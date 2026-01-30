@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xcopy:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter analyze:*)"
+    ]
+  }
+}
