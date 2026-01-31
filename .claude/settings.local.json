@@ -10,7 +10,12 @@
       "Bash(cd:*)",
       "Bash(dir /s /b \"c:\\\\dev\")",
       "Bash(findstr:*)",
-      "Bash(dir /b /s \"c:\\\\dev\")"
+      "Bash(dir /b /s \"c:\\\\dev\")",
+      "Bash(tree:*)",
+      "Bash(Get-ChildItem -Path \"c:\\\\dev\\\\campus_nerds\\\\lib\" -Filter \"*.dart\" -Recurse)",
+      "Bash(Measure-Object)",
+      "Bash(Select-Object -ExpandProperty Count)",
+      "Bash(del \"c:\\\\dev\\\\campus_nerds\\\\lib\\\\presentation\\\\features\\\\auth\\\\pages\\\\login_email_page.dart\")"
     ]
   }
 }

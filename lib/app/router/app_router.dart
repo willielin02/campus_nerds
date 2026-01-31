@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/event.dart';
 import '../../presentation/features/account/pages/account_page.dart';
-import '../../presentation/features/auth/pages/login_email_page.dart';
 import '../../presentation/features/auth/pages/login_page.dart';
 import '../../presentation/features/checkout/pages/checkout_page.dart';
 import '../../presentation/features/checkout/pages/payment_web_view_page.dart';
@@ -56,7 +55,6 @@ class AppRouter {
     final authRoutes = [
       AppRoutes.splash,
       AppRoutes.login,
-      AppRoutes.loginEmail,
     ];
 
     // Onboarding routes (require login but not complete profile)
@@ -81,7 +79,7 @@ class AppRouter {
     // Not logged in - redirect to login for protected routes
     if (!isLoggedIn && !isAuthRoute) {
       authNotifier.setRedirectLocationIfUnset(currentPath);
-      return AppRoutes.loginEmail;
+      return AppRoutes.login;
     }
 
     // Logged in but on auth route - redirect to home
@@ -94,7 +92,7 @@ class AppRouter {
       if (authNotifier.loading) {
         return null; // Stay on splash while loading
       }
-      return isLoggedIn ? AppRoutes.home : AppRoutes.loginEmail;
+      return isLoggedIn ? AppRoutes.home : AppRoutes.login;
     }
 
     return null;
@@ -151,11 +149,6 @@ class AppRouter {
                 state.uri.queryParameters['allowGuest'] != 'false';
             return LoginPage(allowGuest: allowGuest);
           },
-        ),
-        GoRoute(
-          path: AppRoutes.loginEmail,
-          name: AppRouteNames.loginEmail,
-          builder: (context, state) => const LoginEmailPage(),
         ),
         GoRoute(
           path: AppRoutes.basicInfo,

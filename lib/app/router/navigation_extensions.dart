@@ -7,13 +7,8 @@ import 'auth_state_notifier.dart';
 /// Navigation extension methods for BuildContext
 extension NavigationExtensions on BuildContext {
   /// Navigate to login page
-  void goToLogin({bool allowGuest = false}) {
+  void goToLogin({bool allowGuest = true}) {
     go('${AppRoutes.login}?allowGuest=$allowGuest');
-  }
-
-  /// Navigate to email login page
-  void goToLoginEmail({bool allowGuest = false}) {
-    go('${AppRoutes.loginEmail}?allowGuest=$allowGuest');
   }
 
   /// Navigate to basic info page

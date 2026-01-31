@@ -5,7 +5,6 @@ abstract class AppRoutes {
 
   // Auth routes
   static const String login = '/login';
-  static const String loginEmail = '/login-email';
   static const String basicInfo = '/basic-info';
   static const String schoolEmailVerification = '/school-email-verification';
 
@@ -31,7 +30,6 @@ abstract class AppRoutes {
 abstract class AppRouteNames {
   static const String splash = 'splash';
   static const String login = 'login';
-  static const String loginEmail = 'loginEmail';
   static const String basicInfo = 'basicInfo';
   static const String schoolEmailVerification = 'schoolEmailVerification';
   static const String home = 'home';

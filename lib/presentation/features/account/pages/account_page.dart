@@ -30,7 +30,7 @@ class _AccountPageState extends State<AccountPage> {
     return BlocConsumer<AccountBloc, AccountState>(
       listener: (context, state) {
         if (state.status == AccountStatus.loggedOut) {
-          context.go(AppRoutes.loginEmail);
+          context.go(AppRoutes.login);
         }
         if (state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
