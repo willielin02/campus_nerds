@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/router/app_routes.dart';
+import '../../../../app/router/auth_state_notifier.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../bloc/bloc.dart';
 import '../widgets/onboarding_step_progress.dart';
@@ -38,6 +39,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _handleContinueAsGuest() {
+    AuthStateNotifier.instance.setGuestMode(true);
     context.go(AppRoutes.home);
   }
 

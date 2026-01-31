@@ -18,6 +18,10 @@ class AuthRepositoryImpl implements AuthRepository {
   static const String _googleServerClientId =
       '733249908394-9kr063g8q8t1729s0hulherp9j7k5pgc.apps.googleusercontent.com';
 
+  // Apple Sign-In redirect URL for Android (web-based flow)
+  static const String _appleRedirectUri =
+      'https://lzafwlmznlkvmbdxcxop.supabase.co/auth/v1/callback';
+
   @override
   User? get currentUser => SupabaseService.currentUser;
 
@@ -167,6 +171,13 @@ class AuthRepositoryImpl implements AuthRepository {
           AppleIDAuthorizationScopes.fullName,
         ],
         nonce: hashedNonce,
+        // Android requires web authentication options since Apple doesn't have native SDK
+        webAuthenticationOptions: _isAndroid
+            ? WebAuthenticationOptions(
+                clientId: 'com.campusnerds.app.service',
+                redirectUri: Uri.parse(_appleRedirectUri),
+              )
+            : null,
       );
 
       final idToken = credential.identityToken;

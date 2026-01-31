@@ -24,6 +24,7 @@ class AuthStateNotifier extends ChangeNotifier {
   String? _redirectLocation;
   bool _notifyOnAuthChange = true;
   bool _initialized = false;
+  bool _isGuestMode = false;
 
   /// Current user (null if not authenticated)
   User? get user => _user;
@@ -31,8 +32,17 @@ class AuthStateNotifier extends ChangeNotifier {
   /// Whether the app is still loading (splash screen)
   bool get loading => !_initialized || _showSplashImage;
 
-  /// Whether user is logged in
-  bool get loggedIn => _user != null;
+  /// Whether user is logged in (or in guest mode)
+  bool get loggedIn => _user != null || _isGuestMode;
+
+  /// Whether user is in guest mode
+  bool get isGuestMode => _isGuestMode;
+
+  /// Set guest mode
+  void setGuestMode(bool isGuest) {
+    _isGuestMode = isGuest;
+    notifyListeners();
+  }
 
   /// Whether there's a pending redirect
   bool get shouldRedirect => loggedIn && _redirectLocation != null;
