@@ -3,7 +3,14 @@
     "allow": [
       "Bash(xcopy:*)",
       "Bash(flutter pub get:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(flutter clean:*)",
+      "Bash(flutter run:*)",
+      "Bash(find:*)",
+      "Bash(cd:*)",
+      "Bash(dir /s /b \"c:\\\\dev\")",
+      "Bash(findstr:*)",
+      "Bash(dir /b /s \"c:\\\\dev\")"
     ]
   }
 }

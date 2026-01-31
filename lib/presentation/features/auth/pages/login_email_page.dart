@@ -13,12 +13,7 @@ import '../widgets/onboarding_step_progress.dart';
 /// Allows users to sign in or register with email/password.
 /// This is the primary auth entry point (Step 1 of onboarding).
 class LoginEmailPage extends StatefulWidget {
-  const LoginEmailPage({
-    super.key,
-    this.allowGuest = true,
-  });
-
-  final bool allowGuest;
+  const LoginEmailPage({super.key});
 
   @override
   State<LoginEmailPage> createState() => _LoginEmailPageState();
@@ -62,10 +57,6 @@ class _LoginEmailPageState extends State<LoginEmailPage> {
             ),
           );
     }
-  }
-
-  void _handleContinueAsGuest() {
-    context.go(AppRoutes.home);
   }
 
   @override
@@ -149,11 +140,6 @@ class _LoginEmailPageState extends State<LoginEmailPage> {
                           // Register button
                           _buildRegisterButton(colors, textTheme),
 
-                          const SizedBox(height: 16),
-
-                          // Guest button
-                          if (widget.allowGuest) _buildGuestButton(colors, textTheme),
-
                           const SizedBox(height: 32),
                         ],
                       ),
@@ -174,16 +160,13 @@ class _LoginEmailPageState extends State<LoginEmailPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (!widget.allowGuest)
-            IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_rounded,
-                color: colors.secondaryText,
-              ),
-              onPressed: () => context.pop(),
-            )
-          else
-            const SizedBox(width: 64),
+          IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_rounded,
+              color: colors.secondaryText,
+            ),
+            onPressed: () => context.pop(),
+          ),
           const SizedBox(width: 64),
         ],
       ),
@@ -373,29 +356,6 @@ class _LoginEmailPageState extends State<LoginEmailPage> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildGuestButton(AppColorsTheme colors, TextTheme textTheme) {
-    return InkWell(
-      onTap: _handleContinueAsGuest,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: colors.tertiary),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.person_rounded, color: colors.primaryText, size: 28),
-            const SizedBox(width: 8),
-            Text('以訪客身分繼續', style: textTheme.bodyLarge),
-          ],
-        ),
-      ),
     );
   }
 }

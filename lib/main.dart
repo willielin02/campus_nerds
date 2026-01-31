@@ -8,7 +8,13 @@ import 'app/router/router.dart';
 import 'app/theme/app_theme.dart';
 import 'core/di/injection.dart';
 import 'core/services/supabase_service.dart';
+import 'presentation/features/account/bloc/bloc.dart';
 import 'presentation/features/auth/bloc/bloc.dart';
+import 'presentation/features/chat/bloc/bloc.dart';
+import 'presentation/features/checkout/bloc/bloc.dart';
+import 'presentation/features/home/bloc/bloc.dart';
+import 'presentation/features/my_events/bloc/bloc.dart';
+import 'presentation/features/onboarding/bloc/bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,6 +67,24 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> {
       providers: [
         BlocProvider<AuthBloc>(
           create: (_) => getIt<AuthBloc>()..add(const AuthCheckStatus()),
+        ),
+        BlocProvider<OnboardingBloc>(
+          create: (_) => getIt<OnboardingBloc>(),
+        ),
+        BlocProvider<HomeBloc>(
+          create: (_) => getIt<HomeBloc>(),
+        ),
+        BlocProvider<MyEventsBloc>(
+          create: (_) => getIt<MyEventsBloc>(),
+        ),
+        BlocProvider<CheckoutBloc>(
+          create: (_) => getIt<CheckoutBloc>(),
+        ),
+        BlocProvider<ChatBloc>(
+          create: (_) => getIt<ChatBloc>(),
+        ),
+        BlocProvider<AccountBloc>(
+          create: (_) => getIt<AccountBloc>(),
         ),
       ],
       child: MaterialApp.router(

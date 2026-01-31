@@ -112,12 +112,16 @@ class _LoginPageState extends State<LoginPage> {
                         // More options toggle
                         _buildMoreOptionsToggle(colors, textTheme),
 
-                        // Expanded options
+                        // Expanded options (only Apple button)
                         if (_isExpanded) ...[
                           const SizedBox(height: 16),
                           _buildAppleButton(colors, textTheme),
+                        ],
+
+                        // Guest button (separate, always visible when allowed)
+                        if (widget.allowGuest) ...[
                           const SizedBox(height: 16),
-                          if (widget.allowGuest) _buildGuestButton(colors, textTheme),
+                          _buildGuestButton(colors, textTheme),
                         ],
 
                         const SizedBox(height: 32),

@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../domain/entities/event.dart';
+import '../../presentation/features/account/pages/account_page.dart';
 import '../../presentation/features/auth/pages/login_email_page.dart';
 import '../../presentation/features/auth/pages/login_page.dart';
+import '../../presentation/features/checkout/pages/checkout_page.dart';
+import '../../presentation/features/checkout/pages/payment_web_view_page.dart';
+import '../../presentation/features/home/pages/games_booking_confirmation_page.dart';
+import '../../presentation/features/home/pages/home_page.dart';
+import '../../presentation/features/home/pages/study_booking_confirmation_page.dart';
+import '../../presentation/features/my_events/pages/event_details_page.dart';
+import '../../presentation/features/my_events/pages/my_events_page.dart';
+import '../../presentation/features/onboarding/pages/basic_info_page.dart';
+import '../../presentation/features/onboarding/pages/school_email_verification_page.dart';
 import 'app_routes.dart';
 import 'auth_state_notifier.dart';
 
@@ -144,22 +155,17 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.loginEmail,
           name: AppRouteNames.loginEmail,
-          builder: (context, state) {
-            final allowGuest =
-                state.uri.queryParameters['allowGuest'] != 'false';
-            return LoginEmailPage(allowGuest: allowGuest);
-          },
+          builder: (context, state) => const LoginEmailPage(),
         ),
         GoRoute(
           path: AppRoutes.basicInfo,
           name: AppRouteNames.basicInfo,
-          builder: (context, state) => const _PlaceholderPage(title: 'Basic Info'),
+          builder: (context, state) => const BasicInfoPage(),
         ),
         GoRoute(
           path: AppRoutes.schoolEmailVerification,
           name: AppRouteNames.schoolEmailVerification,
-          builder: (context, state) =>
-              const _PlaceholderPage(title: 'School Email Verification'),
+          builder: (context, state) => const SchoolEmailVerificationPage(),
         ),
 
         // Main app with bottom navigation (Shell Route)
@@ -174,7 +180,7 @@ class AppRouter {
                 GoRoute(
                   path: AppRoutes.home,
                   name: AppRouteNames.home,
-                  builder: (context, state) => const _PlaceholderPage(title: 'Home'),
+                  builder: (context, state) => const HomePage(),
                 ),
               ],
             ),
@@ -184,7 +190,7 @@ class AppRouter {
                 GoRoute(
                   path: AppRoutes.myEvents,
                   name: AppRouteNames.myEvents,
-                  builder: (context, state) => const _PlaceholderPage(title: 'My Events'),
+                  builder: (context, state) => const MyEventsPage(),
                 ),
               ],
             ),
@@ -194,7 +200,7 @@ class AppRouter {
                 GoRoute(
                   path: AppRoutes.account,
                   name: AppRouteNames.account,
-                  builder: (context, state) => const _PlaceholderPage(title: 'Account'),
+                  builder: (context, state) => const AccountPage(),
                 ),
               ],
             ),
@@ -206,18 +212,23 @@ class AppRouter {
           path: AppRoutes.eventDetailsStudy,
           name: AppRouteNames.eventDetailsStudy,
           builder: (context, state) {
-            final bookingId = state.uri.queryParameters['bookingId'];
-            return _PlaceholderPage(
-              title: 'Event Details Study',
-              params: {'bookingId': bookingId},
+            final bookingId = state.uri.queryParameters['bookingId'] ?? '';
+            return EventDetailsPage(
+              bookingId: bookingId,
+              isFocusedStudy: true,
             );
           },
         ),
         GoRoute(
           path: AppRoutes.eventDetailsGames,
           name: AppRouteNames.eventDetailsGames,
-          builder: (context, state) =>
-              const _PlaceholderPage(title: 'Event Details Games'),
+          builder: (context, state) {
+            final bookingId = state.uri.queryParameters['bookingId'] ?? '';
+            return EventDetailsPage(
+              bookingId: bookingId,
+              isFocusedStudy: false,
+            );
+          },
         ),
 
         // Booking confirmation routes
@@ -225,32 +236,22 @@ class AppRouter {
           path: AppRoutes.studyBookingConfirmation,
           name: AppRouteNames.studyBookingConfirmation,
           builder: (context, state) {
-            final extra = state.extra as Map<String, dynamic>?;
-            return _PlaceholderPage(
-              title: 'Study Booking Confirmation',
-              params: {
-                'eventId': extra?['eventId'],
-                'eventDate': extra?['eventDate'],
-                'timeSlot': extra?['timeSlot'],
-                'locationDetail': extra?['locationDetail'],
-              },
-            );
+            final event = state.extra as Event?;
+            if (event == null) {
+              return const _PlaceholderPage(title: 'Event not found');
+            }
+            return StudyBookingConfirmationPage(event: event);
           },
         ),
         GoRoute(
           path: AppRoutes.gamesBookingConfirmation,
           name: AppRouteNames.gamesBookingConfirmation,
           builder: (context, state) {
-            final extra = state.extra as Map<String, dynamic>?;
-            return _PlaceholderPage(
-              title: 'Games Booking Confirmation',
-              params: {
-                'eventId': extra?['eventId'],
-                'eventDate': extra?['eventDate'],
-                'timeSlot': extra?['timeSlot'],
-                'locationDetail': extra?['locationDetail'],
-              },
-            );
+            final event = state.extra as Event?;
+            if (event == null) {
+              return const _PlaceholderPage(title: 'Event not found');
+            }
+            return GamesBookingConfirmationPage(event: event);
           },
         ),
 
@@ -261,21 +262,15 @@ class AppRouter {
           builder: (context, state) {
             final tabIndex =
                 int.tryParse(state.uri.queryParameters['tabIndex'] ?? '0') ?? 0;
-            return _PlaceholderPage(
-              title: 'Checkout',
-              params: {'tabIndex': tabIndex},
-            );
+            return CheckoutPage(initialTabIndex: tabIndex);
           },
         ),
         GoRoute(
           path: AppRoutes.paymentWebView,
           name: AppRouteNames.paymentWebView,
           builder: (context, state) {
-            final extra = state.extra as Map<String, dynamic>?;
-            return _PlaceholderPage(
-              title: 'Payment WebView',
-              params: {'paymentHtml': extra?['paymentHtml']},
-            );
+            final paymentHtml = state.uri.queryParameters['paymentHtml'] ?? '';
+            return PaymentWebViewPage(paymentHtml: paymentHtml);
           },
         ),
       ];

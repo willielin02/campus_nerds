@@ -1,8 +1,26 @@
 import 'package:get_it/get_it.dart';
 
+import '../../data/repositories/account_repository_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/repositories/chat_repository_impl.dart';
+import '../../data/repositories/checkout_repository_impl.dart';
+import '../../data/repositories/home_repository_impl.dart';
+import '../../data/repositories/my_events_repository_impl.dart';
+import '../../data/repositories/onboarding_repository_impl.dart';
+import '../../domain/repositories/account_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/chat_repository.dart';
+import '../../domain/repositories/checkout_repository.dart';
+import '../../domain/repositories/home_repository.dart';
+import '../../domain/repositories/my_events_repository.dart';
+import '../../domain/repositories/onboarding_repository.dart';
+import '../../presentation/features/account/bloc/account_bloc.dart';
 import '../../presentation/features/auth/bloc/auth_bloc.dart';
+import '../../presentation/features/chat/bloc/chat_bloc.dart';
+import '../../presentation/features/checkout/bloc/checkout_bloc.dart';
+import '../../presentation/features/home/bloc/home_bloc.dart';
+import '../../presentation/features/my_events/bloc/my_events_bloc.dart';
+import '../../presentation/features/onboarding/bloc/onboarding_bloc.dart';
 
 /// Global service locator
 final getIt = GetIt.instance;
@@ -30,6 +48,30 @@ void _registerRepositories() {
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(),
   );
+
+  getIt.registerLazySingleton<OnboardingRepository>(
+    () => OnboardingRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<HomeRepository>(
+    () => HomeRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<MyEventsRepository>(
+    () => MyEventsRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<CheckoutRepository>(
+    () => CheckoutRepositoryImpl(),
+  );
+
+  getIt.registerFactory<ChatRepository>(
+    () => ChatRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<AccountRepository>(
+    () => AccountRepositoryImpl(),
+  );
 }
 
 void _registerBlocs() {
@@ -37,5 +79,32 @@ void _registerBlocs() {
   // but can also be registered as singleton if needed globally
   getIt.registerFactory<AuthBloc>(
     () => AuthBloc(authRepository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerFactory<OnboardingBloc>(
+    () => OnboardingBloc(onboardingRepository: getIt<OnboardingRepository>()),
+  );
+
+  getIt.registerFactory<HomeBloc>(
+    () => HomeBloc(homeRepository: getIt<HomeRepository>()),
+  );
+
+  getIt.registerFactory<MyEventsBloc>(
+    () => MyEventsBloc(myEventsRepository: getIt<MyEventsRepository>()),
+  );
+
+  getIt.registerFactory<CheckoutBloc>(
+    () => CheckoutBloc(
+      checkoutRepository: getIt<CheckoutRepository>(),
+      myEventsRepository: getIt<MyEventsRepository>(),
+    ),
+  );
+
+  getIt.registerFactory<ChatBloc>(
+    () => ChatBloc(chatRepository: getIt<ChatRepository>()),
+  );
+
+  getIt.registerFactory<AccountBloc>(
+    () => AccountBloc(accountRepository: getIt<AccountRepository>()),
   );
 }

@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
+export 'app_colors.dart';
+
 const String _kThemeModeKey = '__theme_mode__';
 
 /// Campus Nerds Theme Manager
