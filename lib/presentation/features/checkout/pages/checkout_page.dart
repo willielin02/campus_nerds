@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../../domain/entities/checkout.dart';
 import '../bloc/bloc.dart';
 
@@ -44,6 +46,12 @@ class _CheckoutPageState extends State<CheckoutPage>
   }
 
   Future<void> _handlePurchase(Product product) async {
+    // Check if user is logged in
+    if (!SupabaseService.isAuthenticated) {
+      await _showLoginRequiredDialog();
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => _PaymentNoticeDialog(product: product),
@@ -51,6 +59,72 @@ class _CheckoutPageState extends State<CheckoutPage>
 
     if (confirmed == true && mounted) {
       context.read<CheckoutBloc>().add(CheckoutCreateOrder(product.id));
+    }
+  }
+
+  Future<void> _showLoginRequiredDialog() async {
+    final colors = context.appColors;
+    final textTheme = context.textTheme;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: colors.secondaryBackground,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '錯誤',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '您目前尚未登入，請登入後再繼續操作。',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colors.secondaryText,
+                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.alternate,
+                    foregroundColor: colors.primaryText,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    '確定',
+                    style: textTheme.labelLarge?.copyWith(
+                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (mounted) {
+      context.go('${AppRoutes.login}?allowGuest=false');
     }
   }
 
@@ -522,7 +596,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                             Text(
                               isFirst
                                   ? '探索'
-                                  : '節省${product.percentOff ?? 0}%',
+                                  : '節省${product.percentOff}%',
                               style: textTheme.bodyMedium?.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                 color: isSelected
@@ -605,40 +679,55 @@ class _CheckoutPageState extends State<CheckoutPage>
     final selectedProduct =
         products[selectedIndex.clamp(0, products.length - 1)];
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 24, 0, 24),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: isLoading ? null : () => _handlePurchase(selectedProduct),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: colors.primary,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Purchase button
+        Padding(
+          padding: const EdgeInsets.only(top: 32),
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed:
+                  isLoading ? null : () => _handlePurchase(selectedProduct),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.alternate,
+                foregroundColor: colors.primaryText,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: isLoading
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: colors.primaryText,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      '以 NT\$ ${selectedProduct.priceTwd} 購買 ${selectedProduct.packSize} 張票',
+                      style: textTheme.labelLarge?.copyWith(
+                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                      ),
+                    ),
             ),
           ),
-          child: isLoading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-              : Text(
-                  '以 NT\$${selectedProduct.priceTwd} 購買 ${selectedProduct.packSize} 張',
-                  style: textTheme.labelLarge?.copyWith(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                  ),
-                ),
         ),
-      ),
+        // Ticket expiration notice
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+          child: Text(
+            '票券效期：依最近一次購買日起 1 年內。',
+            style: textTheme.bodyMedium?.copyWith(
+              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -734,8 +823,8 @@ class _PaymentNoticeDialog extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context, true),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: Colors.white,
+                      backgroundColor: colors.alternate,
+                      foregroundColor: colors.primaryText,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

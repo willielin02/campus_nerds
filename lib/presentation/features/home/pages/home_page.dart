@@ -40,11 +40,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       context: context,
       cities: state.cities,
       selectedCity: state.selectedCity,
+      category: isFocusedStudy
+          ? CitySelectorCategory.focusedStudy
+          : CitySelectorCategory.englishGames,
+      eventCountsByCity: isFocusedStudy
+          ? state.focusedStudyCountsByCity
+          : state.englishGamesCountsByCity,
       onCitySelected: (city) {
         context.read<HomeBloc>().add(HomeChangeCity(city));
-      },
-      onAllCitiesSelected: () {
-        context.read<HomeBloc>().add(const HomeClearCity());
       },
     );
   }
@@ -395,7 +398,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: Image.asset(
-                                  'assets/images/ticket_games.png',
+                                  'assets/images/ticket_games_work2.png',
                                   fit: BoxFit.contain,
                                   errorBuilder: (_, __, ___) => Icon(
                                     Icons.confirmation_number,

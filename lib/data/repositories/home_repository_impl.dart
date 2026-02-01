@@ -60,6 +60,7 @@ class HomeRepositoryImpl implements HomeRepository {
           id: row.id,
           name: row.name,
           slug: row.slug,
+          imageAsset: CityImages.getImageForCity(row.id),
         );
       }).toList();
 
@@ -164,6 +165,34 @@ class HomeRepositoryImpl implements HomeRepository {
       await _secureStorage.write(key: _cityPreferenceKey, value: cityId);
     } catch (e) {
       // Ignore storage errors
+    }
+  }
+
+  @override
+  Future<Map<String, int>> getEventCountsByCity(EventCategory category) async {
+    try {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      // Get all events for the category
+      final response = await HomeEventsVTable().queryRows(
+        queryFn: (q) => q
+            .eq('category', category.value)
+            .gte('event_date', today.toIso8601String()),
+      );
+
+      // Count events by city
+      final Map<String, int> counts = {};
+      for (final row in response) {
+        final cityId = row.cityId;
+        if (cityId != null) {
+          counts[cityId] = (counts[cityId] ?? 0) + 1;
+        }
+      }
+
+      return counts;
+    } catch (e) {
+      return {};
     }
   }
 

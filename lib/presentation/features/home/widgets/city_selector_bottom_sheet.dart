@@ -1,23 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../domain/entities/city.dart';
 
-/// Bottom sheet for selecting a city
+/// Category type for city selector (affects event counts and opacity)
+enum CitySelectorCategory {
+  focusedStudy,
+  englishGames,
+}
+
+/// Fixed city order matching FlutterFlow
+const _cityOrder = [
+  '2e7c8bc4-232b-4423-9526-002fc27ed1d3', // 臺北
+  '2e3dfbb9-8c2a-4098-8c09-9213f55de6fc', // 桃園
+  '3d221404-0590-4cca-b553-1ab890f31267', // 新竹
+  '3bc5798e-933e-4d46-a819-05f3fa060077', // 臺中
+  'c3e02d08-970d-4fcf-82c5-69a86f69e872', // 嘉義
+  '33a466b3-6d0b-4cd6-b197-9eaba2101853', // 臺南
+  '72cbb430-f015-41b1-970a-86297bf3c904', // 高雄
+];
+
+/// Bottom sheet for selecting a city (FlutterFlow grid design)
 class CitySelectorBottomSheet extends StatelessWidget {
   const CitySelectorBottomSheet({
     super.key,
     required this.cities,
     required this.selectedCity,
     required this.onCitySelected,
-    required this.onAllCitiesSelected,
+    required this.category,
+    required this.eventCountsByCity,
   });
 
   final List<City> cities;
   final City? selectedCity;
   final ValueChanged<City> onCitySelected;
-  final VoidCallback onAllCitiesSelected;
+  final CitySelectorCategory category;
+
+  /// Event counts per city (cityId -> count) for opacity control
+  final Map<String, int> eventCountsByCity;
 
   /// Show the city selector bottom sheet
   static Future<void> show({
@@ -25,17 +46,39 @@ class CitySelectorBottomSheet extends StatelessWidget {
     required List<City> cities,
     required City? selectedCity,
     required ValueChanged<City> onCitySelected,
-    required VoidCallback onAllCitiesSelected,
+    required CitySelectorCategory category,
+    required Map<String, int> eventCountsByCity,
   }) {
+    // Filter cities to only show those with images (the 7 supported cities)
+    // and sort them in the fixed order
+    final filteredCities =
+        cities.where((city) => city.imageAsset != null).toList();
+
+    // Sort by fixed order
+    filteredCities.sort((a, b) {
+      final indexA = _cityOrder.indexOf(a.id);
+      final indexB = _cityOrder.indexOf(b.id);
+      // If not found in order list, put at end
+      final orderA = indexA == -1 ? 999 : indexA;
+      final orderB = indexB == -1 ? 999 : indexB;
+      return orderA.compareTo(orderB);
+    });
+
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => CitySelectorBottomSheet(
-        cities: cities,
-        selectedCity: selectedCity,
-        onCitySelected: onCitySelected,
-        onAllCitiesSelected: onAllCitiesSelected,
+      enableDrag: false,
+      useRootNavigator: true,
+      builder: (context) => GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: CitySelectorBottomSheet(
+          cities: filteredCities,
+          selectedCity: selectedCity,
+          onCitySelected: onCitySelected,
+          category: category,
+          eventCountsByCity: eventCountsByCity,
+        ),
       ),
     );
   }
@@ -45,114 +88,172 @@ class CitySelectorBottomSheet extends StatelessWidget {
     final colors = context.appColors;
     final textTheme = context.textTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.secondaryBackground,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle bar
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(top: 12),
-            decoration: BoxDecoration(
-              color: colors.tertiary,
-              borderRadius: BorderRadius.circular(2),
-            ),
+    return Padding(
+      // Outer padding: 16 left/right (matches FlutterFlow)
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: colors.primaryBackground,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
           ),
-
-          // Title
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              '選擇地區',
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+        ),
+        child: Padding(
+          // Inner column padding: left 32, top 48, right 32, bottom 32
+          padding: const EdgeInsetsDirectional.fromSTEB(32, 48, 32, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Title in Row (left-aligned)
+              Row(
+                children: [
+                  Text(
+                    '想認識哪裡的書呆子呢？',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                    ),
+                  ),
+                ],
               ),
-            ),
+
+              // Grid of city cards with top padding
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: GridView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: cities.length,
+                    itemBuilder: (context, index) {
+                      final city = cities[index];
+                      final eventCount = eventCountsByCity[city.id] ?? 0;
+                      final isDisabled = eventCount == 0;
+
+                      return _CityCard(
+                        city: city,
+                        isDisabled: isDisabled,
+                        onTap: isDisabled
+                            ? null
+                            : () {
+                                Navigator.pop(context);
+                                onCitySelected(city);
+                              },
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // Bottom safe area
+              SizedBox(height: MediaQuery.of(context).padding.bottom),
+            ],
           ),
-
-          // Divider
-          Divider(color: colors.tertiary, height: 1),
-
-          // All cities option
-          _CityOption(
-            label: '全部地區',
-            isSelected: selectedCity == null,
-            onTap: () {
-              Navigator.pop(context);
-              onAllCitiesSelected();
-            },
-            colors: colors,
-            textTheme: textTheme,
-          ),
-
-          // City list
-          ...cities.map((city) => _CityOption(
-                label: city.name,
-                isSelected: selectedCity?.id == city.id,
-                onTap: () {
-                  Navigator.pop(context);
-                  onCitySelected(city);
-                },
-                colors: colors,
-                textTheme: textTheme,
-              )),
-
-          // Bottom safe area
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _CityOption extends StatelessWidget {
-  const _CityOption({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    required this.colors,
-    required this.textTheme,
+/// City card widget with image background and text overlay
+class _CityCard extends StatelessWidget {
+  const _CityCard({
+    required this.city,
+    required this.isDisabled,
+    this.onTap,
   });
 
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final AppColorsTheme colors;
-  final TextTheme textTheme;
+  final City city;
+  final bool isDisabled;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: isSelected ? colors.primary.withOpacity(0.1) : null,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: textTheme.bodyLarge?.copyWith(
-                  color: isSelected ? colors.primary : colors.primaryText,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                ),
-              ),
+    final colors = context.appColors;
+    final textTheme = context.textTheme;
+
+    return Opacity(
+      opacity: isDisabled ? 0.22 : 1.0,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: colors.secondaryBackground,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: colors.tertiary,
+              width: 2,
             ),
-            if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: colors.primary,
-                size: 20,
+          ),
+          child: Stack(
+            children: [
+              // Image background
+              if (city.imageAsset != null)
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      city.imageAsset!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+
+              // City name overlay
+              Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 8, 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          city.name,
+                          style: textTheme.labelLarge?.copyWith(
+                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            shadows: [
+                              Shadow(
+                                color: colors.primary,
+                                offset: const Offset(2, 2),
+                                blurRadius: 2,
+                              ),
+                              Shadow(
+                                color: colors.primary,
+                                offset: const Offset(-2, -2),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

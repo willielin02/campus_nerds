@@ -43,4 +43,8 @@ abstract class HomeRepository {
 
   /// Save user's city preference
   Future<void> saveUserCityPreference(String cityId);
+
+  /// Get event counts for all cities by category
+  /// Returns a map of cityId -> event count
+  Future<Map<String, int>> getEventCountsByCity(EventCategory category);
 }

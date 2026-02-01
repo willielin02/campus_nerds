@@ -52,59 +52,54 @@ class _GamesBookingConfirmationPageState
           child: Scaffold(
             backgroundColor: colors.primaryBackground,
             body: SafeArea(
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: const BoxDecoration(),
-                child: Column(
-                  children: [
-                    // Header row
-                    _buildHeader(context, colors, textTheme),
-                    // Content
-                    Expanded(
-                      child: Container(
-                        decoration: const BoxDecoration(),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            children: [
-                              // Title row: "English Games ( city )"
-                              _buildTitleRow(colors, textTheme, state),
-                              // Subtitle row with ticket balance
-                              _buildSubtitleRow(context, colors, textTheme, state),
-                              // Description text right-aligned
-                              _buildDescriptionRow(textTheme),
-                              // ListView with event card, rules, and notice
-                              Expanded(
-                                child: ListView(
-                                  controller: _listViewController,
-                                  padding: EdgeInsets.zero,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8),
-                                      child: Column(
-                                        children: [
-                                          // Event info card
-                                          _buildEventCard(colors, textTheme),
-                                          // Rules card
-                                          _buildRulesCard(colors, textTheme),
-                                          // Notice section
-                                          _buildNoticeSection(textTheme),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+              child: Column(
+                children: [
+                  // Header row
+                  _buildHeader(context, colors, textTheme),
+                  // Content (scrollable area)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          // Title row: "English Games ( city )"
+                          _buildTitleRow(colors, textTheme, state),
+                          // Subtitle row with ticket balance
+                          _buildSubtitleRow(context, colors, textTheme, state),
+                          // Description text right-aligned
+                          _buildDescriptionRow(textTheme),
+                          // ListView with event card, rules, and notice
+                          Expanded(
+                            child: ListView(
+                              controller: _listViewController,
+                              padding: EdgeInsets.zero,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Column(
+                                    children: [
+                                      // Event info card
+                                      _buildEventCard(colors, textTheme),
+                                      // Rules card
+                                      _buildRulesCard(colors, textTheme),
+                                      // Notice section
+                                      _buildNoticeSection(textTheme),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              // Confirm button
-                              _buildConfirmButton(context, colors, textTheme),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  // Confirm button (fixed at bottom, outside scrollable area)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _buildConfirmButton(context, colors, textTheme, state),
+                  ),
+                ],
               ),
             ),
           ),
@@ -524,12 +519,13 @@ class _GamesBookingConfirmationPageState
     BuildContext context,
     AppColorsTheme colors,
     TextTheme textTheme,
+    HomeState state,
   ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
       child: SizedBox(
-        width: double.infinity,
-        height: 56,
+        width: 192,
+        height: 64,
         child: ElevatedButton(
           onPressed: () async {
             // Scroll to bottom first
@@ -538,25 +534,32 @@ class _GamesBookingConfirmationPageState
               duration: const Duration(milliseconds: 666),
               curve: Curves.ease,
             );
-            await Future.delayed(const Duration(milliseconds: 500));
-            // Show confirmation dialog
-            if (context.mounted) {
-              _showConfirmDialog(context, colors, textTheme);
+            await Future.delayed(const Duration(milliseconds: 2222));
+
+            if (!context.mounted) return;
+
+            // Check ticket balance
+            if (state.ticketBalance.gamesBalance <= 0) {
+              // No tickets - navigate to checkout
+              context.push('${AppRoutes.checkout}?tabIndex=1');
+              return;
             }
+
+            // Show confirmation dialog
+            _showConfirmDialog(context, colors, textTheme);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: colors.secondary,
-            foregroundColor: Colors.white,
+            backgroundColor: colors.tertiary,
+            foregroundColor: colors.primaryText,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
           child: Text(
             '確認報名',
             style: textTheme.labelLarge?.copyWith(
-              fontSize: 18,
-              color: Colors.white,
+              color: colors.primaryText,
               fontFamily: GoogleFonts.notoSansTc().fontFamily,
             ),
           ),

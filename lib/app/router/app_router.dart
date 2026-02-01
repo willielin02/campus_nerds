@@ -153,11 +153,13 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.basicInfo,
           name: AppRouteNames.basicInfo,
+          parentNavigatorKey: appNavigatorKey,
           builder: (context, state) => const BasicInfoPage(),
         ),
         GoRoute(
           path: AppRoutes.schoolEmailVerification,
           name: AppRouteNames.schoolEmailVerification,
+          parentNavigatorKey: appNavigatorKey,
           builder: (context, state) => const SchoolEmailVerificationPage(),
         ),
 
@@ -200,10 +202,11 @@ class AppRouter {
           ],
         ),
 
-        // Event details routes
+        // Event details routes (use root navigator - no navbar)
         GoRoute(
           path: AppRoutes.eventDetailsStudy,
           name: AppRouteNames.eventDetailsStudy,
+          parentNavigatorKey: appNavigatorKey,
           builder: (context, state) {
             final bookingId = state.uri.queryParameters['bookingId'] ?? '';
             return EventDetailsPage(
@@ -215,6 +218,7 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.eventDetailsGames,
           name: AppRouteNames.eventDetailsGames,
+          parentNavigatorKey: appNavigatorKey,
           builder: (context, state) {
             final bookingId = state.uri.queryParameters['bookingId'] ?? '';
             return EventDetailsPage(
@@ -224,10 +228,11 @@ class AppRouter {
           },
         ),
 
-        // Booking confirmation routes
+        // Booking confirmation routes (use root navigator - no navbar)
         GoRoute(
           path: AppRoutes.studyBookingConfirmation,
           name: AppRouteNames.studyBookingConfirmation,
+          parentNavigatorKey: appNavigatorKey,
           builder: (context, state) {
             final event = state.extra as Event?;
             if (event == null) {
@@ -239,6 +244,7 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.gamesBookingConfirmation,
           name: AppRouteNames.gamesBookingConfirmation,
+          parentNavigatorKey: appNavigatorKey,
           builder: (context, state) {
             final event = state.extra as Event?;
             if (event == null) {
@@ -248,10 +254,11 @@ class AppRouter {
           },
         ),
 
-        // Payment routes
+        // Payment routes (use root navigator - no navbar)
         GoRoute(
           path: AppRoutes.checkout,
           name: AppRouteNames.checkout,
+          parentNavigatorKey: appNavigatorKey,
           builder: (context, state) {
             final tabIndex =
                 int.tryParse(state.uri.queryParameters['tabIndex'] ?? '0') ?? 0;
@@ -261,6 +268,7 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.paymentWebView,
           name: AppRouteNames.paymentWebView,
+          parentNavigatorKey: appNavigatorKey,
           builder: (context, state) {
             final paymentHtml = state.uri.queryParameters['paymentHtml'] ?? '';
             return PaymentWebViewPage(paymentHtml: paymentHtml);
@@ -280,26 +288,32 @@ class _MainShell extends StatelessWidget {
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: const Color(0xFFEEEEF1),
+        selectedItemColor: const Color(0xFF57636C),
+        unselectedItemColor: const Color(0xFFDBDBDD),
         currentIndex: navigationShell.currentIndex,
         onTap: (index) => navigationShell.goBranch(
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: '首頁',
+            icon: Icon(Icons.home_outlined, size: 32),
+            activeIcon: Icon(Icons.home, size: 32),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.event_outlined),
-            activeIcon: Icon(Icons.event),
-            label: '我的活動',
+            icon: Icon(Icons.event_outlined, size: 32),
+            activeIcon: Icon(Icons.event, size: 32),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outlined),
-            activeIcon: Icon(Icons.person),
-            label: '帳號',
+            icon: Icon(Icons.person_outlined, size: 32),
+            activeIcon: Icon(Icons.person, size: 32),
+            label: '',
           ),
         ],
       ),

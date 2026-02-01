@@ -18,7 +18,7 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
         queryFn: (q) => q
             .eq('ticket_type', ticketType)
             .eq('is_active', true)
-            .order('pack_size'),
+            .order('pack_size', ascending: true),
       );
 
       return response.map(_mapRowToProduct).toList();
@@ -31,7 +31,10 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
   Future<List<Product>> getAllProducts() async {
     try {
       final response = await ProductsTable().queryRows(
-        queryFn: (q) => q.eq('is_active', true).order('ticket_type').order('pack_size'),
+        queryFn: (q) => q
+            .eq('is_active', true)
+            .order('ticket_type', ascending: true)
+            .order('pack_size', ascending: true),
       );
 
       return response.map(_mapRowToProduct).toList();

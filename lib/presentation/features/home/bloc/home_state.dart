@@ -23,6 +23,12 @@ class HomeState extends Equatable {
   final String? errorMessage;
   final bool isRefreshing;
 
+  /// Event counts per city for focused study (cityId -> count)
+  final Map<String, int> focusedStudyCountsByCity;
+
+  /// Event counts per city for english games (cityId -> count)
+  final Map<String, int> englishGamesCountsByCity;
+
   const HomeState({
     this.status = HomeStatus.initial,
     this.cities = const [],
@@ -32,6 +38,8 @@ class HomeState extends Equatable {
     this.ticketBalance = const TicketBalance(),
     this.errorMessage,
     this.isRefreshing = false,
+    this.focusedStudyCountsByCity = const {},
+    this.englishGamesCountsByCity = const {},
   });
 
   /// Check if data is loaded
@@ -44,6 +52,14 @@ class HomeState extends Equatable {
   /// Get display name for selected city
   String get selectedCityName => selectedCity?.name ?? '全部地區';
 
+  /// Get focused study event count for a city
+  int getFocusedStudyCountForCity(String cityId) =>
+      focusedStudyCountsByCity[cityId] ?? 0;
+
+  /// Get english games event count for a city
+  int getEnglishGamesCountForCity(String cityId) =>
+      englishGamesCountsByCity[cityId] ?? 0;
+
   HomeState copyWith({
     HomeStatus? status,
     List<City>? cities,
@@ -54,16 +70,23 @@ class HomeState extends Equatable {
     TicketBalance? ticketBalance,
     String? errorMessage,
     bool? isRefreshing,
+    Map<String, int>? focusedStudyCountsByCity,
+    Map<String, int>? englishGamesCountsByCity,
   }) {
     return HomeState(
       status: status ?? this.status,
       cities: cities ?? this.cities,
-      selectedCity: clearSelectedCity ? null : (selectedCity ?? this.selectedCity),
+      selectedCity:
+          clearSelectedCity ? null : (selectedCity ?? this.selectedCity),
       focusedStudyEvents: focusedStudyEvents ?? this.focusedStudyEvents,
       englishGamesEvents: englishGamesEvents ?? this.englishGamesEvents,
       ticketBalance: ticketBalance ?? this.ticketBalance,
       errorMessage: errorMessage,
       isRefreshing: isRefreshing ?? this.isRefreshing,
+      focusedStudyCountsByCity:
+          focusedStudyCountsByCity ?? this.focusedStudyCountsByCity,
+      englishGamesCountsByCity:
+          englishGamesCountsByCity ?? this.englishGamesCountsByCity,
     );
   }
 
@@ -77,5 +100,7 @@ class HomeState extends Equatable {
         ticketBalance,
         errorMessage,
         isRefreshing,
+        focusedStudyCountsByCity,
+        englishGamesCountsByCity,
       ];
 }

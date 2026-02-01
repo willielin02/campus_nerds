@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../domain/entities/event.dart';
 import '../../../../domain/repositories/home_repository.dart';
 import 'home_event.dart';
 import 'home_state.dart';
@@ -50,6 +51,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         limit: 10,
       );
 
+      // Load event counts for all cities (for city selector opacity)
+      final focusedStudyCountsByCity = await _homeRepository.getEventCountsByCity(
+        EventCategory.focusedStudy,
+      );
+      final englishGamesCountsByCity = await _homeRepository.getEventCountsByCity(
+        EventCategory.englishGames,
+      );
+
       emit(state.copyWith(
         status: HomeStatus.loaded,
         cities: cities,
@@ -57,6 +66,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         focusedStudyEvents: focusedStudyEvents,
         englishGamesEvents: englishGamesEvents,
         ticketBalance: ticketBalance,
+        focusedStudyCountsByCity: focusedStudyCountsByCity,
+        englishGamesCountsByCity: englishGamesCountsByCity,
       ));
     } catch (e) {
       emit(state.copyWith(
