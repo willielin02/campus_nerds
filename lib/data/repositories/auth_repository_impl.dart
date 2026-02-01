@@ -174,7 +174,7 @@ class AuthRepositoryImpl implements AuthRepository {
         // Android requires web authentication options since Apple doesn't have native SDK
         webAuthenticationOptions: _isAndroid
             ? WebAuthenticationOptions(
-                clientId: 'com.campusnerds.app.service',
+                clientId: 'app.campusnerds.auth',
                 redirectUri: Uri.parse(_appleRedirectUri),
               )
             : null,
