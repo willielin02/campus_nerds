@@ -24,7 +24,14 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Apple Sign-In callback handler for Android -->
+            <!-- Supabase OAuth callback handler (custom URL scheme) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="app.campusnerds.app" />
+            </intent-filter>
+            <!-- Supabase OAuth callback handler (HTTPS deep link) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

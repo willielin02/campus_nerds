@@ -18,9 +18,8 @@ class AuthRepositoryImpl implements AuthRepository {
   static const String _googleServerClientId =
       '733249908394-9kr063g8q8t1729s0hulherp9j7k5pgc.apps.googleusercontent.com';
 
-  // Apple Sign-In redirect URL for Android (web-based flow)
-  static const String _appleRedirectUri =
-      'https://lzafwlmznlkvmbdxcxop.supabase.co/auth/v1/callback';
+  // OAuth redirect URL for mobile apps (custom URL scheme)
+  static const String _mobileRedirectUri = 'app.campusnerds.app://login-callback';
 
   @override
   User? get currentUser => SupabaseService.currentUser;
@@ -143,13 +142,19 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthResult> signInWithApple() async {
     try {
-      if (kIsWeb) {
-        await SupabaseService.client.auth.signInWithOAuth(
+      // Android and Web: Use Supabase OAuth flow (opens browser)
+      if (_isAndroid || kIsWeb) {
+        final success = await SupabaseService.client.auth.signInWithOAuth(
           OAuthProvider.apple,
-          authScreenLaunchMode: LaunchMode.platformDefault,
+          redirectTo: _mobileRedirectUri,
+          authScreenLaunchMode: LaunchMode.externalApplication,
         );
 
-        // Wait for auth state change
+        if (!success) {
+          return AuthResult.failure('Apple 登入失敗');
+        }
+
+        // Wait for auth state change (user will be redirected back)
         final authState = await SupabaseService.authStateChanges
             .timeout(const Duration(minutes: 5))
             .firstWhere((event) => event.event == AuthChangeEvent.signedIn);
@@ -161,7 +166,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return AuthResult.failure('Apple 登入失敗');
       }
 
-      // Native platform sign-in
+      // iOS: Use native Sign in with Apple
       final rawNonce = SupabaseService.client.auth.generateRawNonce();
       final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
@@ -171,13 +176,6 @@ class AuthRepositoryImpl implements AuthRepository {
           AppleIDAuthorizationScopes.fullName,
         ],
         nonce: hashedNonce,
-        // Android requires web authentication options since Apple doesn't have native SDK
-        webAuthenticationOptions: _isAndroid
-            ? WebAuthenticationOptions(
-                clientId: 'app.campusnerds.auth',
-                redirectUri: Uri.parse(_appleRedirectUri),
-              )
-            : null,
       );
 
       final idToken = credential.identityToken;
