@@ -1,6 +1,9 @@
 // Supabase Edge Function: sync-facebook-friends
 // Syncs a user's Facebook friends who also use the Campus Nerds app
 // and stores the friendships in the database for group matching
+//
+// NEW: Optionally exchanges short-lived token for long-lived token (60 days)
+//      and stores it for background sync during auto-grouping
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -9,6 +12,10 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// Facebook App credentials (from environment)
+const FB_APP_ID = Deno.env.get('FB_APP_ID') ?? ''
+const FB_APP_SECRET = Deno.env.get('FB_APP_SECRET') ?? ''
 
 interface FacebookFriend {
   id: string
@@ -24,6 +31,48 @@ interface FacebookFriendsResponse {
     message: string
     type: string
     code: number
+  }
+}
+
+interface LongLivedTokenResponse {
+  access_token?: string
+  token_type?: string
+  expires_in?: number
+  error?: {
+    message: string
+    type: string
+    code: number
+  }
+}
+
+// Exchange short-lived token for long-lived token (60 days)
+async function exchangeForLongLivedToken(shortLivedToken: string): Promise<string | null> {
+  if (!FB_APP_ID || !FB_APP_SECRET) {
+    console.log('FB_APP_ID or FB_APP_SECRET not configured, skipping token exchange')
+    return null
+  }
+
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/oauth/access_token?` +
+      `grant_type=fb_exchange_token&` +
+      `client_id=${FB_APP_ID}&` +
+      `client_secret=${FB_APP_SECRET}&` +
+      `fb_exchange_token=${shortLivedToken}`
+    )
+
+    const data: LongLivedTokenResponse = await response.json()
+
+    if (data.error) {
+      console.error('Token exchange error:', data.error.message)
+      return null
+    }
+
+    console.log(`Got long-lived token, expires in ${data.expires_in} seconds`)
+    return data.access_token || null
+  } catch (error) {
+    console.error('Token exchange failed:', error)
+    return null
   }
 }
 
@@ -59,8 +108,8 @@ serve(async (req) => {
       })
     }
 
-    // Get Facebook access token from request body
-    const { access_token } = await req.json()
+    // Get Facebook access token and options from request body
+    const { access_token, store_token = false } = await req.json()
 
     if (!access_token) {
       return new Response(JSON.stringify({ error: 'Missing access_token' }), {
@@ -69,10 +118,22 @@ serve(async (req) => {
       })
     }
 
+    // Optionally exchange for long-lived token
+    let tokenToUse = access_token
+    let longLivedToken: string | null = null
+
+    if (store_token) {
+      longLivedToken = await exchangeForLongLivedToken(access_token)
+      if (longLivedToken) {
+        tokenToUse = longLivedToken
+        console.log('Using long-lived token for sync')
+      }
+    }
+
     // Fetch friends from Facebook Graph API
     // Note: user_friends permission only returns friends who also use this app
     const fbResponse = await fetch(
-      `https://graph.facebook.com/v18.0/me/friends?access_token=${access_token}&limit=5000`
+      `https://graph.facebook.com/v18.0/me/friends?access_token=${tokenToUse}&limit=5000`
     )
 
     const fbData: FacebookFriendsResponse = await fbResponse.json()
@@ -137,10 +198,19 @@ serve(async (req) => {
       }
     }
 
-    // Update user's sync status
-    await supabaseClient.from('users').update({
+    // Update user's sync status and optionally store long-lived token
+    const updateData: Record<string, any> = {
       fb_last_sync_at: new Date().toISOString(),
-    }).eq('id', user.id)
+      fb_last_sync_status: 'success',
+    }
+
+    // Store long-lived token if available and user consented
+    if (store_token && longLivedToken) {
+      updateData.fb_access_token = longLivedToken
+      console.log('Storing long-lived token for user')
+    }
+
+    await supabaseClient.from('users').update(updateData).eq('id', user.id)
 
     // Log successful sync
     await supabaseClient.from('fb_friend_sync_attempts').insert({
@@ -160,6 +230,7 @@ serve(async (req) => {
       friends_count: insertedCount,
       total_fb_friends: friends.length,
       matched_app_users: appFriends?.length || 0,
+      token_stored: store_token && longLivedToken !== null,
       message: `成功同步 ${insertedCount} 位好友`,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

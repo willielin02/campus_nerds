@@ -90,13 +90,15 @@ class FacebookRepositoryImpl implements FacebookRepository {
     // Logout from Facebook SDK
     await _facebookAuth.logOut();
 
-    // Clear Facebook data in database
+    // Clear Facebook data in database (including stored access token)
     final userId = SupabaseService.currentUserId;
     if (userId != null) {
       await SupabaseService.from('users').update({
         'fb_user_id': null,
         'fb_connected_at': null,
         'fb_last_sync_at': null,
+        'fb_last_sync_status': null,
+        'fb_access_token': null,
       }).eq('id', userId);
     }
   }
@@ -125,18 +127,27 @@ class FacebookRepositoryImpl implements FacebookRepository {
     }
   }
 
-  Future<FacebookSyncResult> _syncFriendsToBackend(String accessToken) async {
+  Future<FacebookSyncResult> _syncFriendsToBackend(
+    String accessToken, {
+    bool storeToken = true, // Default to true for background sync support
+  }) async {
     try {
       // Call Supabase Edge Function to sync friends
+      // store_token: if true, exchanges for long-lived token and stores it
+      // for background sync during auto-grouping (requires FB_APP_SECRET on server)
       final response = await SupabaseService.client.functions.invoke(
         'sync-facebook-friends',
-        body: {'access_token': accessToken},
+        body: {
+          'access_token': accessToken,
+          'store_token': storeToken,
+        },
       );
 
       if (response.status == 200) {
         final data = response.data as Map<String, dynamic>?;
         final friendsCount = data?['friends_count'] as int? ?? 0;
-        return FacebookSyncResult.success(friendsCount);
+        final tokenStored = data?['token_stored'] as bool? ?? false;
+        return FacebookSyncResult.success(friendsCount, tokenStored: tokenStored);
       } else {
         final data = response.data as Map<String, dynamic>?;
         final errorMessage = data?['error'] as String? ?? '同步失敗';

@@ -25,17 +25,21 @@ class FacebookLinkResult {
 class FacebookSyncResult {
   final bool success;
   final int friendsCount;
+  final bool tokenStored; // Whether long-lived token was stored for background sync
   final String? errorMessage;
 
   const FacebookSyncResult._({
     required this.success,
     this.friendsCount = 0,
+    this.tokenStored = false,
     this.errorMessage,
   });
 
-  factory FacebookSyncResult.success(int friendsCount) => FacebookSyncResult._(
+  factory FacebookSyncResult.success(int friendsCount, {bool tokenStored = false}) =>
+      FacebookSyncResult._(
         success: true,
         friendsCount: friendsCount,
+        tokenStored: tokenStored,
       );
 
   factory FacebookSyncResult.failure(String message) => FacebookSyncResult._(
