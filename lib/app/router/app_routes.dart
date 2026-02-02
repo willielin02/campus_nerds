@@ -24,6 +24,9 @@ abstract class AppRoutes {
   // Payment
   static const String checkout = '/checkout';
   static const String paymentWebView = '/payment-web-view';
+
+  // Ticket History
+  static const String ticketHistory = '/ticket-history';
 }
 
 /// Route names for named navigation
@@ -41,4 +44,5 @@ abstract class AppRouteNames {
   static const String gamesBookingConfirmation = 'gamesBookingConfirmation';
   static const String checkout = 'checkout';
   static const String paymentWebView = 'paymentWebView';
+  static const String ticketHistory = 'ticketHistory';
 }

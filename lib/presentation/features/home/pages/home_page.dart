@@ -555,7 +555,7 @@ class _EventCardEmpty extends StatelessWidget {
     final textTheme = context.textTheme;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 24),
+      padding: const EdgeInsets.symmetric(vertical: 24),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(

@@ -7,6 +7,7 @@ import '../../data/repositories/checkout_repository_impl.dart';
 import '../../data/repositories/home_repository_impl.dart';
 import '../../data/repositories/my_events_repository_impl.dart';
 import '../../data/repositories/onboarding_repository_impl.dart';
+import '../../data/repositories/ticket_history_repository_impl.dart';
 import '../../domain/repositories/account_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/chat_repository.dart';
@@ -14,6 +15,7 @@ import '../../domain/repositories/checkout_repository.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../../domain/repositories/my_events_repository.dart';
 import '../../domain/repositories/onboarding_repository.dart';
+import '../../domain/repositories/ticket_history_repository.dart';
 import '../../presentation/features/account/bloc/account_bloc.dart';
 import '../../presentation/features/auth/bloc/auth_bloc.dart';
 import '../../presentation/features/chat/bloc/chat_bloc.dart';
@@ -21,6 +23,7 @@ import '../../presentation/features/checkout/bloc/checkout_bloc.dart';
 import '../../presentation/features/home/bloc/home_bloc.dart';
 import '../../presentation/features/my_events/bloc/my_events_bloc.dart';
 import '../../presentation/features/onboarding/bloc/onboarding_bloc.dart';
+import '../../presentation/features/ticket_history/bloc/ticket_history_bloc.dart';
 
 /// Global service locator
 final getIt = GetIt.instance;
@@ -72,6 +75,10 @@ void _registerRepositories() {
   getIt.registerLazySingleton<AccountRepository>(
     () => AccountRepositoryImpl(),
   );
+
+  getIt.registerLazySingleton<TicketHistoryRepository>(
+    () => TicketHistoryRepositoryImpl(),
+  );
 }
 
 void _registerBlocs() {
@@ -106,5 +113,11 @@ void _registerBlocs() {
 
   getIt.registerFactory<AccountBloc>(
     () => AccountBloc(accountRepository: getIt<AccountRepository>()),
+  );
+
+  getIt.registerFactory<TicketHistoryBloc>(
+    () => TicketHistoryBloc(
+      ticketHistoryRepository: getIt<TicketHistoryRepository>(),
+    ),
   );
 }

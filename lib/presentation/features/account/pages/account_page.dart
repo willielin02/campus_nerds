@@ -93,7 +93,7 @@ class _AccountPageState extends State<AccountPage> {
                                 icon: Icons.confirmation_number_outlined,
                                 title: '票券紀錄',
                                 onTap: () {
-                                  context.push(AppRoutes.checkout);
+                                  context.push(AppRoutes.ticketHistory);
                                 },
                               ),
                               _SettingsItem(
