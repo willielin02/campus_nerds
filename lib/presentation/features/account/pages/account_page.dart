@@ -100,9 +100,7 @@ class _AccountPageState extends State<AccountPage> {
                                 icon: Icons.facebook_rounded,
                                 title: '臉書綁定',
                                 onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('功能開發中')),
-                                  );
+                                  context.push(AppRoutes.facebookBinding);
                                 },
                                 isLast: true,
                               ),

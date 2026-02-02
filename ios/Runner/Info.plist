@@ -55,6 +55,23 @@
 				<string>com.googleusercontent.apps.733249908394-55lgm73d9mjpj8hj5p0n28mor6vt9dfe</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb1131997582237392</string>
+			</array>
+		</dict>
+	</array>
+	<key>FacebookAppID</key>
+	<string>1131997582237392</string>
+	<key>FacebookClientToken</key>
+	<string>d53420eff7cc8572122958476233dbbc</string>
+	<key>FacebookDisplayName</key>
+	<string>Campus Nerds</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
 	</array>
 </dict>
 </plist>

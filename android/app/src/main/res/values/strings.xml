@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Campus Nerds</string>
+    <!-- Facebook SDK Configuration -->
+    <string name="facebook_app_id">1131997582237392</string>
+    <string name="facebook_client_token">d53420eff7cc8572122958476233dbbc</string>
+    <string name="fb_login_protocol_scheme">fb1131997582237392</string>
+</resources>

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/di/injection.dart';
 import '../../domain/entities/event.dart';
-import '../../presentation/features/ticket_history/bloc/bloc.dart';
 import '../../presentation/features/account/pages/account_page.dart';
 import '../../presentation/features/auth/pages/login_page.dart';
 import '../../presentation/features/checkout/pages/checkout_page.dart';
@@ -17,6 +14,7 @@ import '../../presentation/features/my_events/pages/my_events_page.dart';
 import '../../presentation/features/onboarding/pages/basic_info_page.dart';
 import '../../presentation/features/onboarding/pages/school_email_verification_page.dart';
 import '../../presentation/features/ticket_history/pages/ticket_history_page.dart';
+import '../../presentation/features/facebook_binding/pages/facebook_binding_page.dart';
 import 'app_routes.dart';
 import 'auth_state_notifier.dart';
 
@@ -280,14 +278,20 @@ class AppRouter {
         ),
 
         // Ticket History route (use root navigator - no navbar)
+        // BLoC is provided at app level in main.dart (singleton)
         GoRoute(
           path: AppRoutes.ticketHistory,
           name: AppRouteNames.ticketHistory,
           parentNavigatorKey: appNavigatorKey,
-          builder: (context, state) => BlocProvider(
-            create: (_) => getIt<TicketHistoryBloc>(),
-            child: const TicketHistoryPage(),
-          ),
+          builder: (context, state) => const TicketHistoryPage(),
+        ),
+
+        // Facebook Binding route (use root navigator - no navbar)
+        GoRoute(
+          path: AppRoutes.facebookBinding,
+          name: AppRouteNames.facebookBinding,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) => const FacebookBindingPage(),
         ),
       ];
 }

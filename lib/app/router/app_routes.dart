@@ -27,6 +27,9 @@ abstract class AppRoutes {
 
   // Ticket History
   static const String ticketHistory = '/ticket-history';
+
+  // Facebook Binding
+  static const String facebookBinding = '/facebook-binding';
 }
 
 /// Route names for named navigation
@@ -45,4 +48,5 @@ abstract class AppRouteNames {
   static const String checkout = 'checkout';
   static const String paymentWebView = 'paymentWebView';
   static const String ticketHistory = 'ticketHistory';
+  static const String facebookBinding = 'facebookBinding';
 }

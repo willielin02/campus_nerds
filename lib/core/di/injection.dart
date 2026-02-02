@@ -4,6 +4,7 @@ import '../../data/repositories/account_repository_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/chat_repository_impl.dart';
 import '../../data/repositories/checkout_repository_impl.dart';
+import '../../data/repositories/facebook_repository_impl.dart';
 import '../../data/repositories/home_repository_impl.dart';
 import '../../data/repositories/my_events_repository_impl.dart';
 import '../../data/repositories/onboarding_repository_impl.dart';
@@ -12,6 +13,7 @@ import '../../domain/repositories/account_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/chat_repository.dart';
 import '../../domain/repositories/checkout_repository.dart';
+import '../../domain/repositories/facebook_repository.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../../domain/repositories/my_events_repository.dart';
 import '../../domain/repositories/onboarding_repository.dart';
@@ -79,6 +81,10 @@ void _registerRepositories() {
   getIt.registerLazySingleton<TicketHistoryRepository>(
     () => TicketHistoryRepositoryImpl(),
   );
+
+  getIt.registerLazySingleton<FacebookRepository>(
+    () => FacebookRepositoryImpl(),
+  );
 }
 
 void _registerBlocs() {
@@ -89,7 +95,10 @@ void _registerBlocs() {
   );
 
   getIt.registerFactory<OnboardingBloc>(
-    () => OnboardingBloc(onboardingRepository: getIt<OnboardingRepository>()),
+    () => OnboardingBloc(
+      onboardingRepository: getIt<OnboardingRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
   );
 
   getIt.registerFactory<HomeBloc>(
@@ -100,7 +109,8 @@ void _registerBlocs() {
     () => MyEventsBloc(myEventsRepository: getIt<MyEventsRepository>()),
   );
 
-  getIt.registerFactory<CheckoutBloc>(
+  // CheckoutBloc is singleton to cache products data across navigations
+  getIt.registerLazySingleton<CheckoutBloc>(
     () => CheckoutBloc(
       checkoutRepository: getIt<CheckoutRepository>(),
       myEventsRepository: getIt<MyEventsRepository>(),
@@ -115,7 +125,8 @@ void _registerBlocs() {
     () => AccountBloc(accountRepository: getIt<AccountRepository>()),
   );
 
-  getIt.registerFactory<TicketHistoryBloc>(
+  // TicketHistoryBloc is singleton to cache history data across navigations
+  getIt.registerLazySingleton<TicketHistoryBloc>(
     () => TicketHistoryBloc(
       ticketHistoryRepository: getIt<TicketHistoryRepository>(),
     ),
