@@ -61,8 +61,13 @@ class _SchoolEmailVerificationPageState
 
     return BlocListener<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
+        // Navigation after verification (matching FlutterFlow logic):
+        // - codeVerified: User needs to fill basic info → BasicInfo page
+        // - completed: User already has basic info → Home page
         if (state.status == OnboardingStatus.codeVerified) {
           context.go(AppRoutes.basicInfo);
+        } else if (state.status == OnboardingStatus.completed) {
+          context.go(AppRoutes.home);
         } else if (state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -151,10 +156,10 @@ class _SchoolEmailVerificationPageState
                           // Progress indicator
                           Padding(
                             padding: const EdgeInsets.only(top: 32),
-                            child: SizedBox(
+                            child: const SizedBox(
                               width: double.infinity,
                               height: 24,
-                              child: const OnboardingStepProgress(
+                              child: OnboardingStepProgress(
                                 currentStep: 2,
                                 totalSteps: 3,
                               ),

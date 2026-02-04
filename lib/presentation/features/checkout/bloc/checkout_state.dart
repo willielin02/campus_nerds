@@ -21,6 +21,7 @@ class CheckoutState {
     this.gamesBalance = 0,
     this.orderResult,
     this.errorMessage,
+    this.isRefreshing = false,
   });
 
   final CheckoutStatus status;
@@ -32,6 +33,10 @@ class CheckoutState {
   final int gamesBalance;
   final CreateOrderResult? orderResult;
   final String? errorMessage;
+  final bool isRefreshing;
+
+  /// Check if we have cached data
+  bool get hasCachedData => studyProducts.isNotEmpty || gamesProducts.isNotEmpty;
 
   /// Get currently selected study product
   Product? get selectedStudyProduct {
@@ -57,6 +62,7 @@ class CheckoutState {
     int? gamesBalance,
     CreateOrderResult? orderResult,
     String? errorMessage,
+    bool? isRefreshing,
     bool clearOrderResult = false,
     bool clearError = false,
   }) {
@@ -70,6 +76,7 @@ class CheckoutState {
       gamesBalance: gamesBalance ?? this.gamesBalance,
       orderResult: clearOrderResult ? null : (orderResult ?? this.orderResult),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 }

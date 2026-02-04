@@ -185,9 +185,13 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                         const SizedBox(height: 32),
                         _buildLogo(),
                         const SizedBox(height: 32),
-                        const OnboardingStepProgress(
-                          currentStep: 3,
-                          totalSteps: 3,
+                        const SizedBox(
+                          width: double.infinity,
+                          height: 24,
+                          child: OnboardingStepProgress(
+                            currentStep: 3,
+                            totalSteps: 3,
+                          ),
                         ),
                         const SizedBox(height: 32),
                         _buildTitle(textTheme),

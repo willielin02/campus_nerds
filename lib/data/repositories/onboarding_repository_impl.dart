@@ -1,3 +1,7 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import '../../core/services/supabase_service.dart';
 import '../../core/utils/domain_validators.dart';
 import '../../domain/entities/university.dart';
@@ -157,12 +161,25 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
         return OnboardingResult.failure('用戶未登入');
       }
 
-      // Update user's basic info
+      // Determine client OS
+      String clientOs;
+      if (kIsWeb) {
+        clientOs = 'web';
+      } else if (Platform.isIOS) {
+        clientOs = 'ios';
+      } else if (Platform.isAndroid) {
+        clientOs = 'android';
+      } else {
+        clientOs = 'unknown';
+      }
+
+      // Update user's basic info (matching FlutterFlow fields)
       await UsersTable().update(
         data: {
           'nickname': nickname.trim(),
           'gender': gender,
           'birthday': birthday.toIso8601String().split('T')[0], // Date only
+          'os': clientOs,
           'updated_at': DateTime.now().toIso8601String(),
         },
         matchingRows: (q) => q.eq('id', userId),

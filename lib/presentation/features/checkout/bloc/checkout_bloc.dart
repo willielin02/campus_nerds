@@ -25,11 +25,21 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   }
 
   /// Load products and user balance
+  /// Uses stale-while-revalidate pattern: show cached data first, refresh in background
   Future<void> _onLoadProducts(
     CheckoutLoadProducts event,
     Emitter<CheckoutState> emit,
   ) async {
-    emit(state.copyWith(status: CheckoutStatus.loading));
+    // If we have cached data, show it immediately and refresh in background
+    if (state.hasCachedData) {
+      emit(state.copyWith(
+        status: CheckoutStatus.loaded,
+        isRefreshing: true,
+      ));
+    } else {
+      // No cached data, show loading state
+      emit(state.copyWith(status: CheckoutStatus.loading));
+    }
 
     try {
       // Load products in parallel
@@ -37,21 +47,35 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       final gamesProducts = await _checkoutRepository.getProducts('games');
       final ticketBalance = await _myEventsRepository.getTicketBalance();
 
+      // Determine selected indices
+      // Only set default selection if this is the first load (no cached data)
+      final selectedStudyIndex = state.hasCachedData
+          ? state.selectedStudyIndex
+          : (studyProducts.length > 1 ? 1 : 0);
+      final selectedGamesIndex = state.hasCachedData
+          ? state.selectedGamesIndex
+          : (gamesProducts.length > 1 ? 1 : 0);
+
       emit(state.copyWith(
         status: CheckoutStatus.loaded,
         studyProducts: studyProducts,
         gamesProducts: gamesProducts,
         studyBalance: ticketBalance.studyBalance,
         gamesBalance: ticketBalance.gamesBalance,
-        // Default select middle product (index 1)
-        selectedStudyIndex: studyProducts.length > 1 ? 1 : 0,
-        selectedGamesIndex: gamesProducts.length > 1 ? 1 : 0,
+        selectedStudyIndex: selectedStudyIndex,
+        selectedGamesIndex: selectedGamesIndex,
+        isRefreshing: false,
       ));
     } catch (e) {
-      emit(state.copyWith(
-        status: CheckoutStatus.error,
-        errorMessage: '載入商品失敗',
-      ));
+      // If we have cached data, keep showing it even if refresh fails
+      if (state.hasCachedData) {
+        emit(state.copyWith(isRefreshing: false));
+      } else {
+        emit(state.copyWith(
+          status: CheckoutStatus.error,
+          errorMessage: '載入商品失敗',
+        ));
+      }
     }
   }
 

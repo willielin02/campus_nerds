@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../domain/repositories/auth_repository.dart';
 import '../../../../domain/repositories/onboarding_repository.dart';
 import 'onboarding_event.dart';
 import 'onboarding_state.dart';
@@ -9,11 +10,14 @@ import 'onboarding_state.dart';
 /// Onboarding BLoC for managing school email verification and basic info
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   final OnboardingRepository _onboardingRepository;
+  final AuthRepository _authRepository;
   Timer? _cooldownTimer;
 
   OnboardingBloc({
     required OnboardingRepository onboardingRepository,
+    required AuthRepository authRepository,
   })  : _onboardingRepository = onboardingRepository,
+        _authRepository = authRepository,
         super(const OnboardingState()) {
     on<OnboardingValidateEmail>(_onValidateEmail);
     on<OnboardingSendCode>(_onSendCode);
@@ -96,6 +100,9 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   }
 
   /// Verify the code entered by user
+  /// After verification, checks if user already has basic info:
+  /// - If yes, navigates to Home (via completed status)
+  /// - If no, navigates to BasicInfo (via codeVerified status)
   Future<void> _onVerifyCode(
     OnboardingVerifyCode event,
     Emitter<OnboardingState> emit,
@@ -112,11 +119,27 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
     if (result.success) {
       _cancelCooldownTimer();
-      emit(state.copyWith(
-        status: OnboardingStatus.codeVerified,
-        isLoading: false,
-        cooldownSeconds: 0,
-      ));
+
+      // Check if user already has basic info (matching FlutterFlow logic)
+      // If user has gender, birthday, nickname, os -> go to Home
+      // Otherwise -> go to BasicInfo
+      final profileStatus = await _authRepository.getUserProfileStatus();
+
+      if (profileStatus != null && profileStatus.hasBasicInfo) {
+        // User already has basic info, go directly to Home
+        emit(state.copyWith(
+          status: OnboardingStatus.completed,
+          isLoading: false,
+          cooldownSeconds: 0,
+        ));
+      } else {
+        // User needs to fill basic info
+        emit(state.copyWith(
+          status: OnboardingStatus.codeVerified,
+          isLoading: false,
+          cooldownSeconds: 0,
+        ));
+      }
     } else {
       emit(state.copyWith(
         status: OnboardingStatus.codeSent, // Stay on code entry

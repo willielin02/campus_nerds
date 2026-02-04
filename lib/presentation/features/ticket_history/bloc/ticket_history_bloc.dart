@@ -18,14 +18,21 @@ class TicketHistoryBloc extends Bloc<TicketHistoryEvent, TicketHistoryState> {
   }
 
   /// Load study ticket history
+  /// Uses stale-while-revalidate pattern: show cached data first, refresh in background
   Future<void> _onLoadStudy(
     TicketHistoryLoadStudy event,
     Emitter<TicketHistoryState> emit,
   ) async {
-    // Skip if already loaded study entries
-    if (state.studyEntries.isNotEmpty && !state.isRefreshing) return;
-
-    emit(state.copyWith(status: TicketHistoryStatus.loading));
+    // If we have cached data, show it immediately and refresh in background
+    if (state.hasCachedStudyData) {
+      emit(state.copyWith(
+        status: TicketHistoryStatus.loaded,
+        isRefreshing: true,
+      ));
+    } else {
+      // No cached data, show loading state
+      emit(state.copyWith(status: TicketHistoryStatus.loading));
+    }
 
     try {
       // Load ticket balance and entries in parallel
@@ -38,39 +45,61 @@ class TicketHistoryBloc extends Bloc<TicketHistoryEvent, TicketHistoryState> {
         status: TicketHistoryStatus.loaded,
         ticketBalance: results[0] as dynamic,
         studyEntries: results[1] as dynamic,
+        isRefreshing: false,
       ));
     } catch (e) {
-      emit(state.copyWith(
-        status: TicketHistoryStatus.error,
-        errorMessage: '載入票券紀錄失敗',
-      ));
+      // If we have cached data, keep showing it even if refresh fails
+      if (state.hasCachedStudyData) {
+        emit(state.copyWith(isRefreshing: false));
+      } else {
+        emit(state.copyWith(
+          status: TicketHistoryStatus.error,
+          errorMessage: '載入票券紀錄失敗',
+        ));
+      }
     }
   }
 
   /// Load games ticket history
+  /// Uses stale-while-revalidate pattern: show cached data first, refresh in background
   Future<void> _onLoadGames(
     TicketHistoryLoadGames event,
     Emitter<TicketHistoryState> emit,
   ) async {
-    // Skip if already loaded games entries
-    if (state.gamesEntries.isNotEmpty && !state.isRefreshing) return;
-
-    emit(state.copyWith(status: TicketHistoryStatus.loading));
+    // If we have cached data, show it immediately and refresh in background
+    if (state.hasCachedGamesData) {
+      emit(state.copyWith(
+        status: TicketHistoryStatus.loaded,
+        isRefreshing: true,
+      ));
+    } else {
+      // No cached data, show loading state
+      emit(state.copyWith(status: TicketHistoryStatus.loading));
+    }
 
     try {
-      final entries = await _ticketHistoryRepository.getTicketHistory(
-        ticketType: 'games',
-      );
+      // Load ticket balance and entries in parallel
+      final results = await Future.wait([
+        _ticketHistoryRepository.getTicketBalance(),
+        _ticketHistoryRepository.getTicketHistory(ticketType: 'games'),
+      ]);
 
       emit(state.copyWith(
         status: TicketHistoryStatus.loaded,
-        gamesEntries: entries,
+        ticketBalance: results[0] as dynamic,
+        gamesEntries: results[1] as dynamic,
+        isRefreshing: false,
       ));
     } catch (e) {
-      emit(state.copyWith(
-        status: TicketHistoryStatus.error,
-        errorMessage: '載入票券紀錄失敗',
-      ));
+      // If we have cached data, keep showing it even if refresh fails
+      if (state.hasCachedGamesData) {
+        emit(state.copyWith(isRefreshing: false));
+      } else {
+        emit(state.copyWith(
+          status: TicketHistoryStatus.error,
+          errorMessage: '載入票券紀錄失敗',
+        ));
+      }
     }
   }
 

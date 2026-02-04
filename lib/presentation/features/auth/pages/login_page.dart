@@ -149,9 +149,9 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   ),
                                   // Progress indicator
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 32),
-                                    child: SizedBox(
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 32),
+                                    child: const SizedBox(
                                       width: double.infinity,
                                       height: 24,
                                       child: OnboardingStepProgress(

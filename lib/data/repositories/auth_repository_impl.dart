@@ -256,9 +256,13 @@ class AuthRepositoryImpl implements AuthRepository {
       final profile = profiles.first;
       final hasUniversity =
           profile.universityId != null && profile.universityId!.isNotEmpty;
-      final hasBasicInfo = profile.gender != null &&
-          profile.gender!.isNotEmpty &&
-          profile.birthday != null;
+      // Check all basic info fields (matching FlutterFlow logic)
+      // Must have: gender, birthday, nickname, os
+      final hasBasicInfo = (profile.gender != null &&
+              profile.gender!.isNotEmpty) &&
+          (profile.birthday != null) &&
+          (profile.nickname != null && profile.nickname!.isNotEmpty) &&
+          (profile.os != null && profile.os!.isNotEmpty);
 
       return UserProfileStatus(
         hasUniversity: hasUniversity,

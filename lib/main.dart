@@ -15,6 +15,7 @@ import 'presentation/features/checkout/bloc/bloc.dart';
 import 'presentation/features/home/bloc/bloc.dart';
 import 'presentation/features/my_events/bloc/bloc.dart';
 import 'presentation/features/onboarding/bloc/bloc.dart';
+import 'presentation/features/ticket_history/bloc/bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,6 +86,9 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> {
         ),
         BlocProvider<AccountBloc>(
           create: (_) => getIt<AccountBloc>(),
+        ),
+        BlocProvider<TicketHistoryBloc>(
+          create: (_) => getIt<TicketHistoryBloc>(),
         ),
       ],
       child: MaterialApp.router(

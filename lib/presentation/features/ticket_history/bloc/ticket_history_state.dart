@@ -32,6 +32,12 @@ class TicketHistoryState extends Equatable {
   /// Check if data is loaded
   bool get isLoaded => status == TicketHistoryStatus.loaded;
 
+  /// Check if we have cached study data
+  bool get hasCachedStudyData => studyEntries.isNotEmpty;
+
+  /// Check if we have cached games data
+  bool get hasCachedGamesData => gamesEntries.isNotEmpty;
+
   TicketHistoryState copyWith({
     TicketHistoryStatus? status,
     List<TicketHistoryEntry>? studyEntries,
