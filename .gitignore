@@ -46,3 +46,6 @@ app.*.map.json
 supabase/.branches
 supabase/.temp
 .supabase
+
+# MCP Server config (contains access tokens)
+.mcp.json

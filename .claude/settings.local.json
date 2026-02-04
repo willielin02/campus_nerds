@@ -15,7 +15,31 @@
       "Bash(Get-ChildItem -Path \"c:\\\\dev\\\\campus_nerds\\\\lib\" -Filter \"*.dart\" -Recurse)",
       "Bash(Measure-Object)",
       "Bash(Select-Object -ExpandProperty Count)",
-      "Bash(del \"c:\\\\dev\\\\campus_nerds\\\\lib\\\\presentation\\\\features\\\\auth\\\\pages\\\\login_email_page.dart\")"
+      "Bash(del \"c:\\\\dev\\\\campus_nerds\\\\lib\\\\presentation\\\\features\\\\auth\\\\pages\\\\login_email_page.dart\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(auth\\): add guest mode, fix Apple Sign-In, update app identifiers\n\n- Add guest mode support to auth_state_notifier for browsing without login\n- Fix Apple Sign-In on Android by adding webAuthenticationOptions\n- Change Android applicationId/namespace to app.campusnerds.app\n- Move MainActivity.kt to app/campusnerds/app package\n- Change iOS bundle identifier to app.campusnerds.app\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git -C c:/dev/campus_nerds status)",
+      "Bash(git -C c:/dev/campus_nerds diff --stat)",
+      "Bash(git -C c:/dev/campus_nerds log --oneline -5)",
+      "Bash(git -C c:/dev/campus_nerds diff lib/presentation/features/checkout/pages/checkout_page.dart)",
+      "Bash(git -C c:/dev/campus_nerds add lib/app/router/app_router.dart lib/data/repositories/checkout_repository_impl.dart lib/data/repositories/home_repository_impl.dart lib/domain/entities/city.dart lib/domain/repositories/home_repository.dart lib/presentation/features/checkout/pages/checkout_page.dart lib/presentation/features/home/bloc/home_bloc.dart lib/presentation/features/home/bloc/home_state.dart lib/presentation/features/home/pages/games_booking_confirmation_page.dart lib/presentation/features/home/pages/home_page.dart lib/presentation/features/home/pages/study_booking_confirmation_page.dart lib/presentation/features/home/widgets/city_selector_bottom_sheet.dart)",
+      "Bash(git -C c:/dev/campus_nerds commit -m \"$\\(cat <<''EOF''\nfix\\(ui\\): checkout page refactor, city selector, booking confirmation fixes\n\nCheckout page:\n- Add login validation before purchase\n- Fix button height \\(56px -> 48px\\) and color \\(primary -> alternate\\)\n- Add ticket expiration notice text\n- Fix product ordering \\(ascending by pack_size\\)\n\nCity selector:\n- Fix city ordering with predefined order\n- Fix title alignment \\(left-aligned\\)\n- Add useRootNavigator for bottom sheet\n\nBooking confirmation:\n- Fix confirm button visibility \\(move outside Expanded\\)\n- Update button styling to match FlutterFlow\n\nRouter:\n- Add parentNavigatorKey to non-navbar routes\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git -C c:/dev/campus_nerds log:*)",
+      "Bash(scoop update:*)",
+      "Bash(winget upgrade:*)",
+      "Bash(supabase --version:*)",
+      "Bash(supabase db:*)",
+      "Bash(supabase:*)",
+      "Bash(curl:*)",
+      "Bash(flutter build:*)",
+      "Bash(psql:*)",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__list_edge_functions",
+      "mcp__supabase__list_migrations"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true
 }
