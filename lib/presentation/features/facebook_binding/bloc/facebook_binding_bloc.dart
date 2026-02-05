@@ -16,7 +16,6 @@ class FacebookBindingBloc
     on<FacebookBindingCheckStatus>(_onCheckStatus);
     on<FacebookBindingLink>(_onLink);
     on<FacebookBindingUnlink>(_onUnlink);
-    on<FacebookBindingSyncFriends>(_onSyncFriends);
     on<FacebookBindingClearError>(_onClearError);
   }
 
@@ -81,28 +80,6 @@ class FacebookBindingBloc
       syncedFriendsCount: null,
       successMessage: '已解除臉書綁定',
     ));
-  }
-
-  Future<void> _onSyncFriends(
-    FacebookBindingSyncFriends event,
-    Emitter<FacebookBindingState> emit,
-  ) async {
-    emit(state.copyWith(status: FacebookBindingStatus.syncing));
-
-    final result = await _facebookRepository.syncFacebookFriends();
-
-    if (result.success) {
-      emit(state.copyWith(
-        status: FacebookBindingStatus.linked,
-        syncedFriendsCount: result.friendsCount,
-        successMessage: '已同步 ${result.friendsCount} 位好友',
-      ));
-    } else {
-      emit(state.copyWith(
-        status: FacebookBindingStatus.linked,
-        errorMessage: result.errorMessage ?? '同步失敗',
-      ));
-    }
   }
 
   void _onClearError(

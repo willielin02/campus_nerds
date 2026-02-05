@@ -21,33 +21,6 @@ class FacebookLinkResult {
       );
 }
 
-/// Result wrapper for Facebook friends sync operations
-class FacebookSyncResult {
-  final bool success;
-  final int friendsCount;
-  final bool tokenStored; // Whether long-lived token was stored for background sync
-  final String? errorMessage;
-
-  const FacebookSyncResult._({
-    required this.success,
-    this.friendsCount = 0,
-    this.tokenStored = false,
-    this.errorMessage,
-  });
-
-  factory FacebookSyncResult.success(int friendsCount, {bool tokenStored = false}) =>
-      FacebookSyncResult._(
-        success: true,
-        friendsCount: friendsCount,
-        tokenStored: tokenStored,
-      );
-
-  factory FacebookSyncResult.failure(String message) => FacebookSyncResult._(
-        success: false,
-        errorMessage: message,
-      );
-}
-
 /// Abstract repository for Facebook operations
 abstract class FacebookRepository {
   /// Check if current user has Facebook linked
@@ -57,16 +30,12 @@ abstract class FacebookRepository {
   Future<String?> getFacebookUserId();
 
   /// Link Facebook account and sync friends
-  /// Returns the Facebook user ID on success
+  /// Friends are synced automatically during:
+  /// 1. Initial binding (handled internally by linkFacebookAccount)
+  /// 2. Auto-grouping cron job (via Edge Function)
+  /// 3. Staff confirmation (via Edge Function)
   Future<FacebookLinkResult> linkFacebookAccount();
 
   /// Unlink Facebook account
   Future<void> unlinkFacebookAccount();
-
-  /// Sync Facebook friends to backend
-  /// This is called:
-  /// 1. When user first links Facebook
-  /// 2. Before auto-grouping (2 days before event)
-  /// 3. When staff changes groups.status from draft to scheduled
-  Future<FacebookSyncResult> syncFacebookFriends();
 }

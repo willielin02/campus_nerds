@@ -23,11 +23,6 @@ class FacebookBindingUnlink extends FacebookBindingEvent {
   const FacebookBindingUnlink();
 }
 
-/// Event to sync Facebook friends
-class FacebookBindingSyncFriends extends FacebookBindingEvent {
-  const FacebookBindingSyncFriends();
-}
-
 /// Event to clear error
 class FacebookBindingClearError extends FacebookBindingEvent {
   const FacebookBindingClearError();

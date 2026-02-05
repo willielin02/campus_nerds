@@ -8,7 +8,6 @@ enum FacebookBindingStatus {
   notLinked,
   linking,
   unlinking,
-  syncing,
   error,
 }
 
@@ -33,8 +32,7 @@ class FacebookBindingState extends Equatable {
   bool get isLoading =>
       status == FacebookBindingStatus.loading ||
       status == FacebookBindingStatus.linking ||
-      status == FacebookBindingStatus.unlinking ||
-      status == FacebookBindingStatus.syncing;
+      status == FacebookBindingStatus.unlinking;
 
   FacebookBindingState copyWith({
     FacebookBindingStatus? status,

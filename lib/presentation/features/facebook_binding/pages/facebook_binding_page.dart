@@ -239,13 +239,6 @@ class _FacebookBindingView extends StatelessWidget {
                                             ],
                                           ),
                                         ),
-                                        // Sync friends button
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 16),
-                                          child: _buildSyncButton(
-                                              context, colors, textTheme),
-                                        ),
                                         // Unlink button
                                         Padding(
                                           padding:
@@ -342,71 +335,6 @@ class _FacebookBindingView extends StatelessWidget {
                               color:
                                   isLinked ? colors.primaryText : Colors.white,
                               fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSyncButton(
-    BuildContext context,
-    AppColorsTheme colors,
-    TextTheme textTheme,
-  ) {
-    return BlocBuilder<FacebookBindingBloc, FacebookBindingState>(
-      builder: (context, state) {
-        final isLoading =
-            state.isLoading && state.status == FacebookBindingStatus.syncing;
-
-        return InkWell(
-          splashColor: Colors.transparent,
-          focusColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          onTap: isLoading
-              ? null
-              : () {
-                  context
-                      .read<FacebookBindingBloc>()
-                      .add(const FacebookBindingSyncFriends());
-                },
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: colors.secondaryBackground,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: colors.tertiary, width: 2),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: isLoading
-                  ? const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.sync,
-                          color: colors.primaryText,
-                          size: 24,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Text(
-                            '重新同步好友名單',
-                            style: textTheme.bodyLarge?.copyWith(
-                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
                         ),

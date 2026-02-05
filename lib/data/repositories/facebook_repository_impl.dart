@@ -103,59 +103,24 @@ class FacebookRepositoryImpl implements FacebookRepository {
     }
   }
 
-  @override
-  Future<FacebookSyncResult> syncFacebookFriends() async {
-    try {
-      // Check if user is logged into Facebook
-      final accessToken = await _facebookAuth.accessToken;
-      if (accessToken == null) {
-        // Try to get a fresh token by logging in again
-        final LoginResult result = await _facebookAuth.login(
-          permissions: ['public_profile', 'user_friends'],
-        );
-
-        if (result.status != LoginStatus.success) {
-          return FacebookSyncResult.failure('請先綁定臉書帳號');
-        }
-
-        return await _syncFriendsToBackend(result.accessToken!.tokenString);
-      }
-
-      return await _syncFriendsToBackend(accessToken.tokenString);
-    } catch (e) {
-      return FacebookSyncResult.failure('同步失敗：${e.toString()}');
-    }
-  }
-
-  Future<FacebookSyncResult> _syncFriendsToBackend(
+  /// Syncs friends to backend via Edge Function (internal use only)
+  /// This is called when user first binds Facebook account
+  Future<void> _syncFriendsToBackend(
     String accessToken, {
     bool storeToken = true, // Default to true for background sync support
   }) async {
-    try {
-      // Call Supabase Edge Function to sync friends
-      // store_token: if true, exchanges for long-lived token and stores it
-      // for background sync during auto-grouping (requires FB_APP_SECRET on server)
-      final response = await SupabaseService.client.functions.invoke(
-        'sync-facebook-friends',
-        body: {
-          'access_token': accessToken,
-          'store_token': storeToken,
-        },
-      );
-
-      if (response.status == 200) {
-        final data = response.data as Map<String, dynamic>?;
-        final friendsCount = data?['friends_count'] as int? ?? 0;
-        final tokenStored = data?['token_stored'] as bool? ?? false;
-        return FacebookSyncResult.success(friendsCount, tokenStored: tokenStored);
-      } else {
-        final data = response.data as Map<String, dynamic>?;
-        final errorMessage = data?['error'] as String? ?? '同步失敗';
-        return FacebookSyncResult.failure(errorMessage);
-      }
-    } catch (e) {
-      return FacebookSyncResult.failure('同步失敗：${e.toString()}');
-    }
+    // Call Supabase Edge Function to sync friends
+    // store_token: if true, exchanges for long-lived token and stores it
+    // for background sync during auto-grouping (requires FB_APP_SECRET on server)
+    await SupabaseService.client.functions.invoke(
+      'sync-facebook-friends',
+      body: {
+        'access_token': accessToken,
+        'store_token': storeToken,
+      },
+    );
+    // Errors are logged on server side; we don't need to handle them here
+    // since the binding was successful regardless of sync result
   }
 
   String _getErrorMessage(LoginStatus status) {
