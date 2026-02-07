@@ -46,6 +46,7 @@ class TicketHistoryBloc extends Bloc<TicketHistoryEvent, TicketHistoryState> {
         ticketBalance: results[0] as dynamic,
         studyEntries: results[1] as dynamic,
         isRefreshing: false,
+        studyDataLoaded: true,
       ));
     } catch (e) {
       // If we have cached data, keep showing it even if refresh fails
@@ -89,6 +90,7 @@ class TicketHistoryBloc extends Bloc<TicketHistoryEvent, TicketHistoryState> {
         ticketBalance: results[0] as dynamic,
         gamesEntries: results[1] as dynamic,
         isRefreshing: false,
+        gamesDataLoaded: true,
       ));
     } catch (e) {
       // If we have cached data, keep showing it even if refresh fails
@@ -124,6 +126,8 @@ class TicketHistoryBloc extends Bloc<TicketHistoryEvent, TicketHistoryState> {
         studyEntries: results[1] as dynamic,
         gamesEntries: results[2] as dynamic,
         isRefreshing: false,
+        studyDataLoaded: true,
+        gamesDataLoaded: true,
       ));
     } catch (e) {
       emit(state.copyWith(

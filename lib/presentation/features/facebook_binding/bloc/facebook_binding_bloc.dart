@@ -23,7 +23,14 @@ class FacebookBindingBloc
     FacebookBindingCheckStatus event,
     Emitter<FacebookBindingState> emit,
   ) async {
-    emit(state.copyWith(status: FacebookBindingStatus.loading));
+    // Stale-while-revalidate: if we already have data, keep showing it
+    // while refreshing in the background
+    final hasCachedData = state.status == FacebookBindingStatus.linked ||
+        state.status == FacebookBindingStatus.notLinked;
+
+    if (!hasCachedData) {
+      emit(state.copyWith(status: FacebookBindingStatus.loading));
+    }
 
     final isLinked = await _facebookRepository.isFacebookLinked();
     String? fbUserId;

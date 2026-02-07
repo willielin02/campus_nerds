@@ -19,6 +19,8 @@ class TicketHistoryState extends Equatable {
   final TicketBalance ticketBalance;
   final String? errorMessage;
   final bool isRefreshing;
+  final bool studyDataLoaded;
+  final bool gamesDataLoaded;
 
   const TicketHistoryState({
     this.status = TicketHistoryStatus.initial,
@@ -27,16 +29,18 @@ class TicketHistoryState extends Equatable {
     this.ticketBalance = const TicketBalance(),
     this.errorMessage,
     this.isRefreshing = false,
+    this.studyDataLoaded = false,
+    this.gamesDataLoaded = false,
   });
 
   /// Check if data is loaded
   bool get isLoaded => status == TicketHistoryStatus.loaded;
 
-  /// Check if we have cached study data
-  bool get hasCachedStudyData => studyEntries.isNotEmpty;
+  /// Check if we have cached study data (loaded at least once)
+  bool get hasCachedStudyData => studyDataLoaded;
 
-  /// Check if we have cached games data
-  bool get hasCachedGamesData => gamesEntries.isNotEmpty;
+  /// Check if we have cached games data (loaded at least once)
+  bool get hasCachedGamesData => gamesDataLoaded;
 
   TicketHistoryState copyWith({
     TicketHistoryStatus? status,
@@ -45,6 +49,8 @@ class TicketHistoryState extends Equatable {
     TicketBalance? ticketBalance,
     String? errorMessage,
     bool? isRefreshing,
+    bool? studyDataLoaded,
+    bool? gamesDataLoaded,
   }) {
     return TicketHistoryState(
       status: status ?? this.status,
@@ -53,6 +59,8 @@ class TicketHistoryState extends Equatable {
       ticketBalance: ticketBalance ?? this.ticketBalance,
       errorMessage: errorMessage,
       isRefreshing: isRefreshing ?? this.isRefreshing,
+      studyDataLoaded: studyDataLoaded ?? this.studyDataLoaded,
+      gamesDataLoaded: gamesDataLoaded ?? this.gamesDataLoaded,
     );
   }
 
@@ -64,5 +72,7 @@ class TicketHistoryState extends Equatable {
         ticketBalance,
         errorMessage,
         isRefreshing,
+        studyDataLoaded,
+        gamesDataLoaded,
       ];
 }

@@ -5,8 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
-import '../../../../core/di/injection.dart';
-import '../../../../domain/repositories/facebook_repository.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
 import '../bloc/bloc.dart';
 
 /// Facebook binding page
@@ -16,12 +15,10 @@ class FacebookBindingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => FacebookBindingBloc(
-        facebookRepository: getIt<FacebookRepository>(),
-      )..add(const FacebookBindingCheckStatus()),
-      child: const _FacebookBindingView(),
-    );
+    // Trigger a refresh each time the page is opened;
+    // the bloc is a global singleton so cached state shows immediately
+    context.read<FacebookBindingBloc>().add(const FacebookBindingCheckStatus());
+    return const _FacebookBindingView();
   }
 }
 
@@ -40,7 +37,7 @@ class _FacebookBindingView extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.successMessage!),
-              backgroundColor: Colors.green,
+              backgroundColor: colors.secondaryText,
             ),
           );
           context
@@ -167,7 +164,7 @@ class _FacebookBindingView extends StatelessWidget {
                             ),
                             // Facebook button
                             Padding(
-                              padding: const EdgeInsets.only(top: 32),
+                              padding: const EdgeInsets.only(top: 32, bottom: 24),
                               child:
                                   _buildFacebookButton(context, colors, textTheme),
                             ),
@@ -187,19 +184,18 @@ class _FacebookBindingView extends StatelessWidget {
                                             vertical: 12,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.green.withOpacity(0.1),
+                                            color: colors.alternate,
                                             borderRadius:
                                                 BorderRadius.circular(12),
                                             border: Border.all(
-                                              color:
-                                                  Colors.green.withOpacity(0.3),
+                                              color: colors.tertiary,
                                             ),
                                           ),
                                           child: Row(
                                             children: [
-                                              const Icon(
+                                              Icon(
                                                 Icons.check_circle,
-                                                color: Colors.green,
+                                                color: colors.secondaryText,
                                                 size: 24,
                                               ),
                                               const SizedBox(width: 12),
@@ -297,13 +293,12 @@ class _FacebookBindingView extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               color: isLinked
-                  ? colors.secondaryBackground.withOpacity(0.5)
-                  : const Color(0xFF1877F2), // Facebook blue
+                  ? colors.quaternary
+                  : colors.secondaryText,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: isLinked ? colors.tertiary : const Color(0xFF1877F2),
-                width: 2,
-              ),
+              border: isLinked
+                  ? Border.all(color: colors.tertiary, width: 2)
+                  : null,
             ),
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -371,7 +366,7 @@ class _FacebookBindingView extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: colors.error.withOpacity(0.5), width: 1),
+              border: Border.all(color: colors.tertiary, width: 1),
             ),
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -382,7 +377,7 @@ class _FacebookBindingView extends StatelessWidget {
                         height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: colors.error,
+                          color: colors.secondaryText,
                         ),
                       ),
                     )
@@ -391,7 +386,7 @@ class _FacebookBindingView extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.link_off,
-                          color: colors.error,
+                          color: colors.secondaryText,
                           size: 24,
                         ),
                         Padding(
@@ -400,7 +395,7 @@ class _FacebookBindingView extends StatelessWidget {
                             '解除綁定',
                             style: textTheme.bodyLarge?.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                              color: colors.error,
+                              color: colors.secondaryText,
                             ),
                           ),
                         ),
@@ -418,48 +413,16 @@ class _FacebookBindingView extends StatelessWidget {
     AppColorsTheme colors,
     TextTheme textTheme,
   ) {
-    showDialog(
+    showAppConfirmDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          '確定要解除綁定嗎？',
-          style: textTheme.titleMedium?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-        ),
-        content: Text(
-          '解除綁定後，我們將無法在分組時避開你的臉書好友',
-          style: textTheme.bodyMedium?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(
-              '取消',
-              style: textTheme.bodyLarge?.copyWith(
-                fontFamily: GoogleFonts.notoSansTc().fontFamily,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context
-                  .read<FacebookBindingBloc>()
-                  .add(const FacebookBindingUnlink());
-            },
-            child: Text(
-              '確定解除',
-              style: textTheme.bodyLarge?.copyWith(
-                fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                color: colors.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+      title: '確定要解除綁定嗎？',
+      message: '解除綁定後，我們將無法在分組時避開你的臉書好友',
+      confirmText: '確定解除',
+      onConfirm: () {
+        context
+            .read<FacebookBindingBloc>()
+            .add(const FacebookBindingUnlink());
+      },
     );
   }
 }

@@ -40,10 +40,15 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
 
   void _onTabChanged() {
     if (_tabController.indexIsChanging) return;
+    final state = context.read<TicketHistoryBloc>().state;
     if (_tabController.index == 0) {
-      context.read<TicketHistoryBloc>().add(const TicketHistoryLoadStudy());
+      if (!state.studyDataLoaded) {
+        context.read<TicketHistoryBloc>().add(const TicketHistoryLoadStudy());
+      }
     } else {
-      context.read<TicketHistoryBloc>().add(const TicketHistoryLoadGames());
+      if (!state.gamesDataLoaded) {
+        context.read<TicketHistoryBloc>().add(const TicketHistoryLoadGames());
+      }
     }
   }
 

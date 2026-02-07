@@ -207,13 +207,14 @@ class _MyEventsPageState extends State<MyEventsPage>
   }
 }
 
-/// Loading state widget
+/// Skeleton loading placeholder matching MyEventCard layout
 class _MyEventCardLoading extends StatelessWidget {
   const _MyEventCardLoading();
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final textTheme = context.textTheme;
 
     return Container(
       width: double.infinity,
@@ -225,10 +226,107 @@ class _MyEventCardLoading extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: const Padding(
-        padding: EdgeInsets.all(24),
-        child: Center(
-          child: CircularProgressIndicator(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Row 1: category + status badge placeholder
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 144,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: colors.alternate,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Container(
+                          width: 48,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: colors.alternate,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: 48,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: colors.quaternary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Row 2: time placeholder
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                children: [
+                  Text(
+                    '時間： ',
+                    style: textTheme.labelMedium?.copyWith(
+                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                    ),
+                  ),
+                  Container(
+                    width: 108,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: colors.alternate,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Container(
+                      width: 48,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: colors.alternate,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Row 3: location placeholder
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 12, 0, 18),
+              child: Row(
+                children: [
+                  Text(
+                    '地點： ',
+                    style: textTheme.labelMedium?.copyWith(
+                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                    ),
+                  ),
+                  Container(
+                    width: 128,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: colors.alternate,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -485,17 +485,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     bool isLoading,
   ) {
     if (isLoading) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 24),
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width,
+      return Align(
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 24),
           child: const _EventCardLoading(),
         ),
       );
     }
 
     if (events.isEmpty) {
-      return const _EventCardEmpty();
+      return Align(
+        alignment: Alignment.topCenter,
+        child: const _EventCardEmpty(),
+      );
     }
 
     return ListView.separated(
@@ -517,7 +520,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 }
 
-/// Loading state widget
+/// Skeleton loading placeholder matching EventCard layout
 class _EventCardLoading extends StatelessWidget {
   const _EventCardLoading();
 
@@ -535,11 +538,63 @@ class _EventCardLoading extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: const Padding(
-        padding: EdgeInsets.all(24),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Row 1: date + time slot placeholder
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 160,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: colors.alternate,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Container(
+                          width: 80,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: colors.alternate,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Row 2: location placeholder
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 12, 0, 18),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: Container(
+                    width: 180,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: colors.alternate,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

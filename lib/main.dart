@@ -15,6 +15,7 @@ import 'presentation/features/checkout/bloc/bloc.dart';
 import 'presentation/features/home/bloc/bloc.dart';
 import 'presentation/features/my_events/bloc/bloc.dart';
 import 'presentation/features/onboarding/bloc/bloc.dart';
+import 'presentation/features/facebook_binding/bloc/bloc.dart';
 import 'presentation/features/ticket_history/bloc/bloc.dart';
 
 void main() async {
@@ -89,6 +90,9 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> {
         ),
         BlocProvider<TicketHistoryBloc>(
           create: (_) => getIt<TicketHistoryBloc>(),
+        ),
+        BlocProvider<FacebookBindingBloc>(
+          create: (_) => getIt<FacebookBindingBloc>(),
         ),
       ],
       child: MaterialApp.router(

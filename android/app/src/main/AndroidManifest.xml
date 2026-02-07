@@ -61,5 +61,7 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Allow detecting Facebook app for native SSO login -->
+        <package android:name="com.facebook.katana" />
     </queries>
 </manifest>

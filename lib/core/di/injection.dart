@@ -25,6 +25,7 @@ import '../../presentation/features/checkout/bloc/checkout_bloc.dart';
 import '../../presentation/features/home/bloc/home_bloc.dart';
 import '../../presentation/features/my_events/bloc/my_events_bloc.dart';
 import '../../presentation/features/onboarding/bloc/onboarding_bloc.dart';
+import '../../presentation/features/facebook_binding/bloc/facebook_binding_bloc.dart';
 import '../../presentation/features/ticket_history/bloc/ticket_history_bloc.dart';
 
 /// Global service locator
@@ -129,6 +130,13 @@ void _registerBlocs() {
   getIt.registerLazySingleton<TicketHistoryBloc>(
     () => TicketHistoryBloc(
       ticketHistoryRepository: getIt<TicketHistoryRepository>(),
+    ),
+  );
+
+  // FacebookBindingBloc is singleton to cache binding status across navigations
+  getIt.registerLazySingleton<FacebookBindingBloc>(
+    () => FacebookBindingBloc(
+      facebookRepository: getIt<FacebookRepository>(),
     ),
   );
 }
