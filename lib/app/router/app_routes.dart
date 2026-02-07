@@ -30,6 +30,12 @@ abstract class AppRoutes {
 
   // Facebook Binding
   static const String facebookBinding = '/facebook-binding';
+
+  // Contact Support
+  static const String contactSupport = '/contact-support';
+
+  // FAQ
+  static const String faq = '/faq';
 }
 
 /// Route names for named navigation
@@ -49,4 +55,6 @@ abstract class AppRouteNames {
   static const String paymentWebView = 'paymentWebView';
   static const String ticketHistory = 'ticketHistory';
   static const String facebookBinding = 'facebookBinding';
+  static const String contactSupport = 'contactSupport';
+  static const String faq = 'faq';
 }

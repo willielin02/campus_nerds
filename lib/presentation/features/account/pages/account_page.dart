@@ -130,18 +130,14 @@ class _AccountPageState extends State<AccountPage> {
                                 icon: Icons.question_mark_rounded,
                                 title: '常見問題與使用說明',
                                 onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('功能開發中')),
-                                  );
+                                  context.push(AppRoutes.faq);
                                 },
                               ),
                               _SettingsItem(
                                 icon: Icons.contact_mail_rounded,
                                 title: '聯絡客服',
                                 onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('功能開發中')),
-                                  );
+                                  context.push(AppRoutes.contactSupport);
                                 },
                                 isLast: true,
                               ),
@@ -205,17 +201,13 @@ class _AccountPageState extends State<AccountPage> {
                 borderRadius: BorderRadius.circular(48),
               ),
               child: ClipOval(
-                child: profile?.avatarUrl != null
-                    ? Image.network(
-                        profile!.avatarUrl!,
-                        fit: BoxFit.fill,
-                        errorBuilder: (_, __, ___) => _buildDefaultAvatar(colors),
-                      )
-                    : Image.asset(
-                        'assets/images/Gemini_Generated_Image_wn5duxwn5duxwn5d.png',
-                        fit: BoxFit.fill,
-                        errorBuilder: (_, __, ___) => _buildDefaultAvatar(colors),
-                      ),
+                child: Image.asset(
+                  profile?.gender == 'female'
+                      ? 'assets/images/Gemini_Generated_Image_ajjb8yajjb8yajjb.png'
+                      : 'assets/images/Gemini_Generated_Image_wn5duxwn5duxwn5d.png',
+                  fit: BoxFit.fill,
+                  errorBuilder: (_, __, ___) => _buildDefaultAvatar(colors),
+                ),
               ),
             ),
 

@@ -15,6 +15,8 @@ import '../../presentation/features/onboarding/pages/basic_info_page.dart';
 import '../../presentation/features/onboarding/pages/school_email_verification_page.dart';
 import '../../presentation/features/ticket_history/pages/ticket_history_page.dart';
 import '../../presentation/features/facebook_binding/pages/facebook_binding_page.dart';
+import '../../presentation/features/account/pages/contact_support_page.dart';
+import '../../presentation/features/account/pages/faq_page.dart';
 import 'app_routes.dart';
 import 'auth_state_notifier.dart';
 
@@ -292,6 +294,22 @@ class AppRouter {
           name: AppRouteNames.facebookBinding,
           parentNavigatorKey: appNavigatorKey,
           builder: (context, state) => const FacebookBindingPage(),
+        ),
+
+        // Contact Support route (use root navigator - no navbar)
+        GoRoute(
+          path: AppRoutes.contactSupport,
+          name: AppRouteNames.contactSupport,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) => const ContactSupportPage(),
+        ),
+
+        // FAQ route (use root navigator - no navbar)
+        GoRoute(
+          path: AppRoutes.faq,
+          name: AppRouteNames.faq,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) => const FaqPage(),
         ),
       ];
 }
