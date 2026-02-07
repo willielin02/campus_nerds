@@ -56,14 +56,14 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">訂單查看</h2>
+      <h2 className="text-2xl font-semibold mb-6">訂單查看</h2>
 
       {/* Filters */}
       <div className="mb-4">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as OrderStatus | '')}
-          className="border border-tertiary rounded-lg px-3 py-1.5 text-sm bg-secondary"
+          className="border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
         >
           <option value="">全部狀態</option>
           {Object.entries(ORDER_STATUS_LABELS).map(([key, label]) => (
@@ -73,7 +73,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders table */}
-      <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] overflow-hidden">
+      <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-tertiary bg-alternate/50">

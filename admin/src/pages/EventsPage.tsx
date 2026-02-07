@@ -95,10 +95,10 @@ export default function EventsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">活動管理</h2>
+        <h2 className="text-2xl font-semibold">活動管理</h2>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="px-4 py-2 bg-primary-text text-secondary rounded-[var(--radius-app)] text-sm font-medium hover:opacity-90 transition-opacity"
+          className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 transition-opacity"
         >
           {showCreateForm ? '取消' : '建立活動'}
         </button>
@@ -106,7 +106,7 @@ export default function EventsPage() {
 
       {/* Create form */}
       {showCreateForm && (
-        <form onSubmit={handleCreate} className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-5 mb-6">
+        <form onSubmit={handleCreate} className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-5 mb-6">
           <h3 className="text-sm font-semibold mb-4">建立新活動</h3>
           <div className="grid grid-cols-2 gap-4">
             <label className="block">
@@ -114,7 +114,7 @@ export default function EventsPage() {
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value as EventCategory)}
-                className="mt-1 block w-full border border-tertiary rounded-lg px-3 py-2 text-sm bg-primary"
+                className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
               >
                 <option value="focused_study">專注讀書</option>
                 <option value="english_games">英文遊戲</option>
@@ -127,7 +127,7 @@ export default function EventsPage() {
                 value={newDate}
                 onChange={(e) => setNewDate(e.target.value)}
                 required
-                className="mt-1 block w-full border border-tertiary rounded-lg px-3 py-2 text-sm bg-primary"
+                className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
               />
             </label>
             <label className="block">
@@ -135,7 +135,7 @@ export default function EventsPage() {
               <select
                 value={newTimeSlot}
                 onChange={(e) => setNewTimeSlot(e.target.value as EventTimeSlot)}
-                className="mt-1 block w-full border border-tertiary rounded-lg px-3 py-2 text-sm bg-primary"
+                className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
               >
                 <option value="morning">上午</option>
                 <option value="afternoon">下午</option>
@@ -148,7 +148,7 @@ export default function EventsPage() {
                 value={newCityId}
                 onChange={(e) => setNewCityId(e.target.value)}
                 required
-                className="mt-1 block w-full border border-tertiary rounded-lg px-3 py-2 text-sm bg-primary"
+                className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
               >
                 <option value="">選擇城市</option>
                 {cities.map((c) => (
@@ -164,7 +164,7 @@ export default function EventsPage() {
                 onChange={(e) => setNewGroupSize(Number(e.target.value))}
                 min={2}
                 step={2}
-                className="mt-1 block w-full border border-tertiary rounded-lg px-3 py-2 text-sm bg-primary"
+                className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
               />
             </label>
             {newDate && (
@@ -181,7 +181,7 @@ export default function EventsPage() {
             <button
               type="submit"
               disabled={creating}
-              className="px-4 py-2 bg-primary-text text-secondary rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
+              className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
             >
               {creating ? '建立中...' : '確認建立'}
             </button>
@@ -194,7 +194,7 @@ export default function EventsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as EventStatus | '')}
-          className="border border-tertiary rounded-lg px-3 py-1.5 text-sm bg-secondary"
+          className="border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
         >
           <option value="">全部狀態</option>
           {Object.entries(EVENT_STATUS_LABELS).map(([key, label]) => (
@@ -204,7 +204,7 @@ export default function EventsPage() {
       </div>
 
       {/* Events table */}
-      <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] overflow-hidden">
+      <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-tertiary bg-alternate/50">

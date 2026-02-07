@@ -3,17 +3,19 @@ interface StatusBadgeProps {
   color: 'green' | 'yellow' | 'red' | 'gray' | 'blue'
 }
 
+// Solid background + contrasting text — matches Flutter's StatusBadge style
+// (solid bg, white text, 8px radius)
 const colorMap = {
-  green: 'bg-success/15 text-success',
-  yellow: 'bg-warning/25 text-amber-700',
-  red: 'bg-error/15 text-error',
-  gray: 'bg-alternate text-secondary-text',
-  blue: 'bg-blue-50 text-blue-700',
+  green: 'bg-success text-white',
+  yellow: 'bg-warning text-primary-text',
+  red: 'bg-error text-white',
+  gray: 'bg-tertiary-text text-white',
+  blue: 'bg-secondary-text text-white',
 }
 
 export default function StatusBadge({ label, color }: StatusBadgeProps) {
   return (
-    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${colorMap[color]}`}>
+    <span className={`inline-block px-2 py-0.5 rounded-lg text-xs font-medium ${colorMap[color]}`}>
       {label}
     </span>
   )

@@ -10,9 +10,9 @@ export default function Layout() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-56 bg-secondary border-r border-tertiary flex flex-col shrink-0">
-        <div className="px-5 py-5 border-b border-tertiary">
-          <h1 className="text-base font-bold text-primary-text">Campus Nerds</h1>
+      <aside className="w-56 bg-secondary border-r-2 border-tertiary flex flex-col shrink-0">
+        <div className="px-5 py-5 border-b-2 border-tertiary">
+          <h1 className="text-base font-semibold text-primary-text">Campus Nerds</h1>
           <p className="text-xs text-tertiary-text mt-0.5">Admin Dashboard</p>
         </div>
         <nav className="flex-1 py-3">
@@ -33,7 +33,7 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
-        <div className="px-5 py-4 border-t border-tertiary">
+        <div className="px-5 py-4 border-t-2 border-tertiary">
           <a
             href="https://campusnerds.app"
             target="_blank"

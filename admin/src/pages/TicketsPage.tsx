@@ -76,7 +76,7 @@ export default function TicketsPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">票券調整</h2>
+      <h2 className="text-2xl font-semibold mb-6">票券調整</h2>
 
       {/* Search */}
       <form onSubmit={handleSearch} className="flex gap-3 mb-6">
@@ -85,12 +85,12 @@ export default function TicketsPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="輸入暱稱或 Email 搜尋用戶..."
-          className="flex-1 border border-tertiary rounded-lg px-4 py-2 text-sm bg-secondary"
+          className="flex-1 border-2 border-tertiary rounded-[var(--radius-app)] px-4 py-2 text-sm bg-secondary"
         />
         <button
           type="submit"
           disabled={searching}
-          className="px-4 py-2 bg-primary-text text-secondary rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
+          className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
         >
           {searching ? '搜尋中...' : '搜尋'}
         </button>
@@ -100,7 +100,7 @@ export default function TicketsPage() {
         {/* Search results */}
         <div>
           {searchResults.length > 0 && (
-            <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] overflow-hidden">
+            <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] overflow-hidden">
               <div className="px-4 py-2 bg-alternate/50 text-xs font-medium text-secondary-text">
                 搜尋結果 ({searchResults.length})
               </div>
@@ -128,7 +128,7 @@ export default function TicketsPage() {
           {selectedUser && (
             <div className="space-y-4">
               {/* User info */}
-              <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-4">
+              <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4">
                 <h3 className="text-sm font-semibold mb-2">用戶資訊</h3>
                 <p className="text-sm">{selectedUser.nickname || '(未設定暱稱)'}</p>
                 <p className="text-xs text-secondary-text">
@@ -140,18 +140,18 @@ export default function TicketsPage() {
 
               {/* Balance */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-4 text-center">
-                  <p className="text-2xl font-bold">{balance?.study_balance ?? 0}</p>
+                <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
+                  <p className="text-2xl font-semibold">{balance?.study_balance ?? 0}</p>
                   <p className="text-xs text-secondary-text">讀書票</p>
                 </div>
-                <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-4 text-center">
-                  <p className="text-2xl font-bold">{balance?.games_balance ?? 0}</p>
+                <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
+                  <p className="text-2xl font-semibold">{balance?.games_balance ?? 0}</p>
                   <p className="text-xs text-secondary-text">遊戲票</p>
                 </div>
               </div>
 
               {/* Adjust form */}
-              <form onSubmit={handleAdjust} className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-4">
+              <form onSubmit={handleAdjust} className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4">
                 <h3 className="text-sm font-semibold mb-3">調整票券</h3>
                 <div className="flex items-end gap-3">
                   <label className="block">
@@ -159,7 +159,7 @@ export default function TicketsPage() {
                     <select
                       value={adjustType}
                       onChange={(e) => setAdjustType(e.target.value as TicketType)}
-                      className="mt-1 block w-full border border-tertiary rounded-lg px-3 py-2 text-sm bg-primary"
+                      className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
                     >
                       <option value="study">讀書票</option>
                       <option value="games">遊戲票</option>
@@ -171,13 +171,13 @@ export default function TicketsPage() {
                       type="number"
                       value={adjustAmount}
                       onChange={(e) => setAdjustAmount(Number(e.target.value))}
-                      className="mt-1 block w-full border border-tertiary rounded-lg px-3 py-2 text-sm bg-primary"
+                      className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
                     />
                   </label>
                   <button
                     type="submit"
                     disabled={submitting || adjustAmount === 0}
-                    className="px-4 py-2 bg-primary-text text-secondary rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
+                    className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
                   >
                     {submitting ? '處理中...' : '提交'}
                   </button>
@@ -186,7 +186,7 @@ export default function TicketsPage() {
 
               {/* Recent ledger */}
               {ledger.length > 0 && (
-                <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] overflow-hidden">
+                <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] overflow-hidden">
                   <div className="px-4 py-2 bg-alternate/50 text-xs font-medium text-secondary-text">
                     最近異動紀錄
                   </div>

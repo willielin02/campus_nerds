@@ -179,10 +179,10 @@ export default function EventDetailPage() {
       </div>
 
       {/* Event info card */}
-      <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-5 mb-6">
+      <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-5 mb-6">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-bold">
+            <h2 className="text-lg font-semibold">
               {event.event_date} {TIME_SLOT_LABELS[event.time_slot]}
             </h2>
             <p className="text-sm text-secondary-text mt-1">
@@ -199,7 +199,7 @@ export default function EventDetailPage() {
               <button
                 onClick={handleTransitionToNotified}
                 disabled={transitioning}
-                className="px-3 py-1.5 bg-success text-white rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50"
+                className="px-3 py-2 bg-success text-white rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
               >
                 {transitioning ? '處理中...' : '發送通知'}
               </button>
@@ -210,16 +210,16 @@ export default function EventDetailPage() {
 
       {/* Booking stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-4 text-center">
-          <p className="text-2xl font-bold">{bookingStats.total}</p>
+        <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
+          <p className="text-2xl font-semibold">{bookingStats.total}</p>
           <p className="text-xs text-secondary-text">總報名</p>
         </div>
-        <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-4 text-center">
-          <p className="text-2xl font-bold">{bookingStats.male}</p>
+        <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
+          <p className="text-2xl font-semibold">{bookingStats.male}</p>
           <p className="text-xs text-secondary-text">男生</p>
         </div>
-        <div className="bg-secondary border border-tertiary rounded-[var(--radius-app)] p-4 text-center">
-          <p className="text-2xl font-bold">{bookingStats.female}</p>
+        <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
+          <p className="text-2xl font-semibold">{bookingStats.female}</p>
           <p className="text-xs text-secondary-text">女生</p>
         </div>
       </div>
@@ -238,7 +238,7 @@ export default function EventDetailPage() {
             const venueName = (group.venue as unknown as Venue)?.name
 
             return (
-              <div key={group.id} className="bg-secondary border border-tertiary rounded-[var(--radius-app)] overflow-hidden">
+              <div key={group.id} className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] overflow-hidden">
                 <div
                   className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-alternate/30 transition-colors"
                   onClick={() => setExpandedGroup(isExpanded ? null : group.id)}
@@ -281,7 +281,7 @@ export default function EventDetailPage() {
                           <select
                             value={selectedVenues[group.id] || ''}
                             onChange={(e) => setSelectedVenues((prev) => ({ ...prev, [group.id]: e.target.value }))}
-                            className="mt-1 block w-full border border-tertiary rounded-lg px-3 py-2 text-sm bg-primary"
+                            className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
                           >
                             <option value="">選擇場地...</option>
                             {venues.map((v) => (
@@ -292,7 +292,7 @@ export default function EventDetailPage() {
                         <button
                           onClick={() => handleConfirmGroup(group.id)}
                           disabled={confirming === group.id || !selectedVenues[group.id]}
-                          className="px-4 py-2 bg-primary-text text-secondary rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
+                          className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
                         >
                           {confirming === group.id ? '確認中...' : '確認分組'}
                         </button>
