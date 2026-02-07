@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Nerds - 校園裡的書呆子</title>
+  <meta name="description" content="Campus Nerds 是專為台灣大學生打造的社交活動平台，透過專注讀書和英文遊戲活動，認識新朋友。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FBFBFF',
+            secondary: '#FFFFFF',
+            tertiary: '#DBDBDD',
+            alternate: '#EEEEF1',
+            primaryText: '#14181B',
+            secondaryText: '#57636C',
+            tertiaryText: '#9AA6AF',
+          },
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+          },
+          borderRadius: {
+            'app': '12px',
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-primary text-primaryText font-sans">
+
+  <!-- Navigation -->
+  <nav class="w-full border-b border-tertiary bg-secondary">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold tracking-tight">Campus Nerds</a>
+      <div class="flex items-center gap-6 text-sm text-secondaryText">
+        <a href="/privacy.html" class="hover:text-primaryText transition-colors">隱私權政策</a>
+        <a href="/terms.html" class="hover:text-primaryText transition-colors">服務條款</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="max-w-5xl mx-auto px-6 py-24 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold leading-tight">
+      校園裡的書呆子
+    </h1>
+    <p class="mt-6 text-lg md:text-xl text-secondaryText max-w-2xl mx-auto leading-relaxed">
+      專為台灣大學生打造的社交活動平台。<br>
+      透過專注讀書和英文遊戲，認識不同校園的新朋友。
+    </p>
+    <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a href="#" class="inline-flex items-center gap-2 bg-primaryText text-secondary px-8 py-3 rounded-app text-base font-medium hover:opacity-90 transition-opacity">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+        App Store
+      </a>
+      <a href="#" class="inline-flex items-center gap-2 bg-primaryText text-secondary px-8 py-3 rounded-app text-base font-medium hover:opacity-90 transition-opacity">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.61 1.814L13.793 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.61-.92zm10.895 9.478l2.56-2.56 .001-.001L20.8 6.903c.63-.35.63-.92 0-1.27l-.734-.407-3.24 3.24-2.56 2.56 .239.266zm0 1.416l-.239.266 2.56 2.56 3.24 3.24.734-.407c.63-.35.63-.92 0-1.27l-3.734-2.073-2.561-2.316zM5.024.81L15.2 6.48l-2.773 2.773L5.024.81z"/></svg>
+        Google Play
+      </a>
+    </div>
+    <p class="mt-4 text-sm text-tertiaryText">即將上線，敬請期待</p>
+  </section>
+
+  <!-- Features -->
+  <section class="bg-secondary border-y border-tertiary">
+    <div class="max-w-5xl mx-auto px-6 py-20">
+      <h2 class="text-2xl font-bold text-center mb-12">為什麼選擇 Campus Nerds？</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+
+        <!-- Feature 1 -->
+        <div class="border border-tertiary rounded-app p-6 bg-primary">
+          <div class="w-10 h-10 bg-alternate rounded-app flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-secondaryText" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">認識新朋友</h3>
+          <p class="text-secondaryText leading-relaxed">系統自動將你與來自不同學校的陌生人分組，每次活動都是一段全新的社交體驗。</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="border border-tertiary rounded-app p-6 bg-primary">
+          <div class="w-10 h-10 bg-alternate rounded-app flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-secondaryText" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">智慧分組，避開好友</h3>
+          <p class="text-secondaryText leading-relaxed">綁定 Facebook 後，系統會自動識別你的好友，分組時確保你遇到的都是新面孔。</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="border border-tertiary rounded-app p-6 bg-primary">
+          <div class="w-10 h-10 bg-alternate rounded-app flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-secondaryText" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">專注讀書</h3>
+          <p class="text-secondaryText leading-relaxed">設定讀書目標，和組員一起到咖啡廳專注學習。互相督促，讓讀書不再孤單。</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="border border-tertiary rounded-app p-6 bg-primary">
+          <div class="w-10 h-10 bg-alternate rounded-app flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-secondaryText" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">英文遊戲</h3>
+          <p class="text-secondaryText leading-relaxed">透過有趣的英文遊戲活動，在輕鬆的氛圍中練習英文，同時結交志同道合的朋友。</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="max-w-5xl mx-auto px-6 py-20 text-center">
+    <h2 class="text-2xl font-bold mb-4">準備好認識新朋友了嗎？</h2>
+    <p class="text-secondaryText mb-8">下載 Campus Nerds，開始你的校園社交旅程。</p>
+    <a href="mailto:team@campusnerds.app" class="inline-flex items-center gap-2 border-2 border-tertiary text-secondaryText px-8 py-3 rounded-app text-base font-medium hover:bg-alternate transition-colors">
+      聯絡我們：team@campusnerds.app
+    </a>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-tertiary bg-secondary">
+    <div class="max-w-5xl mx-auto px-6 py-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-sm text-tertiaryText">&copy; 2026 書呆子軟體工作室. All rights reserved.</p>
+        <div class="flex items-center gap-6 text-sm text-secondaryText">
+          <a href="/privacy.html" class="hover:text-primaryText transition-colors">隱私權政策</a>
+          <a href="/terms.html" class="hover:text-primaryText transition-colors">服務條款</a>
+          <a href="mailto:team@campusnerds.app" class="hover:text-primaryText transition-colors">team@campusnerds.app</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
