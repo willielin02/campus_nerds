@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Noto Sans TC", sans-serif;
+  --color-primary: #FBFBFF;
+  --color-secondary: #FFFFFF;
+  --color-tertiary: #DBDBDD;
+  --color-alternate: #EEEEF1;
+  --color-primary-text: #14181B;
+  --color-secondary-text: #57636C;
+  --color-tertiary-text: #9AA6AF;
+  --color-success: #249689;
+  --color-error: #B95755;
+  --color-warning: #F9CF58;
+  --radius-app: 12px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-primary);
+  color: var(--color-primary-text);
+  margin: 0;
+}
