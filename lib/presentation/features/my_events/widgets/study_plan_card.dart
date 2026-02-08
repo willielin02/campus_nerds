@@ -20,11 +20,35 @@ class StudyPlanCard extends StatelessWidget {
   final bool canEditGoalContent;
   final bool canCheckGoal;
 
+  bool get _canEdit => plan.isMe && (canEditGoalContent || canCheckGoal);
+
+  static Widget _slotBadge(int slot, Color badgeColor, Color textColor, TextTheme textTheme, String? fontFamily) {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        '$slot',
+        style: textTheme.bodyMedium?.copyWith(
+          fontFamily: fontFamily,
+          color: textColor,
+          fontWeight: FontWeight.w700,
+          height: 1,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+    final accentColor = plan.isMe ? colors.secondaryText : colors.tertiaryText;
 
     return Container(
       width: double.infinity,
@@ -39,29 +63,42 @@ class StudyPlanCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: "書呆子 [displayName]"
+            // Header: "書呆子 [displayName] 的待辦事項"
             Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '書呆子 ${plan.displayName}',
-                    style: textTheme.labelLarge?.copyWith(
-                      fontFamily: fontFamily,
+              padding: const EdgeInsets.only(top: 16, bottom: 4),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '書呆子 ${plan.displayName}',
+                      style: textTheme.labelLarge?.copyWith(
+                        fontFamily: fontFamily,
+                      ),
                     ),
-                  ),
-                ],
+                    TextSpan(
+                      text: ' 的待辦事項',
+                      style: textTheme.labelLarge?.copyWith(
+                        fontFamily: fontFamily,
+                        color: accentColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             // Goal 1
-            _buildGoalRow(context, 1, plan.plan1Id, plan.plan1Content, plan.plan1Done),
+            _buildGoalRow(context, 1, plan.plan1Id, plan.plan1Content, plan.plan1Done, accentColor,
+                topPadding: 16, bottomPadding: 12),
+            Divider(thickness: 1, indent: 0, endIndent: 0, color: colors.alternate, height: 1),
             // Goal 2
-            _buildGoalRow(context, 2, plan.plan2Id, plan.plan2Content, plan.plan2Done),
+            _buildGoalRow(context, 2, plan.plan2Id, plan.plan2Content, plan.plan2Done, accentColor,
+                topPadding: 12, bottomPadding: 12),
+            Divider(thickness: 1, indent: 0, endIndent: 0, color: colors.alternate, height: 1),
             // Goal 3 (extra bottom padding)
-            _buildGoalRow(context, 3, plan.plan3Id, plan.plan3Content, plan.plan3Done,
-                bottomPadding: 18),
+            _buildGoalRow(context, 3, plan.plan3Id, plan.plan3Content, plan.plan3Done, accentColor,
+                topPadding: 12, bottomPadding: 16),
           ],
         ),
       ),
@@ -73,51 +110,61 @@ class StudyPlanCard extends StatelessWidget {
     int slot,
     String? planId,
     String? content,
-    bool isDone, {
-    double bottomPadding = 0,
+    bool isDone,
+    Color accentColor, {
+    double topPadding = 8,
+    double bottomPadding = 8,
   }) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+    final isEmpty = content == null || content.isEmpty;
 
-    return Padding(
-      padding: EdgeInsets.only(top: 12, bottom: bottomPadding),
+    Widget row = Padding(
+      padding: EdgeInsets.only(top: topPadding, bottom: bottomPadding),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Number prefix
-          Text(
-            '$slot. ',
-            style: textTheme.bodyLarge?.copyWith(
-              fontFamily: fontFamily,
-            ),
+          // Goal number badge
+          Padding(
+            padding: const EdgeInsets.only(top: 1, right: 8),
+            child: _slotBadge(slot, accentColor, colors.secondaryBackground, textTheme, fontFamily),
           ),
-          // Goal content
+          // Goal content (or placeholder if empty)
           Expanded(
-            child: Text(
-              content ?? '',
-              style: textTheme.bodyLarge?.copyWith(
-                fontFamily: fontFamily,
-              ),
-            ),
+            child: isEmpty
+                ? Text(
+                    _canEdit ? '點擊以新增' : '',
+                    style: textTheme.bodyLarge?.copyWith(
+                      fontFamily: fontFamily,
+                      color: colors.quaternary,
+                    ),
+                  )
+                : Text(
+                    content,
+                    style: textTheme.bodyLarge?.copyWith(
+                      fontFamily: fontFamily,
+                    ),
+                  ),
           ),
           // Check/edit icon
-          Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: _buildGoalIcon(colors, isDone, planId, content, slot),
-          ),
+          _buildGoalIcon(colors, isDone, accentColor),
         ],
       ),
     );
+
+    // Make entire row tappable when editable
+    if (_canEdit && !isDone) {
+      return InkWell(
+        onTap: () => onGoalTap(slot, planId, content, isDone),
+        child: row,
+      );
+    }
+
+    return row;
   }
 
-  Widget _buildGoalIcon(
-    AppColorsTheme colors,
-    bool isDone,
-    String? planId,
-    String? content,
-    int slot,
-  ) {
+  Widget _buildGoalIcon(AppColorsTheme colors, bool isDone, Color accentColor) {
     // If done → show checkmark
     if (isDone) {
       return Container(
@@ -133,15 +180,12 @@ class StudyPlanCard extends StatelessWidget {
       );
     }
 
-    // If is_me && not done && (canEditContent || canCheckGoal) → show edit icon
-    if (plan.isMe && (canEditGoalContent || canCheckGoal)) {
-      return InkWell(
-        onTap: () => onGoalTap(slot, planId, content, isDone),
-        child: Icon(
-          Icons.edit_rounded,
-          color: colors.primaryText,
-          size: 24,
-        ),
+    // If editable → show edit icon (tap handled by parent InkWell)
+    if (_canEdit) {
+      return Icon(
+        Icons.edit_rounded,
+        color: accentColor,
+        size: 24,
       );
     }
 

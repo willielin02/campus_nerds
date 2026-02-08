@@ -80,7 +80,7 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
     return ListView.builder(
       controller: _scrollController,
       reverse: true, // Newest messages at the bottom
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.zero,
       itemCount: widget.messages.length + (widget.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
         // Load more button at the top (oldest messages)

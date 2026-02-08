@@ -66,7 +66,7 @@ class _MyEventsPageState extends State<MyEventsPage>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.successMessage!),
-              backgroundColor: colors.success,
+              backgroundColor: colors.secondaryText,
             ),
           );
           context.read<MyEventsBloc>().add(const MyEventsClearSuccess());

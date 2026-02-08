@@ -229,7 +229,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.successMessage!),
-              backgroundColor: colors.success,
+              backgroundColor: colors.secondaryText,
             ),
           );
           context.read<MyEventsBloc>().add(const MyEventsClearSuccess());
@@ -647,6 +647,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     }
 
     final studyPlans = state.studyPlans;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     if (studyPlans.isEmpty) {
       return ListView(
@@ -702,18 +703,37 @@ class _EventDetailsPageState extends State<EventDetailsPage>
       );
     }
 
-    return ListView.separated(
+    final isPreGrouping = event.groupId == null;
+
+    return ListView.builder(
       padding: const EdgeInsets.fromLTRB(8, 24, 8, 24),
-      itemCount: studyPlans.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemCount: studyPlans.length + (isPreGrouping ? 1 : 0),
       itemBuilder: (context, index) {
+        // Hint text below the cards in pre-grouping phase
+        if (index == studyPlans.length) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: Text(
+              '請先寫下活動期間你希望完成的 3 個待辦事項，分組後你將看到其他夥伴的待辦事項。',
+              style: textTheme.bodyMedium?.copyWith(
+                fontFamily: fontFamily,
+                color: colors.tertiaryText,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
+
         final plan = studyPlans[index];
-        return StudyPlanCard(
-          plan: plan,
-          canEditGoalContent: event.canEditGoalContent,
-          canCheckGoal: event.canCheckGoal,
-          onGoalTap: (slot, planId, content, isDone) =>
-              _handleGoalTap(event, slot, planId, content, isDone),
+        return Padding(
+          padding: EdgeInsets.only(top: index > 0 ? 16 : 0),
+          child: StudyPlanCard(
+            plan: plan,
+            canEditGoalContent: event.canEditGoalContent,
+            canCheckGoal: event.canCheckGoal,
+            onGoalTap: (slot, planId, content, isDone) =>
+                _handleGoalTap(event, slot, planId, content, isDone),
+          ),
         );
       },
     );

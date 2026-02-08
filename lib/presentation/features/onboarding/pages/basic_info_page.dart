@@ -325,7 +325,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.primary, width: 2),
+              borderSide: BorderSide(color: colors.quaternary, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,

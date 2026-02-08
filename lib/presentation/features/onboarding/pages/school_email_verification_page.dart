@@ -273,8 +273,8 @@ class _SchoolEmailVerificationPageState
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: Colors.transparent,
+                        borderSide: BorderSide(
+                          color: colors.primaryText,
                           width: 2,
                         ),
                       ),
@@ -384,8 +384,8 @@ class _SchoolEmailVerificationPageState
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Colors.transparent,
+                            borderSide: BorderSide(
+                              color: colors.primaryText,
                               width: 2,
                             ),
                           ),

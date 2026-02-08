@@ -40,16 +40,20 @@ class EditGoalDialog extends StatefulWidget {
       context: context,
       builder: (ctx) => Dialog(
         elevation: 0,
+        insetPadding: EdgeInsets.zero,
         backgroundColor: Colors.transparent,
-        clipBehavior: Clip.none,
-        child: EditGoalDialog(
-          slot: slot,
-          planId: planId,
-          initialContent: initialContent,
-          initialIsDone: initialIsDone,
-          canEditContent: canEditContent,
-          canEditCompletion: canEditCompletion,
-          onSave: onSave,
+        alignment: Alignment.center,
+        child: GestureDetector(
+          onTap: () => FocusScope.of(ctx).unfocus(),
+          child: EditGoalDialog(
+            slot: slot,
+            planId: planId,
+            initialContent: initialContent,
+            initialIsDone: initialIsDone,
+            canEditContent: canEditContent,
+            canEditCompletion: canEditCompletion,
+            onSave: onSave,
+          ),
         ),
       ),
     );
@@ -154,8 +158,8 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Colors.transparent,
+                          borderSide: BorderSide(
+                            color: colors.tertiaryText,
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(8),
@@ -181,57 +185,67 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                         fontFamily: fontFamily,
                       ),
                       maxLines: null,
+                      keyboardType: TextInputType.text,
                       cursorColor: colors.primaryText,
                     ),
                   ),
                 ),
 
-              // Checkbox row (only when canEditCompletion)
-              if (widget.canEditCompletion)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Row(
-                    children: [
-                      Theme(
-                        data: ThemeData(
-                          checkboxTheme: CheckboxThemeData(
-                            visualDensity: VisualDensity.compact,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+              // Checkbox row (always visible; disabled when canEditCompletion is false)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Row(
+                  children: [
+                    Theme(
+                      data: ThemeData(
+                        checkboxTheme: CheckboxThemeData(
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                          unselectedWidgetColor: colors.tertiaryText,
                         ),
-                        child: Checkbox(
-                          value: _isDone,
-                          onChanged: (v) => setState(() => _isDone = v!),
-                          side: BorderSide(
-                            width: 2,
-                            color: colors.tertiaryText,
-                          ),
-                          activeColor: colors.secondaryText,
-                          checkColor: colors.primary,
+                        unselectedWidgetColor: widget.canEditCompletion
+                            ? colors.tertiaryText
+                            : colors.alternate,
+                      ),
+                      child: Checkbox(
+                        value: _isDone,
+                        onChanged: widget.canEditCompletion
+                            ? (v) => setState(() => _isDone = v!)
+                            : null,
+                        side: BorderSide(
+                          width: 2,
+                          color: widget.canEditCompletion
+                              ? colors.tertiaryText
+                              : colors.alternate,
+                        ),
+                        activeColor: colors.secondaryText,
+                        checkColor: colors.primary,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 3),
+                      child: Text(
+                        widget.canEditCompletion
+                            ? (_isDone
+                                ? '待辦事項 ${widget.slot} 已完成'
+                                : '待辦事項 ${widget.slot} 尚未完成')
+                            : '待辦事項 ${widget.slot} 尚不能勾選完成',
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontFamily: fontFamily,
+                          color: widget.canEditCompletion
+                              ? (_isDone
+                                  ? colors.secondaryText
+                                  : colors.tertiary)
+                              : colors.alternate,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 3),
-                        child: Text(
-                          _isDone
-                              ? '待辦事項 ${widget.slot} 已完成'
-                              : '待辦事項 ${widget.slot} 尚未完成',
-                          style: textTheme.bodyLarge?.copyWith(
-                            fontFamily: fontFamily,
-                            color: _isDone
-                                ? colors.secondaryText
-                                : colors.tertiary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
 
               // Buttons row
               Padding(
