@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/theme/app_theme.dart';
 import '../../../../domain/entities/booking.dart';
+import '../../../../domain/entities/event.dart';
 import '../../chat/widgets/chat_tab.dart';
 import '../bloc/bloc.dart';
 import '../widgets/cancel_booking_dialog.dart';
@@ -43,9 +44,17 @@ class _EventDetailsPageState extends State<EventDetailsPage>
   void _initTabController(MyEvent event) {
     if (_tabController == null) {
       _tabController = TabController(length: 2, vsync: this);
-      // Load study plans when tab controller is ready
-      if (event.groupId != null && widget.isFocusedStudy) {
-        context.read<MyEventsBloc>().add(MyEventsLoadStudyPlans(event.groupId!));
+      // Load study plans: group plans if grouped, own plans if not
+      if (widget.isFocusedStudy) {
+        if (event.groupId != null) {
+          context
+              .read<MyEventsBloc>()
+              .add(MyEventsLoadStudyPlans(event.groupId!));
+        } else {
+          context
+              .read<MyEventsBloc>()
+              .add(MyEventsLoadMyStudyPlans(event.bookingId));
+        }
       }
     }
   }
@@ -65,15 +74,12 @@ class _EventDetailsPageState extends State<EventDetailsPage>
   }
 
   void _handleCancelBooking(MyEvent event) {
-    showDialog(
-      context: context,
-      builder: (ctx) => CancelBookingDialog(
-        event: event,
-        onConfirm: () {
-          context.read<MyEventsBloc>().add(MyEventsCancelBooking(event.bookingId));
-          Navigator.of(ctx).pop();
-        },
-      ),
+    CancelBookingDialog.show(
+      context,
+      event: event,
+      onConfirm: () {
+        context.read<MyEventsBloc>().add(MyEventsCancelBooking(event.bookingId));
+      },
     );
   }
 
@@ -92,31 +98,27 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     String? content,
     bool isDone,
   ) {
-    if (planId == null || event.groupId == null) return;
+    if (planId == null) return;
 
-    final canEditContent = event.isChatOpen;
-    final canEditCompletion = event.isChatOpen;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => EditGoalDialog(
-        slot: slot,
-        planId: planId,
-        initialContent: content,
-        initialIsDone: isDone,
-        canEditContent: canEditContent,
-        canEditCompletion: canEditCompletion,
-        onSave: (newContent, newIsDone) {
-          context.read<MyEventsBloc>().add(
-                MyEventsUpdateStudyPlan(
-                  planId: planId,
-                  content: newContent,
-                  isDone: newIsDone,
-                  groupId: event.groupId!,
-                ),
-              );
-        },
-      ),
+    EditGoalDialog.show(
+      context,
+      slot: slot,
+      planId: planId,
+      initialContent: content,
+      initialIsDone: isDone,
+      canEditContent: event.canEditGoalContent,
+      canEditCompletion: event.canCheckGoal,
+      onSave: (newContent, newIsDone) {
+        context.read<MyEventsBloc>().add(
+              MyEventsUpdateStudyPlan(
+                planId: planId,
+                content: newContent,
+                isDone: newIsDone,
+                groupId: event.groupId,
+                bookingId: event.groupId == null ? event.bookingId : null,
+              ),
+            );
+      },
     );
   }
 
@@ -141,18 +143,79 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     }
   }
 
+  bool _showFeedbackButton(MyEvent event) {
+    return event.feedbackSentAt != null;
+  }
+
+  /// Status text based on event lifecycle (matches FlutterFlow exactly)
+  /// scheduled/notified → '已報名', completed → '已結束', else → ''
   String _getStatusText(MyEvent event) {
-    switch (event.bookingStatus) {
-      case BookingStatus.pending:
-        return '報名中';
-      case BookingStatus.matched:
-        return '已報名';
-      case BookingStatus.completed:
-        return '已結束';
-      case BookingStatus.cancelled:
-        return '已取消';
-      case BookingStatus.noShow:
-        return '未出席';
+    if (event.eventStatus == EventStatus.scheduled ||
+        event.eventStatus == EventStatus.notified) {
+      return '已報名';
+    } else if (event.eventStatus == EventStatus.completed) {
+      return '已結束';
+    }
+    return '';
+  }
+
+  /// Format date as "M 月 d 日 ( 六 )" to match FlutterFlow
+  String _formatDateDisplay(MyEvent event) {
+    final d = event.eventDate;
+    final weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+    final weekday = weekdays[d.weekday - 1];
+    return '${d.month} 月 ${d.day} 日 ( $weekday )';
+  }
+
+  /// Format time display: time slot for scheduled, HH:mm for notified/completed
+  String _formatTimeDisplay(MyEvent event) {
+    if (event.groupStartAt != null) {
+      final t = event.groupStartAt!;
+      return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+    }
+    return event.timeSlot.displayName;
+  }
+
+  /// Map locationDetail enum to Chinese venue name (FlutterFlow mapping)
+  String _getLocationDisplay(MyEvent event) {
+    // When notified/completed, use venueName from DB
+    if (event.venueName != null && event.venueName!.isNotEmpty) {
+      return event.venueName!;
+    }
+    // Otherwise map locationDetail enum to display name
+    switch (event.locationDetail) {
+      case 'ntu_main_library_reading_area':
+        return '國立臺灣大學總圖書館 閱覽區';
+      case 'nycu_haoran_library_reading_area':
+        return '國立陽明交通大學浩然圖書館 閱覽區';
+      case 'nthu_main_library_reading_area':
+        return '國立清華大學總圖書館 閱覽區';
+      case 'ncku_main_library_reading_area':
+        return '國立成功大學總圖書館 閱覽區';
+      case 'nccu_daxian_library_reading_area':
+        return '國立政治大學達賢圖書館 閱覽區';
+      case 'ncu_main_library_reading_area':
+        return '國立中央大學總圖書館 閱覽區';
+      case 'nsysu_library_reading_area':
+        return '國立中山大學圖書館 閱覽區';
+      case 'nchu_main_library_reading_area':
+        return '國立中興大學總圖書館 閱覽區';
+      case 'ccu_library_reading_area':
+        return '國立中正大學圖書館 閱覽區';
+      case 'ntnu_main_library_reading_area':
+        return '國立臺灣師範大學總圖書館 閱覽區';
+      case 'ntpu_library_reading_area':
+        return '國立臺北大學圖書館 閱覽區';
+      case 'ntust_library_reading_area':
+        return '國立臺灣科技大學圖書館 閱覽區';
+      case 'ntut_library_reading_area':
+        return '國立臺北科技大學圖書館 閱覽區';
+      case 'library_or_cafe':
+        return '圖書館/ 咖啡廳';
+      case 'boardgame_or_escape_room':
+        return '桌遊店/ 密室逃脫';
+      default:
+        return event.locationDetail;
     }
   }
 
@@ -311,18 +374,6 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                   style: textTheme.bodyMedium?.copyWith(
                                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                     color: colors.secondaryBackground,
-                                    shadows: [
-                                      Shadow(
-                                        color: colors.primaryText,
-                                        offset: const Offset(0.2, 0.2),
-                                        blurRadius: 0.2,
-                                      ),
-                                      Shadow(
-                                        color: colors.primaryText,
-                                        offset: const Offset(-0.2, -0.2),
-                                        blurRadius: 0.2,
-                                      ),
-                                    ],
                                   ),
                                 ),
                               ),
@@ -337,27 +388,29 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  '時間： ',
-                                  style: textTheme.labelMedium?.copyWith(
-                                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            Flexible(
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '時間： ',
+                                    style: textTheme.labelMedium?.copyWith(
+                                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  event.formattedDate,
-                                  style: textTheme.labelLarge?.copyWith(
-                                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                  Text(
+                                    _formatDateDisplay(event),
+                                    style: textTheme.labelLarge?.copyWith(
+                                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  '  ${event.timeSlot.displayName}',
-                                  style: textTheme.labelLarge?.copyWith(
-                                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                  Text(
+                                    '  ${_formatTimeDisplay(event)}',
+                                    style: textTheme.labelLarge?.copyWith(
+                                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             const Padding(
                               padding: EdgeInsets.only(right: 16),
@@ -381,6 +434,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                             ),
                             Flexible(
                               child: InkWell(
+                                splashColor: Colors.transparent,
                                 onTap: () => _openGoogleMaps(event.venueGoogleMapUrl),
                                 child: Container(
                                   decoration: const BoxDecoration(),
@@ -388,7 +442,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        event.locationDetail,
+                                        _getLocationDisplay(event),
                                         style: textTheme.labelMedium?.copyWith(
                                           fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                         ),
@@ -446,41 +500,71 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                 ),
                               ),
                             ),
-                            // Cancel booking button
-                            SizedBox(
-                              width: 144,
-                              height: 48,
-                              child: ElevatedButton(
-                                onPressed: event.canCancel
-                                    ? () => _handleCancelBooking(event)
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colors.tertiary,
-                                  foregroundColor: colors.secondaryBackground,
-                                  disabledBackgroundColor: colors.tertiary.withOpacity(0.5),
-                                  disabledForegroundColor:
-                                      colors.secondaryBackground.withOpacity(0.5),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                            // Cancel booking / Feedback button
+                            // scheduled phase → 取消報名; notified/completed → 填寫問券
+                            // Pressable: bg = tertiaryText; Not pressable: bg = tertiary
+                            // Text: secondaryBackground, no shadow
+                            if (_showFeedbackButton(event))
+                              SizedBox(
+                                width: 144,
+                                height: 48,
+                                child: ElevatedButton(
+                                  onPressed: event.isFeedbackOpen
+                                      ? () {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: const Text('回饋功能即將推出'),
+                                              backgroundColor: colors.tertiary,
+                                            ),
+                                          );
+                                        }
+                                      : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colors.tertiaryText,
+                                    foregroundColor: colors.secondaryBackground,
+                                    disabledBackgroundColor: colors.tertiary,
+                                    disabledForegroundColor: colors.secondaryBackground,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 0,
                                   ),
-                                  elevation: 0,
+                                  child: Text(
+                                    '填寫問券',
+                                    style: textTheme.labelLarge?.copyWith(
+                                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                      color: colors.secondaryBackground,
+                                    ),
+                                  ),
                                 ),
-                                child: Text(
-                                  '取消報名',
-                                  style: textTheme.labelLarge?.copyWith(
-                                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                                    color: colors.secondaryBackground,
-                                    shadows: [
-                                      Shadow(
-                                        color: colors.primaryText,
-                                        offset: const Offset(0.5, 0.5),
-                                        blurRadius: 0.5,
-                                      ),
-                                    ],
+                              )
+                            else
+                              SizedBox(
+                                width: 144,
+                                height: 48,
+                                child: ElevatedButton(
+                                  onPressed: event.canCancel
+                                      ? () => _handleCancelBooking(event)
+                                      : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colors.tertiaryText,
+                                    foregroundColor: colors.secondaryBackground,
+                                    disabledBackgroundColor: colors.tertiary,
+                                    disabledForegroundColor: colors.secondaryBackground,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: Text(
+                                    '取消報名',
+                                    style: textTheme.labelLarge?.copyWith(
+                                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                      color: colors.secondaryBackground,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -518,7 +602,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                   indicatorColor: colors.secondaryText,
                                   dividerColor: Colors.transparent,
                                   tabs: const [
-                                    Tab(text: '目標'),
+                                    Tab(text: '待辦事項'),
                                     Tab(text: '聊天室'),
                                   ],
                                 ),
@@ -618,19 +702,20 @@ class _EventDetailsPageState extends State<EventDetailsPage>
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
-      children: studyPlans
-          .map((plan) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: StudyPlanCard(
-                  plan: plan,
-                  canEdit: plan.isMe && event.isChatOpen,
-                  onGoalTap: (slot, planId, content, isDone) =>
-                      _handleGoalTap(event, slot, planId, content, isDone),
-                ),
-              ))
-          .toList(),
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(8, 24, 8, 24),
+      itemCount: studyPlans.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final plan = studyPlans[index];
+        return StudyPlanCard(
+          plan: plan,
+          canEditGoalContent: event.canEditGoalContent,
+          canCheckGoal: event.canCheckGoal,
+          onGoalTap: (slot, planId, content, isDone) =>
+              _handleGoalTap(event, slot, planId, content, isDone),
+        );
+      },
     );
   }
 

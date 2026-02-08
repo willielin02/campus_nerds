@@ -68,7 +68,7 @@ class MyEventsClearSuccess extends MyEventsEvent {
 // Study Plan Events (Phase 7)
 // ============================================
 
-/// Event to load group focused study plans
+/// Event to load group focused study plans (post-grouping)
 class MyEventsLoadStudyPlans extends MyEventsEvent {
   final String groupId;
 
@@ -78,20 +78,32 @@ class MyEventsLoadStudyPlans extends MyEventsEvent {
   List<Object?> get props => [groupId];
 }
 
+/// Event to load own focused study plans (pre-grouping)
+class MyEventsLoadMyStudyPlans extends MyEventsEvent {
+  final String bookingId;
+
+  const MyEventsLoadMyStudyPlans(this.bookingId);
+
+  @override
+  List<Object?> get props => [bookingId];
+}
+
 /// Event to update a study plan
 class MyEventsUpdateStudyPlan extends MyEventsEvent {
   final String planId;
   final String content;
   final bool isDone;
-  final String groupId; // To refresh plans after update
+  final String? groupId; // To refresh group plans after update
+  final String? bookingId; // To refresh own plans after update (pre-grouping)
 
   const MyEventsUpdateStudyPlan({
     required this.planId,
     required this.content,
     required this.isDone,
-    required this.groupId,
+    this.groupId,
+    this.bookingId,
   });
 
   @override
-  List<Object?> get props => [planId, content, isDone, groupId];
+  List<Object?> get props => [planId, content, isDone, groupId, bookingId];
 }

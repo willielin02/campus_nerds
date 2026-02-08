@@ -122,6 +122,7 @@ supabase/
 
 - **User books:** `create_booking_and_consume_ticket` — booking status=active, deduct 1 ticket
   - Validates: profile complete, has university, event is scheduled, within signup window, no same-slot conflict, sufficient tickets
+  - For focused_study events: `trg_create_study_plans_on_booking` auto-creates 3 empty study plan slots
 - **User cancels:** `cancel_booking_and_refund_ticket` — booking status=cancelled, refund 1 ticket
   - Must be within signup window
 
@@ -195,6 +196,61 @@ Bookings: active → cancelled (user cancels, optional)
 | `trg_events_status_notified` | events UPDATE (scheduled→notified) | Validate all groups confirmed, send notifications |
 | `trg_groups_require_venue_on_scheduled` | groups UPDATE | Enforce venue_id when scheduling |
 | `trg_groups_enforce_venue_matches_event` | groups UPDATE | Venue city must match event city |
+| `trg_create_study_plans_on_booking` | bookings INSERT (focused_study) | Auto-create 3 study plan slots at booking time |
+
+## EventDetailsPage UI Presentation Logic (Focused Study)
+
+The `EventDetailsPage` displays booking details with two tabs: 待辦事項 (study plans) and 聊天室 (chat). The page adapts to the event lifecycle phase.
+
+### Status Badge (top-right)
+
+| `event_status` | Badge Text |
+|----------------|-----------|
+| `scheduled` / `notified` | 已報名 |
+| `completed` | 已結束 |
+| other | (hidden) |
+
+- Style: `tertiaryText` bg, `secondaryBackground` text, rounded 8, NO shadow
+
+### Buttons Row (規則 + 取消報名/填寫問券)
+
+Two buttons at the same position, shown based on lifecycle:
+- **取消報名**: visible when `feedbackSentAt == null` (scheduled phase)
+  - Pressable (bg = `tertiaryText`): before `signupDeadlineAt`
+  - Disabled (bg = `tertiary`): after `signupDeadlineAt`
+- **填寫問券**: visible when `feedbackSentAt != null` (notified/completed phase)
+  - Pressable (bg = `tertiaryText`): after `feedbackSentAt` AND `!hasFilledFeedbackAll`
+  - Disabled (bg = `tertiary`): otherwise
+- Text color: `secondaryBackground`, NO shadow
+
+### Study Plans (待辦事項) — Time-gated Editing
+
+Study plan slots (3 per user) are auto-created at booking time via DB trigger `trg_create_study_plans_on_booking`.
+
+| Phase | `canEditGoalContent` | `canCheckGoal` | Edit icon? | Can edit text? | Can check? |
+|-------|---------------------|---------------|-----------|----------------|------------|
+| After booking (no group) | true (goalCloseAt null) | false (groupStartAt null) | Yes | Yes | No |
+| After grouping, before venue start | true | false | Yes | Yes | No |
+| After venue start, before goalCloseAt | true | true | Yes | Yes | Yes |
+| After goalCloseAt, before goalCheckCloseAt | false | true | Yes | No | Yes |
+| After goalCheckCloseAt | false | false | No | No | No |
+
+- **Pre-grouping**: Only the user's own card shown (loaded via `get_my_focused_study_plans` RPC)
+- **Post-grouping**: All group members' cards shown (loaded via `get_group_focused_study_plans` RPC)
+- **StudyPlanCard**: header "書呆子 [nickname]", 3 numbered goals, edit/check icons per timing
+- **EditGoalDialog**: Text field shown only when `canEditContent`; checkbox shown only when `canEditCompletion`
+
+### Dialog Design Pattern (FlutterFlow standard)
+
+All dialogs use: `Dialog(transparent bg, elevation 0)` → `Container(579w, secondaryBackground, tertiary border 2, rounded 12)` → `Padding(h:16)` → `Column`
+
+Buttons: two `Expanded` buttons — "取消" (secondaryBackground bg, tertiary border, elevation 0.2, rounded 12) + "確定" (alternate bg, elevation 0, rounded 12)
+
+### Chat Tab
+
+- Chat opens at `chatOpenAt` (venue start - 1 hour)
+- Before open: shows "聊天室尚未開放" message
+- Uses Supabase Realtime for live messages
 
 ## Common Commands
 

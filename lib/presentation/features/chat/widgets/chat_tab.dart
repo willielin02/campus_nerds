@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
 import '../../../../domain/entities/booking.dart';
@@ -41,26 +42,24 @@ class _ChatTabState extends State<ChatTab> {
 
     // Chat not open yet
     if (!widget.event.isChatOpen) {
+      final fontFamily = GoogleFonts.notoSansTc().fontFamily;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.chat_bubble_outline,
-              size: 64,
-              color: colors.secondaryText,
+            Opacity(
+              opacity: 0.66,
+              child: Icon(
+                Icons.chat_bubble_outline,
+                size: 64,
+                color: colors.secondaryText,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               '聊天室尚未開放',
-              style: context.textTheme.bodyLarge?.copyWith(
-                color: colors.secondaryText,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '活動開始後即可聊天',
-              style: context.textTheme.bodyMedium?.copyWith(
+              style: context.textTheme.titleMedium?.copyWith(
+                fontFamily: fontFamily,
                 color: colors.secondaryText,
               ),
             ),

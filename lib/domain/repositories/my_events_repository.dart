@@ -62,6 +62,9 @@ abstract class MyEventsRepository {
   /// Get group focused study plans
   Future<List<GroupFocusedPlan>> getGroupFocusedStudyPlans(String groupId);
 
+  /// Get own focused study plans by booking ID (pre-grouping)
+  Future<List<GroupFocusedPlan>> getMyFocusedStudyPlans(String bookingId);
+
   /// Update a focused study plan
   Future<BookingResult> updateFocusedStudyPlan({
     required String planId,

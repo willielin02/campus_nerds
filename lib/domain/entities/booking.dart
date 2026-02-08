@@ -104,6 +104,11 @@ class MyEvent extends Equatable {
   final String? venueAddress;
   final String? venueGoogleMapUrl;
 
+  // Timing info
+  final DateTime? goalCloseAt;
+  final DateTime? goalCheckCloseAt;
+  final DateTime? feedbackSentAt;
+
   // Feedback flags
   final bool hasEventFeedback;
   final bool hasPeerFeedbackAll;
@@ -134,6 +139,9 @@ class MyEvent extends Equatable {
     this.venueName,
     this.venueAddress,
     this.venueGoogleMapUrl,
+    this.goalCloseAt,
+    this.goalCheckCloseAt,
+    this.feedbackSentAt,
     this.hasEventFeedback = false,
     this.hasPeerFeedbackAll = false,
     this.hasFilledFeedbackAll = false,
@@ -177,6 +185,30 @@ class MyEvent extends Equatable {
     return DateTime.now().isAfter(chatOpenAt!);
   }
 
+  /// Check if goal content can still be edited (before goalCloseAt)
+  /// Pre-grouping (goalCloseAt null): always editable
+  /// Post-grouping: editable until goalCloseAt (venue start + 1hr)
+  bool get canEditGoalContent {
+    if (goalCloseAt == null) return true;
+    return DateTime.now().isBefore(goalCloseAt!);
+  }
+
+  /// Check if goal completion can still be toggled
+  /// Requires: after groupStartAt (venue start) AND before goalCheckCloseAt
+  bool get canCheckGoal {
+    if (groupStartAt == null) return false;
+    final now = DateTime.now();
+    if (now.isBefore(groupStartAt!)) return false;
+    if (goalCheckCloseAt == null) return true;
+    return now.isBefore(goalCheckCloseAt!);
+  }
+
+  /// Check if feedback window is open
+  bool get isFeedbackOpen {
+    if (feedbackSentAt == null) return false;
+    return DateTime.now().isAfter(feedbackSentAt!) && !hasFilledFeedbackAll;
+  }
+
   /// Check if user has matched group
   bool get hasGroup => groupId != null && groupStatus != null;
 
@@ -214,6 +246,9 @@ class MyEvent extends Equatable {
       venueName: venueName,
       venueAddress: venueAddress,
       venueGoogleMapUrl: venueGoogleMapUrl,
+      goalCloseAt: goalCloseAt,
+      goalCheckCloseAt: goalCheckCloseAt,
+      feedbackSentAt: feedbackSentAt,
       hasEventFeedback: hasEventFeedback,
       hasPeerFeedbackAll: hasPeerFeedbackAll,
       hasFilledFeedbackAll: hasFilledFeedbackAll,
@@ -244,6 +279,9 @@ class MyEvent extends Equatable {
         venueName,
         venueAddress,
         venueGoogleMapUrl,
+        goalCloseAt,
+        goalCheckCloseAt,
+        feedbackSentAt,
         hasEventFeedback,
         hasPeerFeedbackAll,
         hasFilledFeedbackAll,
@@ -290,8 +328,9 @@ class StudyPlan extends Equatable {
 }
 
 /// Group member's focused study plans
+/// groupId is nullable for pre-grouping plans (user has booked but no group yet)
 class GroupFocusedPlan extends Equatable {
-  final String groupId;
+  final String? groupId;
   final String? userId;
   final String displayName;
   final bool isMe;
@@ -312,7 +351,7 @@ class GroupFocusedPlan extends Equatable {
   final bool plan3Done;
 
   const GroupFocusedPlan({
-    required this.groupId,
+    this.groupId,
     this.userId,
     required this.displayName,
     required this.isMe,

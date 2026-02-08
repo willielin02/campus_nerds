@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_theme.dart';
 import '../../../../domain/entities/chat.dart';
 
 /// Chat message bubble widget
+/// Matches FlutterFlow ChatTimelineItem design
 class ChatMessageBubble extends StatelessWidget {
   const ChatMessageBubble({
     super.key,
@@ -27,22 +29,16 @@ class ChatMessageBubble extends StatelessWidget {
   }
 
   Widget _buildSystemMessage(BuildContext context) {
-    final colors = context.appColors;
     final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: colors.tertiary.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          message.systemMessageText,
-          style: textTheme.bodySmall?.copyWith(
-            color: colors.secondaryText,
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        message.systemMessageText,
+        textAlign: TextAlign.center,
+        style: textTheme.bodyMedium?.copyWith(
+          fontFamily: fontFamily,
         ),
       ),
     );
@@ -51,41 +47,49 @@ class ChatMessageBubble extends StatelessWidget {
   Widget _buildOwnMessage(BuildContext context) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
-      padding: const EdgeInsets.only(left: 48, right: 12, top: 2, bottom: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+      padding: const EdgeInsets.only(left: 16, bottom: 6),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Time
-          Padding(
-            padding: const EdgeInsets.only(right: 6, bottom: 2),
-            child: Text(
-              _formatTime(message.createdAt),
-              style: textTheme.bodySmall?.copyWith(
-                color: colors.secondaryText,
-                fontSize: 10,
+          // Message bubble - right-aligned
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              decoration: BoxDecoration(
+                color: colors.tertiaryText,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                child: Text(
+                  message.content ?? '',
+                  style: textTheme.bodyLarge?.copyWith(
+                    fontFamily: fontFamily,
+                    color: colors.primaryBackground,
+                    shadows: [
+                      Shadow(
+                        color: colors.secondaryText,
+                        offset: const Offset(0.5, 0.5),
+                        blurRadius: 0.5,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-          // Message bubble
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: colors.primary,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(4),
-                ),
-              ),
+          // Time - right-aligned
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8),
               child: Text(
-                message.content ?? '',
+                _formatTime(message.createdAt),
                 style: textTheme.bodyMedium?.copyWith(
-                  color: Colors.white,
+                  fontFamily: fontFamily,
                 ),
               ),
             ),
@@ -98,62 +102,63 @@ class ChatMessageBubble extends StatelessWidget {
   Widget _buildOtherMessage(BuildContext context) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
-      padding: const EdgeInsets.only(left: 12, right: 48, top: 2, bottom: 2),
+      padding: const EdgeInsets.only(right: 16, bottom: 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Sender name
           if (showSender)
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 4),
+              padding: const EdgeInsets.only(left: 12),
               child: Text(
                 '書呆子 ${message.displaySender}',
-                style: textTheme.bodySmall?.copyWith(
-                  color: colors.secondaryText,
-                  fontWeight: FontWeight.w500,
+                style: textTheme.bodyMedium?.copyWith(
+                  fontFamily: fontFamily,
                 ),
               ),
             ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Message bubble
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: colors.secondaryBackground,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(4),
-                      topRight: Radius.circular(16),
-                      bottomLeft: Radius.circular(16),
-                      bottomRight: Radius.circular(16),
-                    ),
-                    border: Border.all(color: colors.tertiary),
+          // Message bubble - left-aligned
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colors.primaryBackground,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: colors.tertiary,
+                    width: 2,
                   ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Text(
                     message.content ?? '',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colors.primaryText,
+                    style: textTheme.bodyLarge?.copyWith(
+                      fontFamily: fontFamily,
+                      color: colors.secondaryText,
                     ),
                   ),
                 ),
               ),
-              // Time
-              Padding(
-                padding: const EdgeInsets.only(left: 6, bottom: 2),
-                child: Text(
-                  _formatTime(message.createdAt),
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colors.secondaryText,
-                    fontSize: 10,
-                  ),
+            ),
+          ),
+          // Time - left-aligned
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Text(
+                _formatTime(message.createdAt),
+                style: textTheme.bodyMedium?.copyWith(
+                  fontFamily: fontFamily,
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -166,6 +171,7 @@ class ChatMessageBubble extends StatelessWidget {
 }
 
 /// Date divider widget for chat
+/// Matches FlutterFlow design: tertiary divider + quaternary label
 class ChatDateDivider extends StatelessWidget {
   const ChatDateDivider({
     super.key,
@@ -178,25 +184,22 @@ class ChatDateDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 0),
+      child: Column(
         children: [
-          Expanded(
-            child: Divider(color: colors.alternate),
+          Divider(
+            thickness: 2,
+            color: colors.tertiary,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              _formatDate(date),
-              style: textTheme.bodySmall?.copyWith(
-                color: colors.secondaryText,
-              ),
+          Text(
+            _formatDate(date),
+            style: textTheme.bodyMedium?.copyWith(
+              fontFamily: fontFamily,
+              color: colors.quaternary,
             ),
-          ),
-          Expanded(
-            child: Divider(color: colors.alternate),
           ),
         ],
       ),

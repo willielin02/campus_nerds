@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
 
 /// Chat input widget with text field and send button
+/// Matches FlutterFlow EventDetailsStudy chat input design
 class ChatInput extends StatefulWidget {
   const ChatInput({
     super.key,
     required this.onSend,
     this.isSending = false,
-    this.hintText = '輸入訊息...',
   });
 
   final void Function(String content) onSend;
   final bool isSending;
-  final String hintText;
 
   @override
   State<ChatInput> createState() => _ChatInputState();
@@ -59,43 +59,43 @@ class _ChatInputState extends State<ChatInput> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: colors.secondaryBackground,
-        border: Border(
-          top: BorderSide(color: colors.alternate),
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
       child: SafeArea(
         top: false,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // Text input
-            Expanded(
-              child: Container(
-                constraints: const BoxConstraints(maxHeight: 120),
-                decoration: BoxDecoration(
-                  color: colors.primaryBackground,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: colors.alternate),
-                ),
-                child: TextField(
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: colors.secondaryBackground,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: colors.tertiary,
+              width: 2,
+            ),
+          ),
+          child: Row(
+            children: [
+              // Text input
+              Expanded(
+                child: TextFormField(
                   controller: _controller,
                   focusNode: _focusNode,
-                  maxLines: null,
-                  textInputAction: TextInputAction.newline,
-                  style: textTheme.bodyMedium,
+                  textInputAction: TextInputAction.send,
+                  onFieldSubmitted: (_) => _handleSend(),
+                  style: textTheme.bodyLarge?.copyWith(
+                    fontFamily: fontFamily,
+                  ),
                   decoration: InputDecoration(
-                    hintText: widget.hintText,
-                    hintStyle: textTheme.bodyMedium?.copyWith(
-                      color: colors.secondaryText,
+                    hintText: '請輸入訊息',
+                    hintStyle: textTheme.bodyLarge?.copyWith(
+                      fontFamily: fontFamily,
+                      color: colors.quaternary,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+                      horizontal: 12,
+                      vertical: 12,
                     ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -103,42 +103,39 @@ class _ChatInputState extends State<ChatInput> {
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-
-            // Send button
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 44,
-              height: 44,
-              child: Material(
-                color: _hasText && !widget.isSending
-                    ? colors.primary
-                    : colors.tertiary,
-                borderRadius: BorderRadius.circular(22),
-                child: InkWell(
-                  onTap: _hasText && !widget.isSending ? _handleSend : null,
-                  borderRadius: BorderRadius.circular(22),
-                  child: Center(
-                    child: widget.isSending
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
+              // Send button
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: widget.isSending
+                    ? const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : Material(
+                        color: colors.primary,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          onTap:
+                              _hasText && !widget.isSending ? _handleSend : null,
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: Icon(
+                              Icons.send_rounded,
+                              size: 20,
                               color: colors.secondaryText,
                             ),
-                          )
-                        : Icon(
-                            Icons.send_rounded,
-                            size: 20,
-                            color: _hasText ? Colors.white : colors.secondaryText,
                           ),
-                  ),
-                ),
+                        ),
+                      ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

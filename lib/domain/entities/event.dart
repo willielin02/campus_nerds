@@ -23,6 +23,8 @@ enum EventStatus {
   open('open', '報名中'),
   full('full', '已額滿'),
   closed('closed', '已截止'),
+  scheduled('scheduled', '已報名'),
+  notified('notified', '已報名'),
   cancelled('cancelled', '已取消'),
   completed('completed', '已結束');
 

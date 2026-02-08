@@ -186,7 +186,21 @@ class FaqPage extends StatelessWidget {
             const SizedBox(height: 12),
 
             // 法律資訊
-            _LegalSection(
+            _FaqCategory(
+              title: '法律資訊',
+              icon: Icons.gavel_outlined,
+              items: const [
+                _FaqItem(
+                  question: '隱私權政策',
+                  answer: '說明我們如何蒐集、使用及保護您的個人資料。',
+                  url: 'https://campusnerds.app/privacy.html',
+                ),
+                _FaqItem(
+                  question: '服務條款',
+                  answer: '使用 Campus Nerds 服務時應遵守的條款與規範。',
+                  url: 'https://campusnerds.app/terms.html',
+                ),
+              ],
               colors: colors,
               textTheme: textTheme,
               fontFamily: fontFamily,
@@ -240,7 +254,7 @@ class _FaqCategory extends StatelessWidget {
           ),
           title: Text(
             title,
-            style: textTheme.bodyLarge?.copyWith(
+            style: textTheme.labelLarge?.copyWith(
               fontFamily: fontFamily,
               fontWeight: FontWeight.w600,
             ),
@@ -267,10 +281,12 @@ class _FaqItem {
   const _FaqItem({
     required this.question,
     required this.answer,
+    this.url,
   });
 
   final String question;
   final String answer;
+  final String? url;
 }
 
 /// FAQ item tile widget
@@ -306,7 +322,7 @@ class _FaqItemTile extends StatelessWidget {
             childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             title: Text(
               item.question,
-              style: textTheme.bodyMedium?.copyWith(
+              style: textTheme.bodyLarge?.copyWith(
                 fontFamily: fontFamily,
                 color: colors.primaryText,
               ),
@@ -325,6 +341,39 @@ class _FaqItemTile extends StatelessWidget {
                   ),
                 ),
               ),
+              if (item.url != null) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: () async {
+                      final uri = Uri.parse(item.url!);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '查看完整內容',
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontFamily: fontFamily,
+                            color: colors.secondaryText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.open_in_new,
+                          color: colors.secondaryText,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -333,127 +382,3 @@ class _FaqItemTile extends StatelessWidget {
   }
 }
 
-/// Legal section with links to privacy policy and terms of service
-class _LegalSection extends StatelessWidget {
-  const _LegalSection({
-    required this.colors,
-    required this.textTheme,
-    required this.fontFamily,
-  });
-
-  final AppColorsTheme colors;
-  final TextTheme textTheme;
-  final String? fontFamily;
-
-  static const String _privacyUrl = 'https://campusnerds.app/privacy.html';
-  static const String _termsUrl = 'https://campusnerds.app/terms.html';
-
-  Future<void> _openUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.secondaryBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colors.tertiary,
-          width: 2,
-        ),
-      ),
-      child: Column(
-        children: [
-          // Section header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.gavel_outlined,
-                  color: colors.secondaryText,
-                  size: 24,
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  '法律資訊',
-                  style: textTheme.bodyLarge?.copyWith(
-                    fontFamily: fontFamily,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Privacy policy link
-          _LegalLinkTile(
-            title: '隱私權政策',
-            onTap: () => _openUrl(_privacyUrl),
-            colors: colors,
-            textTheme: textTheme,
-            fontFamily: fontFamily,
-          ),
-          // Terms of service link
-          _LegalLinkTile(
-            title: '服務條款',
-            onTap: () => _openUrl(_termsUrl),
-            colors: colors,
-            textTheme: textTheme,
-            fontFamily: fontFamily,
-            isLast: true,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Single legal link tile
-class _LegalLinkTile extends StatelessWidget {
-  const _LegalLinkTile({
-    required this.title,
-    required this.onTap,
-    required this.colors,
-    required this.textTheme,
-    required this.fontFamily,
-    this.isLast = false,
-  });
-
-  final String title;
-  final VoidCallback onTap;
-  final AppColorsTheme colors;
-  final TextTheme textTheme;
-  final String? fontFamily;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(56, 8, 16, isLast ? 12 : 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: textTheme.bodyMedium?.copyWith(
-                fontFamily: fontFamily,
-                color: colors.primaryText,
-              ),
-            ),
-            Icon(
-              Icons.open_in_new,
-              color: colors.secondaryText,
-              size: 18,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

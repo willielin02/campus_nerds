@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../domain/entities/booking.dart';
 import '../../../../domain/repositories/my_events_repository.dart';
 import 'my_events_event.dart';
 import 'my_events_state.dart';
@@ -21,6 +22,7 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
     on<MyEventsClearSuccess>(_onClearSuccess);
     // Study plan events (Phase 7)
     on<MyEventsLoadStudyPlans>(_onLoadStudyPlans);
+    on<MyEventsLoadMyStudyPlans>(_onLoadMyStudyPlans);
     on<MyEventsUpdateStudyPlan>(_onUpdateStudyPlan);
   }
 
@@ -214,6 +216,29 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
     }
   }
 
+  /// Load own study plans by booking ID (pre-grouping)
+  Future<void> _onLoadMyStudyPlans(
+    MyEventsLoadMyStudyPlans event,
+    Emitter<MyEventsState> emit,
+  ) async {
+    emit(state.copyWith(isLoadingStudyPlans: true));
+
+    try {
+      final studyPlans =
+          await _myEventsRepository.getMyFocusedStudyPlans(event.bookingId);
+
+      emit(state.copyWith(
+        studyPlans: studyPlans,
+        isLoadingStudyPlans: false,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        isLoadingStudyPlans: false,
+        errorMessage: '載入待辦事項失敗',
+      ));
+    }
+  }
+
   /// Update a study plan
   Future<void> _onUpdateStudyPlan(
     MyEventsUpdateStudyPlan event,
@@ -229,9 +254,17 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
       );
 
       if (result.success) {
-        // Refresh study plans after update
-        final studyPlans =
-            await _myEventsRepository.getGroupFocusedStudyPlans(event.groupId);
+        // Refresh study plans after update (group or own)
+        final List<GroupFocusedPlan> studyPlans;
+        if (event.groupId != null) {
+          studyPlans = await _myEventsRepository
+              .getGroupFocusedStudyPlans(event.groupId!);
+        } else if (event.bookingId != null) {
+          studyPlans = await _myEventsRepository
+              .getMyFocusedStudyPlans(event.bookingId!);
+        } else {
+          studyPlans = state.studyPlans;
+        }
 
         emit(state.copyWith(
           studyPlans: studyPlans,

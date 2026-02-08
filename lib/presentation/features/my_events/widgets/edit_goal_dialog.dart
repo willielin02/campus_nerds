@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
 
 /// Dialog for editing a study plan goal
+/// Matches FlutterFlow EditDialogGoal1/2/3 design
 class EditGoalDialog extends StatefulWidget {
   const EditGoalDialog({
     super.key,
@@ -23,6 +25,36 @@ class EditGoalDialog extends StatefulWidget {
   final bool canEditCompletion;
   final void Function(String content, bool isDone) onSave;
 
+  /// Show the edit goal dialog matching FlutterFlow design
+  static void show(
+    BuildContext context, {
+    required int slot,
+    String? planId,
+    String? initialContent,
+    bool initialIsDone = false,
+    bool canEditContent = true,
+    bool canEditCompletion = true,
+    required void Function(String content, bool isDone) onSave,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        clipBehavior: Clip.none,
+        child: EditGoalDialog(
+          slot: slot,
+          planId: planId,
+          initialContent: initialContent,
+          initialIsDone: initialIsDone,
+          canEditContent: canEditContent,
+          canEditCompletion: canEditCompletion,
+          onSave: onSave,
+        ),
+      ),
+    );
+  }
+
   @override
   State<EditGoalDialog> createState() => _EditGoalDialogState();
 }
@@ -34,7 +66,8 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
   @override
   void initState() {
     super.initState();
-    _contentController = TextEditingController(text: widget.initialContent ?? '');
+    _contentController =
+        TextEditingController(text: widget.initialContent ?? '');
     _isDone = widget.initialIsDone;
   }
 
@@ -45,7 +78,10 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
   }
 
   void _handleSave() {
-    final content = _contentController.text.trim();
+    // If content editing is closed, send original content
+    final content = widget.canEditContent
+        ? _contentController.text.trim()
+        : (widget.initialContent ?? '');
     widget.onSave(content, _isDone);
     Navigator.of(context).pop();
   }
@@ -54,223 +90,212 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
-    return Dialog(
-      backgroundColor: colors.secondaryBackground,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: colors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${widget.slot}',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '編輯待辦事項',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Content input
-            if (widget.canEditContent) ...[
-              Text(
-                '內容',
-                style: textTheme.labelMedium?.copyWith(
-                  color: colors.secondaryText,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _contentController,
-                maxLines: 3,
-                maxLength: 100,
-                decoration: InputDecoration(
-                  hintText: '輸入你要完成的目標...',
-                  hintStyle: TextStyle(color: colors.secondaryText),
-                  filled: true,
-                  fillColor: colors.primaryBackground,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: colors.alternate),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: colors.alternate),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: colors.primary, width: 2),
-                  ),
-                  counterStyle: TextStyle(color: colors.secondaryText),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ] else ...[
-              // Show read-only content when editing is disabled
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colors.primaryBackground,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: colors.alternate),
-                ),
-                child: Text(
-                  widget.initialContent ?? '(無內容)',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: widget.initialContent != null
-                        ? colors.primaryText
-                        : colors.secondaryText,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '已超過編輯截止時間，無法修改內容',
-                style: textTheme.bodySmall?.copyWith(
-                  color: colors.warning,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // Completion checkbox
-            if (widget.canEditCompletion)
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _isDone = !_isDone;
-                  });
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: _isDone
-                        ? colors.success.withOpacity(0.1)
-                        : colors.primaryBackground,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: _isDone ? colors.success : colors.alternate,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: _isDone ? colors.success : Colors.transparent,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: _isDone ? colors.success : colors.secondaryText,
-                            width: 2,
-                          ),
-                        ),
-                        child: _isDone
-                            ? const Icon(Icons.check, size: 18, color: Colors.white)
-                            : null,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '已完成此目標',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: _isDone ? colors.success : colors.primaryText,
-                          fontWeight: _isDone ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colors.tertiary.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: 579,
+        decoration: BoxDecoration(
+          color: colors.secondaryBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: colors.tertiary,
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title: "編輯待辦事項 N "
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, size: 18, color: colors.secondaryText),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '已超過完成打卡截止時間',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colors.secondaryText,
-                        ),
+                    Text(
+                      '編輯待辦事項 ${widget.slot} ',
+                      style: textTheme.labelLarge?.copyWith(
+                        fontFamily: fontFamily,
+                        color: colors.secondaryText,
                       ),
                     ),
                   ],
                 ),
               ),
 
-            const SizedBox(height: 24),
+              // Text field (only when canEditContent)
+              if (widget.canEditContent)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: TextFormField(
+                      controller: _contentController,
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        labelStyle: textTheme.bodyLarge?.copyWith(
+                          fontFamily: fontFamily,
+                        ),
+                        hintText: '請輸入待辦事項 ${widget.slot}',
+                        hintStyle: textTheme.bodyLarge?.copyWith(
+                          fontFamily: fontFamily,
+                          color: colors.tertiary,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: colors.quaternary,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.transparent,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: colors.error,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: colors.error,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                        fillColor: colors.secondaryBackground,
+                      ),
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontFamily: fontFamily,
+                      ),
+                      maxLines: null,
+                      cursorColor: colors.primaryText,
+                    ),
+                  ),
+                ),
 
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.secondaryText,
-                      side: BorderSide(color: colors.alternate),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+              // Checkbox row (only when canEditCompletion)
+              if (widget.canEditCompletion)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Row(
+                    children: [
+                      Theme(
+                        data: ThemeData(
+                          checkboxTheme: CheckboxThemeData(
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          unselectedWidgetColor: colors.tertiaryText,
+                        ),
+                        child: Checkbox(
+                          value: _isDone,
+                          onChanged: (v) => setState(() => _isDone = v!),
+                          side: BorderSide(
+                            width: 2,
+                            color: colors.tertiaryText,
+                          ),
+                          activeColor: colors.secondaryText,
+                          checkColor: colors.primary,
+                        ),
                       ),
-                    ),
-                    child: const Text('取消'),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: Text(
+                          _isDone
+                              ? '待辦事項 ${widget.slot} 已完成'
+                              : '待辦事項 ${widget.slot} 尚未完成',
+                          style: textTheme.bodyLarge?.copyWith(
+                            fontFamily: fontFamily,
+                            color: _isDone
+                                ? colors.secondaryText
+                                : colors.tertiary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: (widget.canEditContent || widget.canEditCompletion)
-                        ? _handleSave
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+
+              // Buttons row
+              Padding(
+                padding: const EdgeInsets.only(top: 16, bottom: 16),
+                child: Row(
+                  children: [
+                    // "取消" button
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.secondaryBackground,
+                              foregroundColor: colors.primaryText,
+                              elevation: 0.2,
+                              side: BorderSide(color: colors.tertiary),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              '取消',
+                              style: textTheme.bodyLarge?.copyWith(
+                                fontFamily: fontFamily,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    child: const Text('確認'),
-                  ),
+                    // "確定" button
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: _handleSave,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.alternate,
+                              foregroundColor: colors.primaryText,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              '確定',
+                              style: textTheme.bodyLarge?.copyWith(
+                                fontFamily: fontFamily,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

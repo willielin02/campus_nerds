@@ -234,13 +234,46 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
 
       if (response == null || response is! List) return [];
 
-      return (response as List).map((item) {
+      return response.map((item) {
         final map = item as Map<String, dynamic>;
         return GroupFocusedPlan(
           groupId: map['group_id'] ?? groupId,
           userId: map['user_id'],
           displayName: map['display_name'] ?? '匿名',
           isMe: map['is_me'] ?? false,
+          plan1Id: map['plan1_id'],
+          plan1Content: map['plan1_content'],
+          plan1Done: map['plan1_done'] ?? false,
+          plan2Id: map['plan2_id'],
+          plan2Content: map['plan2_content'],
+          plan2Done: map['plan2_done'] ?? false,
+          plan3Id: map['plan3_id'],
+          plan3Content: map['plan3_content'],
+          plan3Done: map['plan3_done'] ?? false,
+        );
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<List<GroupFocusedPlan>> getMyFocusedStudyPlans(String bookingId) async {
+    try {
+      final response = await SupabaseService.client.rpc(
+        'get_my_focused_study_plans',
+        params: {'p_booking_id': bookingId},
+      );
+
+      if (response == null || response is! List) return [];
+
+      return response.map((item) {
+        final map = item as Map<String, dynamic>;
+        return GroupFocusedPlan(
+          groupId: null,
+          userId: map['user_id'],
+          displayName: map['display_name'] ?? '匿名',
+          isMe: true,
           plan1Id: map['plan1_id'],
           plan1Content: map['plan1_content'],
           plan1Done: map['plan1_done'] ?? false,
@@ -305,6 +338,9 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
       venueName: row.venueName,
       venueAddress: row.venueAddress,
       venueGoogleMapUrl: row.venueGoogleMapUrl,
+      goalCloseAt: row.goalCloseAt,
+      goalCheckCloseAt: row.goalCheckCloseAt,
+      feedbackSentAt: row.feedbackSentAt,
       hasEventFeedback: row.hasEventFeedback ?? false,
       hasPeerFeedbackAll: row.hasPeerFeedbackAll ?? false,
       hasFilledFeedbackAll: row.hasFilledFeedbackAll ?? false,

@@ -181,18 +181,6 @@ class MyEventCard extends StatelessWidget {
                             style: textTheme.bodyMedium?.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               color: colors.secondaryBackground,
-                              shadows: [
-                                Shadow(
-                                  color: colors.primaryText,
-                                  offset: const Offset(0.2, 0.2),
-                                  blurRadius: 0.2,
-                                ),
-                                Shadow(
-                                  color: colors.primaryText,
-                                  offset: const Offset(-0.2, -0.2),
-                                  blurRadius: 0.2,
-                                ),
-                              ],
                             ),
                           ),
                         ),

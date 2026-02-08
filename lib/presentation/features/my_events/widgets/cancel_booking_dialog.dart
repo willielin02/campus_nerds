@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
 import '../../../../domain/entities/booking.dart';
 
 /// Dialog to confirm booking cancellation
+/// Matches FlutterFlow ConfirmDialogCancelBookingStudy design exactly
 class CancelBookingDialog extends StatelessWidget {
   const CancelBookingDialog({
     super.key,
@@ -14,107 +16,155 @@ class CancelBookingDialog extends StatelessWidget {
   final MyEvent event;
   final VoidCallback onConfirm;
 
+  static void show(
+    BuildContext context, {
+    required MyEvent event,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        clipBehavior: Clip.none,
+        child: CancelBookingDialog(
+          event: event,
+          onConfirm: () {
+            Navigator.of(ctx).pop();
+            onConfirm();
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
-    return AlertDialog(
-      backgroundColor: colors.secondaryBackground,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    final eventTypeName =
+        event.isFocusedStudy ? 'Focused Study' : 'English Games';
+    final ticketTypeName = event.isFocusedStudy ? 'Study' : 'Games';
+
+    return Container(
+      width: 579,
+      decoration: BoxDecoration(
+        color: colors.secondaryBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colors.tertiary,
+          width: 2,
+        ),
       ),
-      title: Row(
-        children: [
-          Icon(Icons.warning_amber_rounded, color: colors.warning),
-          const SizedBox(width: 8),
-          Text(
-            '取消報名',
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '確定要取消這場活動的報名嗎？',
-            style: textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.primaryBackground,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      event.isFocusedStudy
-                          ? Icons.menu_book_rounded
-                          : Icons.games_rounded,
-                      size: 18,
-                      color: event.isFocusedStudy
-                          ? colors.primary
-                          : colors.secondary,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '確定取消本場$eventTypeName嗎？',
+                          style: textTheme.labelLarge?.copyWith(
+                            fontFamily: fontFamily,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      event.eventCategory.displayName,
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
+                  ),
+                ],
+              ),
+            ),
+            // Description
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                '您將取消本場活動的報名，並取回一張 $ticketTypeName 票券。',
+                style: textTheme.bodyLarge?.copyWith(
+                  fontFamily: fontFamily,
+                ),
+              ),
+            ),
+            // Buttons row
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                // "取消" button
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 16, 8, 16),
+                    child: SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.secondaryBackground,
+                          foregroundColor: colors.primaryText,
+                          elevation: 0.2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: colors.tertiary,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          '取消',
+                          style: textTheme.bodyLarge?.copyWith(
+                            fontFamily: fontFamily,
+                          ),
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '${event.formattedDate} ${event.timeSlot.displayName}',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colors.secondaryText,
+                // "確定" button
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 16, 8, 16),
+                    child: SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: onConfirm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.alternate,
+                          foregroundColor: colors.primaryText,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          '確定',
+                          style: textTheme.bodyLarge?.copyWith(
+                            fontFamily: fontFamily,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '取消後票券將會退還至您的帳戶',
-            style: textTheme.bodySmall?.copyWith(
-              color: colors.secondaryText,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            '返回',
-            style: textTheme.bodyMedium?.copyWith(
-              color: colors.secondaryText,
-            ),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: onConfirm,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: colors.error,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text('確定取消'),
-        ),
-      ],
     );
   }
 }

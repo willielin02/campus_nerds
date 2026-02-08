@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
 import '../../../../domain/entities/chat.dart';
@@ -82,18 +83,32 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: widget.messages.length + (widget.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
-        // Loading indicator at the top (oldest messages)
+        // Load more button at the top (oldest messages)
         if (index == widget.messages.length) {
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Center(
               child: widget.isLoadingMore
                   ? const CircularProgressIndicator(strokeWidth: 2)
-                  : TextButton(
-                      onPressed: widget.onLoadMore,
-                      child: Text(
-                        '載入更多',
-                        style: TextStyle(color: colors.primary),
+                  : GestureDetector(
+                      onTap: widget.onLoadMore,
+                      child: Container(
+                        height: 32,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: colors.quaternary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '載入更早訊息',
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              fontFamily:
+                                  GoogleFonts.notoSansTc().fontFamily,
+                              color: colors.secondaryBackground,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
             ),
