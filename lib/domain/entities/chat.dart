@@ -26,6 +26,9 @@ class ChatMessage extends Equatable {
   final String? content;
   final String? senderUserId;
   final String? senderNickname;
+  final String? senderGender;
+  final String? senderUniversityName;
+  final int? senderAge;
   final DateTime sortTs;
   final DateTime createdAt;
   final bool isMe;
@@ -37,6 +40,9 @@ class ChatMessage extends Equatable {
     this.content,
     this.senderUserId,
     this.senderNickname,
+    this.senderGender,
+    this.senderUniversityName,
+    this.senderAge,
     required this.sortTs,
     required this.createdAt,
     this.isMe = false,
@@ -73,6 +79,9 @@ class ChatMessage extends Equatable {
         content,
         senderUserId,
         senderNickname,
+        senderGender,
+        senderUniversityName,
+        senderAge,
         sortTs,
         createdAt,
         isMe,

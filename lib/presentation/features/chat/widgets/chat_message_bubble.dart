@@ -4,10 +4,11 @@ import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_theme.dart';
 import '../../../../domain/entities/chat.dart';
+import '../../../common/widgets/profile_popup.dart';
 
 /// Chat message bubble widget
 /// Matches FlutterFlow ChatTimelineItem design
-class ChatMessageBubble extends StatelessWidget {
+class ChatMessageBubble extends StatefulWidget {
   const ChatMessageBubble({
     super.key,
     required this.message,
@@ -16,6 +17,16 @@ class ChatMessageBubble extends StatelessWidget {
 
   final ChatMessage message;
   final bool showSender;
+
+  @override
+  State<ChatMessageBubble> createState() => _ChatMessageBubbleState();
+}
+
+class _ChatMessageBubbleState extends State<ChatMessageBubble> {
+  final GlobalKey _senderNameKey = GlobalKey();
+
+  ChatMessage get message => widget.message;
+  bool get showSender => widget.showSender;
 
   @override
   Widget build(BuildContext context) {
@@ -109,14 +120,18 @@ class ChatMessageBubble extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sender name
+          // Sender name (tappable for profile popup)
           if (showSender)
             Padding(
               padding: const EdgeInsets.only(left: 12),
-              child: Text(
-                '書呆子 ${message.displaySender}',
-                style: textTheme.bodyMedium?.copyWith(
-                  fontFamily: fontFamily,
+              child: GestureDetector(
+                key: _senderNameKey,
+                onTap: () => _showProfilePopup(),
+                child: Text(
+                  '書呆子 ${message.displaySender}',
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontFamily: fontFamily,
+                  ),
                 ),
               ),
             ),
@@ -161,6 +176,19 @@ class ChatMessageBubble extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showProfilePopup() {
+    showProfilePopup(
+      context,
+      _senderNameKey,
+      ProfilePopupData(
+        displayName: message.displaySender,
+        gender: message.senderGender,
+        universityName: message.senderUniversityName,
+        age: message.senderAge,
       ),
     );
   }
