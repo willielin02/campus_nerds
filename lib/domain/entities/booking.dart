@@ -334,6 +334,9 @@ class GroupFocusedPlan extends Equatable {
   final String? userId;
   final String displayName;
   final bool isMe;
+  final String? gender;
+  final String? universityName;
+  final int? age;
 
   // Plan 1
   final String? plan1Id;
@@ -355,6 +358,9 @@ class GroupFocusedPlan extends Equatable {
     this.userId,
     required this.displayName,
     required this.isMe,
+    this.gender,
+    this.universityName,
+    this.age,
     this.plan1Id,
     this.plan1Content,
     this.plan1Done = false,
@@ -387,12 +393,18 @@ class GroupFocusedPlan extends Equatable {
     return count;
   }
 
+  /// Age display string
+  String get ageDisplay => age != null ? '$age 歲' : '';
+
   @override
   List<Object?> get props => [
         groupId,
         userId,
         displayName,
         isMe,
+        gender,
+        universityName,
+        age,
         plan1Id,
         plan1Content,
         plan1Done,
