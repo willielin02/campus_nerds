@@ -1,4 +1,5 @@
 import '../../core/services/supabase_service.dart';
+import '../../core/utils/app_clock.dart';
 import '../../domain/entities/booking.dart';
 import '../../domain/entities/event.dart';
 import '../../domain/repositories/my_events_repository.dart';
@@ -14,7 +15,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return [];
 
-      final now = DateTime.now();
+      final now = AppClock.now();
       final today = DateTime(now.year, now.month, now.day);
 
       final response = await MyEventsVTable().queryRows(
@@ -38,7 +39,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return [];
 
-      final now = DateTime.now();
+      final now = AppClock.now();
       final today = DateTime(now.year, now.month, now.day);
 
       final response = await MyEventsVTable().queryRows(
@@ -324,13 +325,13 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
       eventId: row.eventId ?? '',
       groupId: row.groupId,
       bookingStatus: BookingStatus.fromString(row.bookingStatus ?? 'pending'),
-      bookingCreatedAt: row.bookingCreatedAt ?? DateTime.now(),
+      bookingCreatedAt: row.bookingCreatedAt ?? AppClock.now(),
       cancelledAt: row.cancelledAt,
       eventCategory:
           EventCategory.fromString(row.eventCategory ?? 'focused_study'),
       cityId: row.cityId,
       universityId: row.universityId,
-      eventDate: row.eventDate ?? DateTime.now(),
+      eventDate: row.eventDate ?? AppClock.now(),
       timeSlot: TimeSlot.fromString(row.timeSlot ?? 'afternoon'),
       locationDetail: row.locationDetail ?? '',
       eventStatus: EventStatus.fromString(row.eventStatus ?? 'open'),

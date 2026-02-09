@@ -1,4 +1,5 @@
 import '../../core/services/supabase_service.dart';
+import '../../core/utils/app_clock.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/account_repository.dart';
 
@@ -44,7 +45,7 @@ class AccountRepositoryImpl implements AccountRepository {
       ),
       avatarUrl: map['avatar_url'] as String?,
       hasFacebookLinked: map['has_facebook_linked'] as bool? ?? false,
-      createdAt: _parseDateTime(map['created_at']) ?? DateTime.now(),
+      createdAt: _parseDateTime(map['created_at']) ?? AppClock.now(),
     );
   }
 

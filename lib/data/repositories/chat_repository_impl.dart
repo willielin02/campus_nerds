@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/services/supabase_service.dart';
+import '../../core/utils/app_clock.dart';
 import '../../domain/entities/chat.dart';
 import '../../domain/repositories/chat_repository.dart';
 
@@ -152,8 +153,8 @@ class ChatRepositoryImpl implements ChatRepository {
       senderGender: map['sender_gender'] as String?,
       senderUniversityName: map['sender_university_name'] as String?,
       senderAge: map['sender_age'] as int?,
-      sortTs: _parseDateTime(map['sort_ts']) ?? DateTime.now(),
-      createdAt: _parseDateTime(map['created_at']) ?? DateTime.now(),
+      sortTs: _parseDateTime(map['sort_ts']) ?? AppClock.now(),
+      createdAt: _parseDateTime(map['created_at']) ?? AppClock.now(),
       isMe: senderUserId != null && senderUserId == currentUserId,
     );
   }

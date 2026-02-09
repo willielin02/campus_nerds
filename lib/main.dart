@@ -8,6 +8,7 @@ import 'app/router/router.dart';
 import 'app/theme/app_theme.dart';
 import 'core/di/injection.dart';
 import 'core/services/supabase_service.dart';
+import 'core/utils/app_clock.dart';
 import 'presentation/features/account/bloc/bloc.dart';
 import 'presentation/features/auth/bloc/bloc.dart';
 import 'presentation/features/chat/bloc/bloc.dart';
@@ -34,6 +35,9 @@ void main() async {
 Future<void> _initializeServices() async {
   // Initialize Supabase
   await SupabaseService.initialize();
+
+  // Sync clock with server (supports mock time for testing)
+  await AppClock.syncWithServer();
 
   // Initialize theme (SharedPreferences)
   await AppTheme.initialize();

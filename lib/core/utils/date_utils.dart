@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+import 'app_clock.dart';
+
 /// Date and time utilities for Campus Nerds
 class AppDateUtils {
   static final _dateFormat = DateFormat('yyyy/MM/dd');
@@ -57,7 +59,7 @@ class AppDateUtils {
 
   /// Calculate age from birthday
   static int calculateAge(DateTime birthday) {
-    final now = DateTime.now();
+    final now = AppClock.now();
     int age = now.year - birthday.year;
     if (now.month < birthday.month ||
         (now.month == birthday.month && now.day < birthday.day)) {
@@ -68,17 +70,17 @@ class AppDateUtils {
 
   /// Check if datetime is in the past
   static bool isPast(DateTime dateTime) {
-    return dateTime.isBefore(DateTime.now());
+    return dateTime.isBefore(AppClock.now());
   }
 
   /// Check if datetime is in the future
   static bool isFuture(DateTime dateTime) {
-    return dateTime.isAfter(DateTime.now());
+    return dateTime.isAfter(AppClock.now());
   }
 
   /// Get relative time string (e.g., "5 分鐘前")
   static String getRelativeTime(DateTime dateTime) {
-    final now = DateTime.now();
+    final now = AppClock.now();
     final difference = now.difference(dateTime);
 
     if (difference.inDays > 7) {

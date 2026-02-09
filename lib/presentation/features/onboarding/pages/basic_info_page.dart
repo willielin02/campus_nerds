@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/utils/app_clock.dart';
 import '../../../features/auth/widgets/onboarding_step_progress.dart';
 import '../bloc/bloc.dart';
 
@@ -122,7 +123,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                   mode: CupertinoDatePickerMode.date,
                   initialDateTime: tempDate,
                   minimumDate: DateTime(1950, 1, 1),
-                  maximumDate: DateTime.now().subtract(
+                  maximumDate: AppClock.now().subtract(
                     const Duration(days: 365 * 16),
                   ), // Must be at least 16
                   onDateTimeChanged: (DateTime newDate) {

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/chat.dart';
 import '../../../common/widgets/profile_popup.dart';
 
@@ -235,7 +236,7 @@ class ChatDateDivider extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    final now = DateTime.now();
+    final now = AppClock.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
     final targetDate = DateTime(date.year, date.month, date.day);

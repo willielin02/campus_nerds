@@ -1,6 +1,7 @@
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 import '../../core/services/supabase_service.dart';
+import '../../core/utils/app_clock.dart';
 import '../../domain/repositories/facebook_repository.dart';
 
 /// Implementation of FacebookRepository using Facebook SDK and Supabase
@@ -73,7 +74,7 @@ class FacebookRepositoryImpl implements FacebookRepository {
 
       await SupabaseService.from('users').update({
         'fb_user_id': fbUserId,
-        'fb_connected_at': DateTime.now().toIso8601String(),
+        'fb_connected_at': AppClock.now().toIso8601String(),
       }).eq('id', userId);
 
       // Sync friends via Edge Function

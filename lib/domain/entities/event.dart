@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../core/utils/app_clock.dart';
+
 /// Event category types
 enum EventCategory {
   focusedStudy('focused_study', '專注讀書'),
@@ -93,7 +95,7 @@ class Event extends Equatable {
 
   /// Check if signup is currently open
   bool get isSignupOpen {
-    final now = DateTime.now();
+    final now = AppClock.now();
     return status == EventStatus.open &&
         now.isAfter(signupOpenAt) &&
         now.isBefore(signupDeadlineAt);

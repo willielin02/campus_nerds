@@ -252,6 +252,52 @@ Buttons: two `Expanded` buttons — "取消" (secondaryBackground bg, tertiary b
 - Before open: shows "聊天室尚未開放" message
 - Uses Supabase Realtime for live messages
 
+## Mock Time System (Integration Testing)
+
+A global mock time system allows testing the entire event lifecycle without waiting for real time to pass. When enabled, **both** Supabase and Flutter use the same fake clock.
+
+### How It Works
+
+- **Supabase:** `public.now()` overrides `pg_catalog.now()` using a stored time offset. All RPC functions, triggers, views, and RLS policies resolve `now()` through this override (via `search_path = 'public', 'pg_catalog'`).
+- **Flutter:** `AppClock.now()` replaces all `DateTime.now()` calls. On app startup, it syncs with the server's `get_server_now()` RPC and stores the offset locally. **In release mode, sync is skipped entirely** — no network call, no latency, `AppClock.now()` = `DateTime.now()`.
+- **Offset-based:** Time still flows naturally (advances in real-time), just shifted by the offset. No drift between client and server.
+
+### Usage
+
+```sql
+-- Set mock time (Supabase SQL Editor or Admin Dashboard)
+SELECT test_set_now('2026-02-20 10:00:00+08');
+
+-- Check current mock time
+SELECT now();
+
+-- Clear mock time (revert to real time)
+SELECT test_clear_now();
+```
+
+After setting/clearing mock time, **restart the Flutter app** to re-sync `AppClock`.
+
+### Security
+
+- `test_set_now()` and `test_clear_now()` are **restricted to `service_role` only** — regular authenticated/anonymous users cannot call them
+- Only accessible via Supabase SQL Editor, admin dashboard, or service_role API key
+- `get_server_now()` remains callable by authenticated users (harmless — only returns current time)
+- In release builds, Flutter never calls `get_server_now()` at all
+
+### Key Rules
+
+- **Never use `DateTime.now()` directly** in Flutter code — always use `AppClock.now()`
+- The only file that uses `DateTime.now()` is `lib/core/utils/app_clock.dart` itself
+- In release mode, `AppClock.syncWithServer()` is a no-op — zero overhead, zero latency
+- In debug/profile mode, syncs with server to pick up any mock time offset
+- The `test_config` table stores the offset; it has RLS enabled with no policies (only accessible via SECURITY DEFINER functions and service_role)
+
+### Files
+
+- `lib/core/utils/app_clock.dart` — Flutter clock utility
+- `supabase/migrations/20260209061100_add_mock_time_system.sql` — Supabase migration
+- `supabase/migrations/20260209120000_restrict_mock_time_permissions.sql` — Permission lockdown
+
 ## Common Commands
 
 ```bash

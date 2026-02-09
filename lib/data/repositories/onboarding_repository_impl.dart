@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../core/services/supabase_service.dart';
+import '../../core/utils/app_clock.dart';
 import '../../core/utils/domain_validators.dart';
 import '../../domain/entities/university.dart';
 import '../../domain/repositories/onboarding_repository.dart';
@@ -180,7 +181,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
           'gender': gender,
           'birthday': birthday.toIso8601String().split('T')[0], // Date only
           'os': clientOs,
-          'updated_at': DateTime.now().toIso8601String(),
+          'updated_at': AppClock.now().toIso8601String(),
         },
         matchingRows: (q) => q.eq('id', userId),
       );
@@ -210,7 +211,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       final lastSentAt = DateTime.parse(response['last_sent_at'] as String);
       const cooldownDuration = Duration(seconds: 60);
       final cooldownEnd = lastSentAt.add(cooldownDuration);
-      final now = DateTime.now();
+      final now = AppClock.now();
 
       if (now.isAfter(cooldownEnd)) {
         return 0;

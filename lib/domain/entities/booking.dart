@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../core/utils/app_clock.dart';
 import 'event.dart';
 
 /// Booking status types
@@ -161,12 +162,12 @@ class MyEvent extends Equatable {
   bool get canCancel {
     if (!isActive) return false;
     if (signupDeadlineAt == null) return false;
-    return DateTime.now().isBefore(signupDeadlineAt!);
+    return AppClock.now().isBefore(signupDeadlineAt!);
   }
 
   /// Check if event is upcoming
   bool get isUpcoming {
-    final now = DateTime.now();
+    final now = AppClock.now();
     final eventDateTime = DateTime(
       eventDate.year,
       eventDate.month,
@@ -182,7 +183,7 @@ class MyEvent extends Equatable {
   /// Check if chat is open
   bool get isChatOpen {
     if (chatOpenAt == null) return false;
-    return DateTime.now().isAfter(chatOpenAt!);
+    return AppClock.now().isAfter(chatOpenAt!);
   }
 
   /// Check if goal content can still be edited (before goalCloseAt)
@@ -190,14 +191,14 @@ class MyEvent extends Equatable {
   /// Post-grouping: editable until goalCloseAt (venue start + 1hr)
   bool get canEditGoalContent {
     if (goalCloseAt == null) return true;
-    return DateTime.now().isBefore(goalCloseAt!);
+    return AppClock.now().isBefore(goalCloseAt!);
   }
 
   /// Check if goal completion can still be toggled
   /// Requires: after groupStartAt (venue start) AND before goalCheckCloseAt
   bool get canCheckGoal {
     if (groupStartAt == null) return false;
-    final now = DateTime.now();
+    final now = AppClock.now();
     if (now.isBefore(groupStartAt!)) return false;
     if (goalCheckCloseAt == null) return true;
     return now.isBefore(goalCheckCloseAt!);
@@ -206,7 +207,7 @@ class MyEvent extends Equatable {
   /// Check if feedback window is open
   bool get isFeedbackOpen {
     if (feedbackSentAt == null) return false;
-    return DateTime.now().isAfter(feedbackSentAt!) && !hasFilledFeedbackAll;
+    return AppClock.now().isAfter(feedbackSentAt!) && !hasFilledFeedbackAll;
   }
 
   /// Check if user has matched group

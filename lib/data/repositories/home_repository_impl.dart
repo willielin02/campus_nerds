@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/services/supabase_service.dart';
+import '../../core/utils/app_clock.dart';
 import '../../domain/entities/booking.dart';
 import '../../domain/entities/city.dart';
 import '../../domain/entities/event.dart';
@@ -101,7 +102,7 @@ class HomeRepositoryImpl implements HomeRepository {
     int limit = 20,
   }) async {
     try {
-      final now = DateTime.now();
+      final now = AppClock.now();
       final today = DateTime(now.year, now.month, now.day);
 
       final response = await HomeEventsVTable().queryRows(
@@ -171,7 +172,7 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<Map<String, int>> getEventCountsByCity(EventCategory category) async {
     try {
-      final now = DateTime.now();
+      final now = AppClock.now();
       final today = DateTime(now.year, now.month, now.day);
 
       // Get all events for the category
@@ -202,7 +203,7 @@ class HomeRepositoryImpl implements HomeRepository {
     int limit = 10,
   }) async {
     try {
-      final now = DateTime.now();
+      final now = AppClock.now();
       final today = DateTime(now.year, now.month, now.day);
 
       final response = await HomeEventsVTable().queryRows(
@@ -233,12 +234,12 @@ class HomeRepositoryImpl implements HomeRepository {
       universityId: row.universityId,
       cityId: row.cityId ?? '',
       category: EventCategory.fromString(row.category ?? 'focused_study'),
-      eventDate: row.eventDate ?? DateTime.now(),
+      eventDate: row.eventDate ?? AppClock.now(),
       timeSlot: TimeSlot.fromString(row.timeSlot ?? 'afternoon'),
       status: EventStatus.fromString(row.status ?? 'open'),
       locationDetail: row.locationDetail ?? '',
-      signupOpenAt: row.signupOpenAt ?? DateTime.now(),
-      signupDeadlineAt: row.signupDeadlineAt ?? DateTime.now(),
+      signupOpenAt: row.signupOpenAt ?? AppClock.now(),
+      signupDeadlineAt: row.signupDeadlineAt ?? AppClock.now(),
       notifyDeadlineAt: row.notifyDeadlineAt,
       hasConflictSameSlot: row.hasConflictSameSlot ?? false,
     );

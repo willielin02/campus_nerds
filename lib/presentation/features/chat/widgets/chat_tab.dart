@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/booking.dart';
 import '../bloc/bloc.dart';
 import 'chat_input.dart';
@@ -38,7 +39,7 @@ class _ChatTabState extends State<ChatTab> {
 
   /// Format chatOpenAt into a smart relative/absolute time string
   String _formatOpenTime(DateTime chatOpenAt) {
-    final now = DateTime.now();
+    final now = AppClock.now();
     final local = chatOpenAt.toLocal();
     final diff = local.difference(now);
 

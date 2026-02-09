@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import '../../core/utils/app_clock.dart';
 import 'lat_lng.dart';
 import 'supabase_table.dart';
 
@@ -107,7 +108,7 @@ class PostgresTime {
   DateTime? time;
 
   static PostgresTime? tryParse(String formattedString) {
-    final datePrefix = DateTime.now().toIso8601String().split('T').first;
+    final datePrefix = AppClock.now().toIso8601String().split('T').first;
     return PostgresTime(
         DateTime.tryParse('${datePrefix}T$formattedString')?.toLocal());
   }

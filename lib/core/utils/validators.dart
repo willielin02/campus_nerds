@@ -1,3 +1,5 @@
+import 'app_clock.dart';
+
 /// Form validation utilities
 class Validators {
   /// Validate email format
@@ -53,7 +55,7 @@ class Validators {
       return '請選擇生日';
     }
 
-    final now = DateTime.now();
+    final now = AppClock.now();
     final age = now.year -
         value.year -
         (now.month < value.month ||
