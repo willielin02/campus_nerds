@@ -15,6 +15,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         super(const HomeState()) {
     on<HomeLoadData>(_onLoadData);
     on<HomeRefresh>(_onRefresh);
+    on<HomeRefreshBalance>(_onRefreshBalance);
     on<HomeChangeCity>(_onChangeCity);
     on<HomeClearCity>(_onClearCity);
   }
@@ -77,7 +78,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  /// Refresh home data
+  /// Refresh home data (events + balance)
   Future<void> _onRefresh(
     HomeRefresh event,
     Emitter<HomeState> emit,
@@ -87,19 +88,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     try {
       final cityId = state.selectedCity?.id;
 
-      final focusedStudyEvents = await _homeRepository.getFocusedStudyEvents(
-        cityId: cityId,
-        limit: 10,
-      );
-
-      final englishGamesEvents = await _homeRepository.getEnglishGamesEvents(
-        cityId: cityId,
-        limit: 10,
-      );
+      final results = await Future.wait([
+        _homeRepository.getFocusedStudyEvents(cityId: cityId, limit: 10),
+        _homeRepository.getEnglishGamesEvents(cityId: cityId, limit: 10),
+        _homeRepository.getTicketBalance(),
+      ]);
 
       emit(state.copyWith(
-        focusedStudyEvents: focusedStudyEvents,
-        englishGamesEvents: englishGamesEvents,
+        focusedStudyEvents: results[0] as List<Event>,
+        englishGamesEvents: results[1] as List<Event>,
+        ticketBalance: results[2] as dynamic,
         isRefreshing: false,
       ));
     } catch (e) {
@@ -107,6 +105,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         isRefreshing: false,
         errorMessage: '重新整理失敗',
       ));
+    }
+  }
+
+  /// Refresh only the ticket balance (lightweight, for app resume)
+  Future<void> _onRefreshBalance(
+    HomeRefreshBalance event,
+    Emitter<HomeState> emit,
+  ) async {
+    try {
+      final ticketBalance = await _homeRepository.getTicketBalance();
+      emit(state.copyWith(ticketBalance: ticketBalance));
+    } catch (_) {
+      // Silently fail — keep showing cached balance
     }
   }
 

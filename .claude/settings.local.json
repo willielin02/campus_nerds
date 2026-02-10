@@ -89,7 +89,8 @@
       "Bash(del \"c:\\\\dev\\\\campus_nerds\\\\lib\\\\presentation\\\\features\\\\checkout\\\\pages\\\\payment_web_view_page.dart\")",
       "WebFetch(domain:developers.ecpay.com.tw)",
       "WebFetch(domain:support.ecpay.com.tw)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(grep:*)"
     ]
   },
   "enableAllProjectMcpServers": true

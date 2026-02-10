@@ -115,7 +115,7 @@ export default function TicketsPage() {
                   <p className="text-sm font-medium">{user.nickname || '(未設定暱稱)'}</p>
                   <p className="text-xs text-tertiary-text">
                     {user.gender === 'male' ? '男' : user.gender === 'female' ? '女' : '-'} ·{' '}
-                    {user.university_code || '-'} · {user.school_email || '-'}
+                    {user.age || '-'} · {user.school_email || '-'}
                   </p>
                 </div>
               ))}

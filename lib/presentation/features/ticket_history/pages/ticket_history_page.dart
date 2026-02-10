@@ -19,12 +19,13 @@ class TicketHistoryPage extends StatefulWidget {
 }
 
 class _TicketHistoryPageState extends State<TicketHistoryPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
     // Load study entries initially
@@ -33,9 +34,17 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<TicketHistoryBloc>().add(const TicketHistoryRefresh());
+    }
   }
 
   void _onTabChanged() {

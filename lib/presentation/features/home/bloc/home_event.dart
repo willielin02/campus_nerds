@@ -34,3 +34,8 @@ class HomeChangeCity extends HomeEvent {
 class HomeClearCity extends HomeEvent {
   const HomeClearCity();
 }
+
+/// Event to refresh only the ticket balance (lightweight)
+class HomeRefreshBalance extends HomeEvent {
+  const HomeRefreshBalance();
+}
