@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>正在前往付款頁面...</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    .loading {
+      text-align: center;
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #333;
+      border-top-color: #e0e0e0;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    p {
+      font-size: 16px;
+      margin: 0;
+    }
+    .error { color: #B95755; }
+  </style>
+</head>
+<body>
+  <div class="loading">
+    <div class="spinner" id="spinner"></div>
+    <p id="message">正在前往付款頁面...</p>
+  </div>
+  <form id="f" method="post" action="https://lzafwlmznlkvmbdxcxop.supabase.co/functions/v1/ecpay_pay" style="display:none">
+    <input type="hidden" name="token" id="t">
+  </form>
+  <script>
+    var token = new URLSearchParams(window.location.search).get('token');
+    if (token) {
+      document.getElementById('t').value = token;
+      document.getElementById('f').submit();
+    } else {
+      document.getElementById('spinner').style.display = 'none';
+      var msg = document.getElementById('message');
+      msg.textContent = '付款連結無效，請返回 App 重試。';
+      msg.className = 'error';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>付款結果 - Campus Nerds</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    .card {
+      text-align: center;
+      padding: 32px 24px;
+      background: #2a2a2a;
+      border-radius: 16px;
+      border: 2px solid #3a3a3a;
+      max-width: 380px;
+      width: calc(100% - 32px);
+    }
+    .icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 32px;
+      font-weight: bold;
+    }
+    .icon-success { background: rgba(36,150,137,0.15); color: #249689; }
+    .icon-error { background: rgba(185,87,85,0.15); color: #B95755; }
+    h1 { font-size: 20px; margin-bottom: 8px; }
+    .msg { font-size: 14px; color: #999; line-height: 1.6; margin-bottom: 24px; }
+    .trade-no { font-size: 12px; color: #666; margin-bottom: 24px; }
+    .hint {
+      font-size: 13px;
+      color: #777;
+      padding-top: 20px;
+      border-top: 1px solid #3a3a3a;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon" id="icon"></div>
+    <h1 id="title"></h1>
+    <p class="msg" id="message"></p>
+    <p class="trade-no" id="trade-info"></p>
+    <p class="hint">請返回 Campus Nerds App 繼續使用</p>
+  </div>
+  <script>
+    var params = new URLSearchParams(window.location.search);
+    var rtnCode = params.get('RtnCode');
+    var rtnMsg = params.get('RtnMsg');
+    var tradeNo = params.get('MerchantTradeNo');
+
+    var icon = document.getElementById('icon');
+    var title = document.getElementById('title');
+    var message = document.getElementById('message');
+    var tradeInfo = document.getElementById('trade-info');
+
+    if (rtnCode === '1') {
+      icon.className = 'icon icon-success';
+      icon.innerHTML = '&#10003;';
+      title.textContent = '付款成功';
+      message.textContent = '票券已加入您的帳戶。';
+    } else {
+      icon.className = 'icon icon-error';
+      icon.innerHTML = '&#10005;';
+      title.textContent = '付款失敗';
+      message.textContent = rtnMsg
+        ? decodeURIComponent(rtnMsg)
+        : '付款過程中發生錯誤，請返回 App 重試。';
+    }
+
+    if (tradeNo) {
+      tradeInfo.textContent = '交易編號：' + tradeNo;
+    }
+  </script>
+</body>
+</html>
