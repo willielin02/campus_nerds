@@ -115,7 +115,7 @@ class _ChatTabState extends State<ChatTab> {
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 48),
                             child: Opacity(
-                              opacity: 0.66,
+                              opacity: 0.8,
                               child: Image.asset(
                                 'assets/images/Gemini_Generated_Image_g65w8og65w8og65w.png',
                                 fit: BoxFit.contain,

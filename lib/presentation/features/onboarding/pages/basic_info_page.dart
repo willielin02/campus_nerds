@@ -1,20 +1,22 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../app/router/app_routes.dart';
+import '../../../../app/router/auth_state_notifier.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/utils/app_clock.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
+import '../../../features/auth/bloc/auth_bloc.dart';
+import '../../../features/auth/bloc/auth_event.dart';
 import '../../../features/auth/widgets/onboarding_step_progress.dart';
 import '../bloc/bloc.dart';
 
 /// Basic info page (Step 3 of onboarding)
 ///
 /// Users enter nickname, select gender and birthday to complete registration.
-/// UI matches FlutterFlow design exactly.
+/// UI matches FlutterFlow BasicInfo0 design exactly.
 class BasicInfoPage extends StatefulWidget {
   const BasicInfoPage({super.key});
 
@@ -31,7 +33,6 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
   static const List<String> _genderOptions = [
     '女性',
     '男性',
-    '其他/ 不願透露',
   ];
 
   bool get _canSubmit =>
@@ -62,76 +63,24 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
 
   Future<void> _handleBirthdaySelect() async {
     final colors = context.appColors;
+    final now = AppClock.now();
 
-    await showCupertinoModalPopup<void>(
+    await showModalBottomSheet<void>(
       context: context,
-      builder: (BuildContext context) {
-        DateTime tempDate = _selectedBirthday ?? DateTime(2000, 1, 1);
+      builder: (context) {
         return Container(
-          height: 300,
+          height: MediaQuery.of(context).size.height / 3,
+          width: MediaQuery.of(context).size.width,
           color: colors.secondaryBackground,
-          child: Column(
-            children: [
-              // Header with Done button
-              Container(
-                height: 44,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: colors.secondaryBackground,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: colors.tertiary,
-                      width: 0.5,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        '取消',
-                        style: GoogleFonts.notoSansTc(
-                          color: colors.secondaryText,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        setState(() => _selectedBirthday = tempDate);
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        '確定',
-                        style: GoogleFonts.notoSansTc(
-                          color: colors.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Date picker
-              Expanded(
-                child: CupertinoDatePicker(
-                  mode: CupertinoDatePickerMode.date,
-                  initialDateTime: tempDate,
-                  minimumDate: DateTime(1950, 1, 1),
-                  maximumDate: AppClock.now().subtract(
-                    const Duration(days: 365 * 16),
-                  ), // Must be at least 16
-                  onDateTimeChanged: (DateTime newDate) {
-                    tempDate = newDate;
-                  },
-                ),
-              ),
-            ],
+          child: CupertinoDatePicker(
+            mode: CupertinoDatePickerMode.date,
+            initialDateTime: DateTime(now.year - 18, now.month, now.day),
+            minimumDate: DateTime(now.year - 100, now.month, now.day),
+            maximumDate: DateTime(now.year - 18, now.month, now.day),
+            backgroundColor: colors.secondaryBackground,
+            onDateTimeChanged: (DateTime newDate) {
+              setState(() => _selectedBirthday = newDate);
+            },
           ),
         );
       },
@@ -154,12 +103,15 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return BlocListener<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
         if (state.status == OnboardingStatus.completed) {
-          // Onboarding complete, go to home
-          context.go(AppRoutes.home);
+          AuthStateNotifier.instance.updateProfileStatus(
+            needsBasicInfo: false,
+            needsSchoolVerification: false,
+          );
         } else if (state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -171,296 +123,460 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
         }
       },
       child: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
         child: Scaffold(
           backgroundColor: colors.primaryBackground,
           body: SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(colors),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Column(
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: colors.primaryBackground,
+              ),
+              child: Column(
+                children: [
+                  // Header (64h)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 64,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const SizedBox(height: 32),
-                        _buildLogo(),
-                        const SizedBox(height: 32),
-                        const SizedBox(
-                          width: double.infinity,
-                          height: 24,
-                          child: OnboardingStepProgress(
-                            currentStep: 3,
-                            totalSteps: 3,
+                        IconButton(
+                          icon: Icon(
+                            Icons.arrow_back_ios_rounded,
+                            color: colors.secondaryText,
+                            size: 24,
+                          ),
+                          iconSize: 64,
+                          padding: EdgeInsets.zero,
+                          onPressed: () => showAppConfirmDialog(
+                            context: context,
+                            title: '確定要登出嗎？',
+                            message: '登出後將返回登入頁面，您需要重新登入才能繼續。',
+                            confirmText: '確定登出',
+                            onConfirm: () {
+                              context
+                                  .read<AuthBloc>()
+                                  .add(const AuthSignOut());
+                            },
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        _buildTitle(textTheme),
-                        const SizedBox(height: 8),
-                        _buildSubtitle(textTheme, colors),
-                        const SizedBox(height: 32),
-                        _buildNicknameField(colors, textTheme),
-                        const SizedBox(height: 24),
-                        _buildGenderDropdown(colors, textTheme),
-                        const SizedBox(height: 24),
-                        _buildBirthdayField(colors, textTheme),
-                        const SizedBox(height: 48),
-                        _buildSubmitButton(colors, textTheme),
-                        const SizedBox(height: 24),
-                        _buildFooterNote(colors, textTheme),
-                        const SizedBox(height: 32),
+                        const SizedBox(width: 64, height: 64),
                       ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildHeader(AppColorsTheme colors) {
-    return SizedBox(
-      height: 64,
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_rounded,
-              color: colors.secondaryText,
-            ),
-            onPressed: () => context.pop(),
-          ),
-          const Spacer(),
-        ],
-      ),
-    );
-  }
+                  // Main content
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                          // Logo
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 32),
+                            child: Image.asset(
+                              'assets/images/Photoroom3.png',
+                              width: double.infinity,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const SizedBox(
+                                  height: 100,
+                                  child: Center(
+                                    child: Text(
+                                      'Campus Nerds',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
 
-  Widget _buildLogo() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Image.asset(
-        'assets/images/Photoroom3.png',
-        width: double.infinity,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return const SizedBox(
-            height: 100,
-            child: Center(
-              child: Text(
-                'Campus Nerds',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+                          // Progress indicator
+                          const Padding(
+                            padding: EdgeInsets.only(top: 32),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 24,
+                              child: OnboardingStepProgress(
+                                currentStep: 3,
+                                totalSteps: 3,
+                              ),
+                            ),
+                          ),
 
-  Widget _buildTitle(TextTheme textTheme) {
-    return Row(
-      children: [
-        Text(
-          'Step3 輸入您的基本資料',
-          style: textTheme.titleMedium?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-        ),
-      ],
-    );
-  }
+                          // Title
+                          Padding(
+                            padding: const EdgeInsets.only(top: 32),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Step3 輸入您的基本資料',
+                                  style: textTheme.titleMedium?.copyWith(
+                                    fontFamily: fontFamily,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
 
-  Widget _buildSubtitle(TextTheme textTheme, AppColorsTheme colors) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Text(
-          '為了提供您更精準的活動分配',
-          style: textTheme.bodyMedium?.copyWith(
-            color: colors.secondaryText,
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-        ),
-      ],
-    );
-  }
+                          // Subtitle
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '為了提供您更精準的活動分配',
+                                  style: textTheme.bodyLarge?.copyWith(
+                                    fontFamily: fontFamily,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
 
-  Widget _buildNicknameField(AppColorsTheme colors, TextTheme textTheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '暱稱',
-          style: textTheme.bodyLarge?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _nicknameController,
-          maxLength: 12,
-          onChanged: (_) => setState(() {}),
-          style: textTheme.bodyLarge?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-          decoration: InputDecoration(
-            hintText: '請輸入暱稱 ( 至多 12 個字 )',
-            hintStyle: textTheme.bodyLarge?.copyWith(
-              color: colors.tertiary,
-              fontFamily: GoogleFonts.notoSansTc().fontFamily,
-            ),
-            counterText: '', // Hide character counter
-            filled: true,
-            fillColor: colors.secondaryBackground,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.tertiary, width: 2),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.tertiary, width: 2),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.quaternary, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+                          // Nickname field
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 2),
+                                  child: Text(
+                                    '暱稱',
+                                    style: textTheme.labelLarge?.copyWith(
+                                      fontFamily: fontFamily,
+                                      color: colors.secondaryText,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: TextFormField(
+                                      controller: _nicknameController,
+                                      maxLength: 12,
+                                      cursorColor: colors.primaryText,
+                                      onChanged: (_) => setState(() {}),
+                                      style: textTheme.bodyLarge?.copyWith(
+                                        fontFamily: fontFamily,
+                                      ),
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        hintText: '請輸入暱稱 ( 至多 12 個字 ) ',
+                                        hintStyle:
+                                            textTheme.bodyLarge?.copyWith(
+                                          fontFamily: fontFamily,
+                                          color: colors.primaryText,
+                                        ),
+                                        counterText: '',
+                                        filled: true,
+                                        fillColor: colors.secondaryBackground,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                            color: colors.tertiary,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                            color: colors.quaternary,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                            color: colors.error,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        focusedErrorBorder:
+                                            OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                            color: colors.error,
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
 
-  Widget _buildGenderDropdown(AppColorsTheme colors, TextTheme textTheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '性別',
-          style: textTheme.bodyLarge?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: colors.secondaryBackground,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: _selectedGender != null ? colors.primary : colors.tertiary,
-              width: 2,
-            ),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedGender,
-              hint: Text(
-                '請選擇性別',
-                style: textTheme.bodyLarge?.copyWith(
-                  color: colors.tertiary,
-                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                ),
-              ),
-              isExpanded: true,
-              icon: Icon(
-                Icons.keyboard_arrow_down,
-                color:
-                    _selectedGender != null ? colors.primary : colors.tertiary,
-              ),
-              dropdownColor: colors.secondaryBackground,
-              style: textTheme.bodyLarge?.copyWith(
-                fontFamily: GoogleFonts.notoSansTc().fontFamily,
-              ),
-              items: _genderOptions.map((String gender) {
-                return DropdownMenuItem<String>(
-                  value: gender,
-                  child: Text(
-                    gender,
-                    style: textTheme.bodyLarge?.copyWith(
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                          // Gender + Birthday row (side by side)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Row(
+                              children: [
+                                // Gender dropdown
+                                Flexible(
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.only(right: 6),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 2),
+                                          child: Text(
+                                            '性別',
+                                            style: textTheme.labelLarge
+                                                ?.copyWith(
+                                              fontFamily: fontFamily,
+                                              color: colors.secondaryText,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 8),
+                                          child: Container(
+                                            width: double.infinity,
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12),
+                                            decoration: BoxDecoration(
+                                              color: colors
+                                                  .secondaryBackground,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: colors.tertiary,
+                                                width: 2,
+                                              ),
+                                            ),
+                                            child:
+                                                DropdownButtonHideUnderline(
+                                              child:
+                                                  DropdownButton<String>(
+                                                value: _selectedGender,
+                                                hint: Text(
+                                                  '請選擇性別',
+                                                  style: textTheme
+                                                      .bodyLarge
+                                                      ?.copyWith(
+                                                    fontFamily: fontFamily,
+                                                  ),
+                                                ),
+                                                isExpanded: true,
+                                                icon: Icon(
+                                                  Icons
+                                                      .keyboard_arrow_down_rounded,
+                                                  color: colors
+                                                      .secondaryText,
+                                                  size: 32,
+                                                ),
+                                                dropdownColor: colors
+                                                    .secondaryBackground,
+                                                elevation: 2,
+                                                style: textTheme.bodyLarge
+                                                    ?.copyWith(
+                                                  fontFamily: fontFamily,
+                                                ),
+                                                items: _genderOptions
+                                                    .map((String gender) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: gender,
+                                                    child: Text(
+                                                      gender,
+                                                      style: textTheme
+                                                          .bodyLarge
+                                                          ?.copyWith(
+                                                        fontFamily:
+                                                            fontFamily,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged:
+                                                    (String? newValue) {
+                                                  setState(() =>
+                                                      _selectedGender =
+                                                          newValue);
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // Birthday picker
+                                Flexible(
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.only(left: 2),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 2),
+                                          child: Text(
+                                            '生日',
+                                            style: textTheme.labelLarge
+                                                ?.copyWith(
+                                              fontFamily: fontFamily,
+                                              color: colors.secondaryText,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 8),
+                                          child: InkWell(
+                                            splashColor:
+                                                Colors.transparent,
+                                            focusColor:
+                                                Colors.transparent,
+                                            hoverColor:
+                                                Colors.transparent,
+                                            highlightColor:
+                                                Colors.transparent,
+                                            onTap: _handleBirthdaySelect,
+                                            child: Container(
+                                              width: double.infinity,
+                                              height: 48,
+                                              decoration: BoxDecoration(
+                                                color: colors
+                                                    .secondaryBackground,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        8),
+                                                border: Border.all(
+                                                  color: colors.tertiary,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets
+                                                            .only(
+                                                            left: 10),
+                                                    child: Text(
+                                                      _selectedBirthday !=
+                                                              null
+                                                          ? '${_selectedBirthday!.year}/${_selectedBirthday!.month.toString().padLeft(2, '0')}/${_selectedBirthday!.day.toString().padLeft(2, '0')}'
+                                                          : '請選擇生日',
+                                                      style: textTheme
+                                                          .bodyLarge
+                                                          ?.copyWith(
+                                                        fontFamily:
+                                                            fontFamily,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Confirm button
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24),
+                            child: _buildSubmitButton(colors, textTheme),
+                          ),
+
+                          // Footer note line 1
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Campus Nerds 提醒您：',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    fontFamily: fontFamily,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Footer note line 2
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4, bottom: 16),
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    '基本資料提交後不可修改。若查證不實，將取消用戶資格。',
+                                    style: textTheme.bodySmall?.copyWith(
+                                      fontFamily: fontFamily,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() => _selectedGender = newValue);
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBirthdayField(AppColorsTheme colors, TextTheme textTheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '生日',
-          style: textTheme.bodyLarge?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-        ),
-        const SizedBox(height: 12),
-        InkWell(
-          onTap: _handleBirthdaySelect,
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              color: colors.secondaryBackground,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color:
-                    _selectedBirthday != null ? colors.primary : colors.tertiary,
-                width: 2,
+                ],
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _selectedBirthday != null
-                      ? '${_selectedBirthday!.year}/${_selectedBirthday!.month.toString().padLeft(2, '0')}/${_selectedBirthday!.day.toString().padLeft(2, '0')}'
-                      : '請選擇生日',
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: _selectedBirthday != null
-                        ? colors.primaryText
-                        : colors.tertiary,
-                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                  ),
-                ),
-                Icon(
-                  Icons.calendar_today_outlined,
-                  color: _selectedBirthday != null
-                      ? colors.primary
-                      : colors.tertiary,
-                ),
-              ],
-            ),
           ),
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildSubmitButton(AppColorsTheme colors, TextTheme textTheme) {
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         return SizedBox(
           width: double.infinity,
-          height: 56,
+          height: 48,
           child: ElevatedButton(
             onPressed: _canSubmit && !state.isLoading ? _handleSubmit : null,
             style: ElevatedButton.styleFrom(
@@ -470,7 +586,6 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              disabledBackgroundColor: colors.tertiary,
             ),
             child: state.status == OnboardingStatus.basicInfoUpdating
                 ? const SizedBox(
@@ -484,24 +599,13 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                 : Text(
                     '確認',
                     style: textTheme.labelLarge?.copyWith(
-                      fontSize: 18,
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                      fontFamily: fontFamily,
+                      color: colors.secondaryText,
                     ),
                   ),
           ),
         );
       },
-    );
-  }
-
-  Widget _buildFooterNote(AppColorsTheme colors, TextTheme textTheme) {
-    return Text(
-      'Campus Nerds 提醒您：基本資料提交後不可修改。若經查證不實，將取消使用者資格。',
-      textAlign: TextAlign.center,
-      style: textTheme.bodySmall?.copyWith(
-        color: colors.secondaryText,
-        fontFamily: GoogleFonts.notoSansTc().fontFamily,
-      ),
     );
   }
 }

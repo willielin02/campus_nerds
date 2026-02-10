@@ -96,10 +96,6 @@ class MyEventsVRow extends SupabaseDataRow {
   set goalCloseAt(DateTime? value) =>
       setField<DateTime>('goal_close_at', value);
 
-  DateTime? get goalCheckCloseAt => getField<DateTime>('goal_check_close_at');
-  set goalCheckCloseAt(DateTime? value) =>
-      setField<DateTime>('goal_check_close_at', value);
-
   bool? get hasEventFeedback => getField<bool>('has_event_feedback');
   set hasEventFeedback(bool? value) =>
       setField<bool>('has_event_feedback', value);

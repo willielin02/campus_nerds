@@ -91,14 +91,6 @@ extension NavigationExtensions on BuildContext {
     go('${AppRoutes.checkout}?tabIndex=$tabIndex');
   }
 
-  /// Navigate to payment web view
-  void goToPaymentWebView({required String paymentHtml}) {
-    go(
-      AppRoutes.paymentWebView,
-      extra: {'paymentHtml': paymentHtml},
-    );
-  }
-
   /// Safely pop the current route
   ///
   /// If there's no route to pop, navigates to home instead

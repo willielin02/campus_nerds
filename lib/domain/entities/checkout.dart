@@ -134,26 +134,3 @@ class CreateOrderResult {
         errorMessage: message,
       );
 }
-
-/// Result of getting payment HTML
-class PaymentHtmlResult {
-  const PaymentHtmlResult._({
-    required this.success,
-    this.html,
-    this.errorMessage,
-  });
-
-  final bool success;
-  final String? html;
-  final String? errorMessage;
-
-  factory PaymentHtmlResult.success(String html) => PaymentHtmlResult._(
-        success: true,
-        html: html,
-      );
-
-  factory PaymentHtmlResult.failure(String message) => PaymentHtmlResult._(
-        success: false,
-        errorMessage: message,
-      );
-}

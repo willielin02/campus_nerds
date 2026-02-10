@@ -626,16 +626,20 @@ class _EventCardEmpty extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.event_busy_rounded,
-                size: 48,
-                color: colors.tertiary,
+              Opacity(
+                opacity: 0.8,
+                child: Image.asset(
+                  'assets/images/Gemini_Generated_Image_v0nidjv0nidjv0ni.png',
+                  width: double.infinity,
+                  fit: BoxFit.fitWidth,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
-                '目前沒有活動',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colors.secondaryText,
+                '很抱歉，\n目前這個城市沒有可報名的活動。',
+                textAlign: TextAlign.left,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: colors.primaryText,
                 ),
               ),
             ],

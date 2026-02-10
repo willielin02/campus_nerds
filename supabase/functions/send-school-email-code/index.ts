@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
 function jsonResponse(body, status = 200) {
@@ -94,25 +95,22 @@ serve(async (req)=>{
         school_email
       });
     }
-    /*
-    // 如果之後要打開網域檢查，把 badRequest 都補上 extra
-    const rawDomain = school_email.split("@")[1] ?? "";
-    const baseDomain = extractBaseDomain(rawDomain);
-
-    const { data: domainRow, error: domainError } = await supabase
-      .from("university_email_domains")
-      .select("id")
-      .eq("domain", baseDomain)
+    // ==== Check if email is already active for another user ====
+    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: activeRow, error: activeError } = await adminClient
+      .from("user_school_emails")
+      .select("id, user_id")
+      .eq("school_email", school_email)
+      .eq("is_active", true)
       .maybeSingle();
-
-    if (domainError) {
-      console.error("domain error", domainError);
+    if (activeError) {
+      console.error("check active email error", activeError);
       return jsonResponse({ error: "Internal error" }, 500);
     }
-    if (!domainRow) {
-      return badRequest("unsupported_domain", { baseDomain });
+    if (activeRow && activeRow.user_id !== user.id) {
+      return jsonResponse({ error: "email_already_bound" }, 409);
     }
-    */ const now = new Date();
+    const now = new Date();
     // ==== 2. rate limit：也把實際時間差打出來 ====
     const { data: lastRecord, error: lastError } = await supabase.from("school_email_verifications").select("id, last_sent_at, sent_count").eq("user_id", user.id).eq("school_email", school_email).order("created_at", {
       ascending: false

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent, AuthState;
 
+import '../../../../app/router/auth_state_notifier.dart';
 import '../../../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -29,13 +30,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
     _authStateSubscription = _authRepository.authStateChanges.listen(
       (authState) {
         if (authState.event == AuthChangeEvent.signedIn ||
-            authState.event == AuthChangeEvent.tokenRefreshed) {
+            authState.event == AuthChangeEvent.tokenRefreshed ||
+            authState.event == AuthChangeEvent.initialSession) {
           add(const AuthCheckStatus());
         } else if (authState.event == AuthChangeEvent.signedOut) {
           // Use event to trigger state change instead of direct emit
           add(const AuthCheckStatus());
         }
       },
+    );
+
+    // Proactively check status if a session already exists (e.g. hot restart
+    // or app relaunch). The initialSession event from Supabase's broadcast
+    // stream may have fired before this subscription was set up.
+    if (_authRepository.currentUser != null) {
+      add(const AuthCheckStatus());
+    }
+  }
+
+  /// Sync profile status to AuthStateNotifier so GoRouter can enforce onboarding.
+  /// Only syncs when we have real data — null means the check failed and we
+  /// should NOT mark as checked (avoids bypassing onboarding).
+  void _syncProfileToRouter(UserProfileStatus? profileStatus) {
+    if (profileStatus == null) return;
+    AuthStateNotifier.instance.updateProfileStatus(
+      needsBasicInfo: profileStatus.needsBasicInfo,
+      needsSchoolVerification: profileStatus.needsSchoolVerification,
     );
   }
 
@@ -50,12 +70,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
       return;
     }
 
-    // Get profile status to determine routing
-    final profileStatus = await _authRepository.getUserProfileStatus();
-    emit(state.copyWithAuthenticated(
-      user: user,
-      profileStatus: profileStatus,
-    ));
+    try {
+      // Get profile status to determine routing
+      final profileStatus = await _authRepository.getUserProfileStatus();
+      _syncProfileToRouter(profileStatus);
+      emit(state.copyWithAuthenticated(
+        user: user,
+        profileStatus: profileStatus,
+      ));
+    } catch (e) {
+      // On failure, assume user needs full onboarding (restrictive default).
+      // This prevents the user from being stuck on splash forever, and
+      // ensures they cannot bypass onboarding if the network call fails.
+      const fallback = UserProfileStatus(
+        hasUniversity: false,
+        hasBasicInfo: false,
+      );
+      _syncProfileToRouter(fallback);
+      emit(state.copyWithAuthenticated(user: user, profileStatus: fallback));
+    }
   }
 
   /// Sign in with email
@@ -73,6 +106,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
     if (result.success && result.user != null) {
       // Get profile status to determine routing
       final profileStatus = await _authRepository.getUserProfileStatus();
+      _syncProfileToRouter(profileStatus);
       emit(state.copyWithAuthenticated(
         user: result.user!,
         profileStatus: profileStatus,
@@ -96,12 +130,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
     if (result.success && result.user != null) {
       // New accounts always need onboarding
+      const profileStatus = UserProfileStatus(
+        hasUniversity: false,
+        hasBasicInfo: false,
+      );
+      _syncProfileToRouter(profileStatus);
       emit(state.copyWithAuthenticated(
         user: result.user!,
-        profileStatus: const UserProfileStatus(
-          hasUniversity: false,
-          hasBasicInfo: false,
-        ),
+        profileStatus: profileStatus,
       ));
     } else {
       emit(state.copyWithError(result.errorMessage ?? '註冊失敗'));
@@ -119,6 +155,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
     if (result.success && result.user != null) {
       final profileStatus = await _authRepository.getUserProfileStatus();
+      _syncProfileToRouter(profileStatus);
       emit(state.copyWithAuthenticated(
         user: result.user!,
         profileStatus: profileStatus,
@@ -139,6 +176,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
     if (result.success && result.user != null) {
       final profileStatus = await _authRepository.getUserProfileStatus();
+      _syncProfileToRouter(profileStatus);
       emit(state.copyWithAuthenticated(
         user: result.user!,
         profileStatus: profileStatus,

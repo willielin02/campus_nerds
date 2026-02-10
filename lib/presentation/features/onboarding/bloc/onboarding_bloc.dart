@@ -76,6 +76,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     emit(state.copyWith(
       status: OnboardingStatus.loading,
       isLoading: true,
+      cooldownSeconds: 60,
     ));
 
     final result = await _onboardingRepository.sendVerificationCode(
@@ -87,7 +88,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         status: OnboardingStatus.codeSent,
         schoolEmail: event.schoolEmail,
         isLoading: false,
-        cooldownSeconds: 60,
       ));
       _startCooldownTimer();
     } else {
@@ -95,6 +95,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         status: OnboardingStatus.error,
         errorMessage: result.errorMessage ?? '發送驗證碼失敗',
         isLoading: false,
+        cooldownSeconds: 0,
       ));
     }
   }

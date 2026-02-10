@@ -107,7 +107,6 @@ class MyEvent extends Equatable {
 
   // Timing info
   final DateTime? goalCloseAt;
-  final DateTime? goalCheckCloseAt;
   final DateTime? feedbackSentAt;
 
   // Feedback flags
@@ -141,7 +140,6 @@ class MyEvent extends Equatable {
     this.venueAddress,
     this.venueGoogleMapUrl,
     this.goalCloseAt,
-    this.goalCheckCloseAt,
     this.feedbackSentAt,
     this.hasEventFeedback = false,
     this.hasPeerFeedbackAll = false,
@@ -195,13 +193,13 @@ class MyEvent extends Equatable {
   }
 
   /// Check if goal completion can still be toggled
-  /// Requires: after groupStartAt (venue start) AND before goalCheckCloseAt
+  /// Requires: after groupStartAt (venue start) AND event still in Upcoming
+  /// (event_date >= today). Closes when the event moves to History.
   bool get canCheckGoal {
     if (groupStartAt == null) return false;
     final now = AppClock.now();
     if (now.isBefore(groupStartAt!)) return false;
-    if (goalCheckCloseAt == null) return true;
-    return now.isBefore(goalCheckCloseAt!);
+    return isUpcoming;
   }
 
   /// Check if feedback window is open
@@ -248,7 +246,6 @@ class MyEvent extends Equatable {
       venueAddress: venueAddress,
       venueGoogleMapUrl: venueGoogleMapUrl,
       goalCloseAt: goalCloseAt,
-      goalCheckCloseAt: goalCheckCloseAt,
       feedbackSentAt: feedbackSentAt,
       hasEventFeedback: hasEventFeedback,
       hasPeerFeedbackAll: hasPeerFeedbackAll,
@@ -281,7 +278,6 @@ class MyEvent extends Equatable {
         venueAddress,
         venueGoogleMapUrl,
         goalCloseAt,
-        goalCheckCloseAt,
         feedbackSentAt,
         hasEventFeedback,
         hasPeerFeedbackAll,

@@ -8,6 +8,7 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../domain/entities/checkout.dart';
+import '../../../common/widgets/app_alert_dialog.dart';
 import '../bloc/bloc.dart';
 
 /// Checkout page for purchasing tickets
@@ -25,12 +26,14 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
+  bool _isPurchasing = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(
       length: 2,
       vsync: this,
@@ -41,86 +44,49 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<CheckoutBloc>().add(const CheckoutLoadProducts());
+    }
+  }
+
   Future<void> _handlePurchase(Product product) async {
+    if (_isPurchasing) return;
+
     // Check if user is logged in
     if (!SupabaseService.isAuthenticated) {
       await _showLoginRequiredDialog();
       return;
     }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => _PaymentNoticeDialog(product: product),
-    );
+    _isPurchasing = true;
+    try {
+      await showAppAlertDialog(
+        context: context,
+        title: '即將前往綠界付款頁面',
+        message: '我們不會儲存您的信用卡資料，所有支付都透過「綠界科技 ECPay」完成。',
+      );
 
-    if (confirmed == true && mounted) {
-      context.read<CheckoutBloc>().add(CheckoutCreateOrder(product.id));
+      if (mounted) {
+        context.read<CheckoutBloc>().add(CheckoutCreateOrder(product.id));
+      }
+    } finally {
+      _isPurchasing = false;
     }
   }
 
   Future<void> _showLoginRequiredDialog() async {
-    final colors = context.appColors;
-    final textTheme = context.textTheme;
-
-    await showDialog(
+    await showAppAlertDialog(
       context: context,
-      builder: (dialogContext) => Dialog(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: colors.secondaryBackground,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '錯誤',
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '您目前尚未登入，請登入後再繼續操作。',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colors.secondaryText,
-                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.alternate,
-                    foregroundColor: colors.primaryText,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    '確定',
-                    style: textTheme.labelLarge?.copyWith(
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      title: '錯誤',
+      message: '您目前尚未登入，請登入後再繼續操作。',
+      buttonText: '確定',
     );
 
     if (mounted) {
@@ -719,7 +685,7 @@ class _CheckoutPageState extends State<CheckoutPage>
         ),
         // Ticket expiration notice
         Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
           child: Text(
             '票券效期：依最近一次購買日起 1 年內。',
             style: textTheme.bodyMedium?.copyWith(
@@ -728,122 +694,6 @@ class _CheckoutPageState extends State<CheckoutPage>
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Payment notice dialog
-class _PaymentNoticeDialog extends StatelessWidget {
-  const _PaymentNoticeDialog({required this.product});
-
-  final Product product;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final textTheme = context.textTheme;
-
-    return Dialog(
-      elevation: 0,
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: colors.secondaryBackground,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '即將前往綠界付款頁面',
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontFamily: GoogleFonts.notoSansTc().fontFamily,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '我們不會儲存您的信用卡資料，所有支付都透過「綠界科技 ECPay」完成。',
-              style: textTheme.bodyMedium?.copyWith(
-                color: colors.secondaryText,
-                fontFamily: GoogleFonts.notoSansTc().fontFamily,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: colors.primaryBackground,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${product.title} x ${product.packSize}張',
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                    ),
-                  ),
-                  Text(
-                    'NT\$${product.priceTwd}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.secondaryText,
-                      side: BorderSide(color: colors.tertiary, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      '取消',
-                      style: textTheme.labelLarge?.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.alternate,
-                      foregroundColor: colors.primaryText,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      '前往付款',
-                      style: textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

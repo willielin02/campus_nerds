@@ -151,7 +151,6 @@ supabase/
   - `chat_open_at` = venue.start_at - 1 hour
   - `goal_close_at` = venue.start_at + 1 hour
   - `feedback_sent_at` = event_date 12:00/17:00/22:00 (morning/afternoon/evening)
-  - `goal_check_close_at` = event_date 13:00/18:00/23:00
 
 ### Phase 5: Notification (Staff, manual)
 
@@ -172,7 +171,7 @@ supabase/
 | venue start | Event begins | — |
 | `goal_close_at` (venue start + 1hr) | Goal editing closes | Automatic |
 | `feedback_sent_at` (12:00/17:00/22:00) | Feedback window opens | Automatic |
-| `goal_check_close_at` (13:00/18:00/23:00) | Goal check-off closes | Automatic |
+| event_date + 1 day 00:00 Taipei | Goal check-off closes (event moves to History) | Date-based |
 
 ### Phase 7: Post-Event
 

@@ -5,7 +5,6 @@ import '../../domain/entities/event.dart';
 import '../../presentation/features/account/pages/account_page.dart';
 import '../../presentation/features/auth/pages/login_page.dart';
 import '../../presentation/features/checkout/pages/checkout_page.dart';
-import '../../presentation/features/checkout/pages/payment_web_view_page.dart';
 import '../../presentation/features/home/pages/games_booking_confirmation_page.dart';
 import '../../presentation/features/home/pages/home_page.dart';
 import '../../presentation/features/home/pages/study_booking_confirmation_page.dart';
@@ -62,22 +61,29 @@ class AppRouter {
     ];
 
     // Onboarding routes (require login but not complete profile)
-    // Note: Used for future profile completion checks
     final onboardingRoutes = [
       AppRoutes.basicInfo,
       AppRoutes.schoolEmailVerification,
     ];
 
     final isAuthRoute = authRoutes.contains(currentPath);
-    // ignore: unused_local_variable
     final isOnboardingRoute = onboardingRoutes.contains(currentPath);
 
-    // Handle pending redirect after login
-    if (authNotifier.shouldRedirect) {
-      final redirect = authNotifier.consumeRedirectLocation();
-      if (redirect != null && redirect != currentPath) {
-        return redirect;
+    // Splash route - redirect based on auth state
+    if (currentPath == AppRoutes.splash) {
+      if (authNotifier.loading) {
+        return null; // Stay on splash while loading
       }
+      if (!isLoggedIn) {
+        return AppRoutes.login;
+      }
+      // For authenticated non-guest users, wait for profile check before
+      // proceeding. Without this, the user would land on /home before the
+      // async profile fetch completes, bypassing onboarding enforcement.
+      if (!authNotifier.isGuestMode && !authNotifier.profileChecked) {
+        return null; // Stay on splash until profile is checked
+      }
+      return AppRoutes.home;
     }
 
     // Not logged in - redirect to login for protected routes
@@ -86,17 +92,43 @@ class AppRouter {
       return AppRoutes.login;
     }
 
-    // Logged in but on auth route - redirect to home
-    if (isLoggedIn && isAuthRoute && currentPath != AppRoutes.splash) {
+    // Logged in but on auth route - redirect to home (or onboarding)
+    if (isLoggedIn && isAuthRoute) {
+      // Wait for profile check before leaving auth route, so the user
+      // doesn't briefly flash through /home before being sent to onboarding.
+      if (!authNotifier.isGuestMode && !authNotifier.profileChecked) {
+        return null; // Stay on current auth route until profile is checked
+      }
       return AppRoutes.home;
     }
 
-    // Splash route - redirect based on auth state
-    if (currentPath == AppRoutes.splash) {
-      if (authNotifier.loading) {
-        return null; // Stay on splash while loading
+    // Onboarding enforcement (skip for guest mode, skip if profile not yet loaded)
+    if (isLoggedIn && !authNotifier.isGuestMode && authNotifier.profileChecked) {
+      final needsSchool = authNotifier.needsSchoolVerification;
+      final needsBasic = authNotifier.needsBasicInfo;
+
+      // Must verify school email first
+      if (needsSchool && currentPath != AppRoutes.schoolEmailVerification) {
+        return AppRoutes.schoolEmailVerification;
       }
-      return isLoggedIn ? AppRoutes.home : AppRoutes.login;
+
+      // Must fill basic info (nickname, birthday, gender, OS)
+      if (needsBasic && currentPath != AppRoutes.basicInfo) {
+        return AppRoutes.basicInfo;
+      }
+
+      // Fully onboarded but still on onboarding route → go home
+      if (!needsSchool && !needsBasic && isOnboardingRoute) {
+        return AppRoutes.home;
+      }
+    }
+
+    // Handle pending redirect after login
+    if (authNotifier.shouldRedirect) {
+      final redirect = authNotifier.consumeRedirectLocation();
+      if (redirect != null && redirect != currentPath) {
+        return redirect;
+      }
     }
 
     return null;
@@ -269,16 +301,6 @@ class AppRouter {
             return CheckoutPage(initialTabIndex: tabIndex);
           },
         ),
-        GoRoute(
-          path: AppRoutes.paymentWebView,
-          name: AppRouteNames.paymentWebView,
-          parentNavigatorKey: appNavigatorKey,
-          builder: (context, state) {
-            final paymentHtml = state.uri.queryParameters['paymentHtml'] ?? '';
-            return PaymentWebViewPage(paymentHtml: paymentHtml);
-          },
-        ),
-
         // Ticket History route (use root navigator - no navbar)
         // BLoC is provided at app level in main.dart (singleton)
         GoRoute(

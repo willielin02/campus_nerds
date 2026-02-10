@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../app/router/app_routes.dart';
+import '../../../../app/router/auth_state_notifier.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../common/widgets/app_alert_dialog.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
+import '../../../features/auth/bloc/auth_bloc.dart';
+import '../../../features/auth/bloc/auth_event.dart';
 import '../../../features/auth/widgets/onboarding_step_progress.dart';
 import '../bloc/bloc.dart';
 
@@ -40,7 +43,6 @@ class _SchoolEmailVerificationPageState
     final email = _emailController.text.trim();
     if (email.isNotEmpty) {
       context.read<OnboardingBloc>().add(OnboardingSendCode(email));
-      setState(() => _isExpanded = true);
     }
   }
 
@@ -61,20 +63,34 @@ class _SchoolEmailVerificationPageState
 
     return BlocListener<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
-        // Navigation after verification (matching FlutterFlow logic):
-        // - codeVerified: User needs to fill basic info → BasicInfo page
-        // - completed: User already has basic info → Home page
+        // Update router notifier — redirects happen automatically via GoRouter
         if (state.status == OnboardingStatus.codeVerified) {
-          context.go(AppRoutes.basicInfo);
-        } else if (state.status == OnboardingStatus.completed) {
-          context.go(AppRoutes.home);
-        } else if (state.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: colors.error,
-            ),
+          // School verified, but still needs basic info
+          AuthStateNotifier.instance.updateProfileStatus(
+            needsBasicInfo: true,
+            needsSchoolVerification: false,
           );
+        } else if (state.status == OnboardingStatus.completed) {
+          // Fully onboarded (school verified + basic info already existed)
+          AuthStateNotifier.instance.updateProfileStatus(
+            needsBasicInfo: false,
+            needsSchoolVerification: false,
+          );
+        } else if (state.errorMessage != null) {
+          if (state.errorMessage == 'email_already_bound') {
+            showAppAlertDialog(
+              context: context,
+              title: '此信箱已被綁定',
+              message: '此學校信箱已被其他帳號使用。若您之前的帳號遺失或有任何疑問，請寄信至 team@campusnerds.app 聯絡客服。',
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: colors.error,
+              ),
+            );
+          }
           context.read<OnboardingBloc>().add(const OnboardingClearError());
         }
         // Update expanded state when code is sent
@@ -98,37 +114,49 @@ class _SchoolEmailVerificationPageState
               ),
               child: Column(
                 children: [
-                  // Header row (64px height) - matching FlutterFlow
-                  Container(
+                  // Header with back button (matching FlutterFlow)
+                  SizedBox(
                     width: double.infinity,
                     height: 64,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: 64,
-                          height: 64,
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.arrow_back_ios_rounded,
-                              color: colors.secondaryText,
-                              size: 24,
-                            ),
-                            onPressed: () => context.pop(),
+                        IconButton(
+                          icon: Icon(
+                            Icons.arrow_back_ios_rounded,
+                            color: colors.secondaryText,
+                            size: 24,
+                          ),
+                          iconSize: 64,
+                          padding: EdgeInsets.zero,
+                          onPressed: () => showAppConfirmDialog(
+                            context: context,
+                            title: '確定要登出嗎？',
+                            message: '登出後將返回登入頁面，您需要重新登入才能繼續。',
+                            confirmText: '確定登出',
+                            onConfirm: () {
+                              context.read<AuthBloc>().add(const AuthSignOut());
+                            },
                           ),
                         ),
-                        Container(width: 64, height: 64),
+                        const SizedBox(width: 64, height: 64),
                       ],
                     ),
                   ),
 
                   // Main content
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
                           // Logo
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -204,8 +232,11 @@ class _SchoolEmailVerificationPageState
 
                           // Code field section (shown when expanded)
                           if (_isExpanded) _buildCodeSection(colors, textTheme),
-                        ],
-                      ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -221,13 +252,14 @@ class _SchoolEmailVerificationPageState
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         final canSend = state.cooldownSeconds == 0 && !state.isLoading;
-        final buttonText = canSend
-            ? '發送驗證碼'
-            : '您可以在${state.cooldownSeconds}秒後重新發送驗證碼';
+        final buttonText = state.cooldownSeconds > 0
+            ? '您可以在${state.cooldownSeconds}秒後重新發送驗證碼'
+            : '發送驗證碼';
 
         return Padding(
           padding: const EdgeInsets.only(top: 16),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Label - matching FlutterFlow
@@ -251,6 +283,7 @@ class _SchoolEmailVerificationPageState
                     controller: _emailController,
                     focusNode: _emailFocusNode,
                     keyboardType: TextInputType.emailAddress,
+                    cursorColor: colors.primaryText,
                     style: textTheme.bodyLarge?.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                       color: colors.primaryText,
@@ -297,31 +330,34 @@ class _SchoolEmailVerificationPageState
                 ),
               ),
 
-              // Send code button - matching FlutterFlow style
-              Opacity(
+              // Send code button - matching FlutterFlow FFButtonWidget style
+              Center(
+                child: Opacity(
                 opacity: canSend ? 1.0 : 0.5,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: SizedBox(
-                    height: 48,
-                    child: TextButton(
-                      onPressed: canSend ? _handleSendCode : null,
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        backgroundColor: colors.primaryBackground,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                  child: ElevatedButton(
+                    onPressed: canSend ? _handleSendCode : null,
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(0, 48),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      backgroundColor: colors.primaryBackground,
+                      foregroundColor: colors.primaryText,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
-                        buttonText,
-                        style: textTheme.bodyLarge?.copyWith(
-                          fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                        ),
+                    ),
+                    child: Text(
+                      buttonText,
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
                       ),
                     ),
                   ),
                 ),
+              ),
               ),
             ],
           ),
@@ -362,6 +398,7 @@ class _SchoolEmailVerificationPageState
                         controller: _codeController,
                         focusNode: _codeFocusNode,
                         keyboardType: TextInputType.number,
+                        cursorColor: colors.primaryText,
                         style: textTheme.bodyLarge?.copyWith(
                           fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           color: colors.primaryText,
@@ -412,7 +449,7 @@ class _SchoolEmailVerificationPageState
 
               // Verify button - matching FlutterFlow
               Padding(
-                padding: const EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.only(top: 16, bottom: 16),
                 child: SizedBox(
                   width: double.infinity,
                   height: 48,

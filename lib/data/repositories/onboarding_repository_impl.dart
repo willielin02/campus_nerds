@@ -101,6 +101,9 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     } catch (e) {
       // Handle specific error cases
       final errorString = e.toString().toLowerCase();
+      if (errorString.contains('email_already_bound')) {
+        return OnboardingResult.failure('email_already_bound');
+      }
       if (errorString.contains('rate') || errorString.contains('cooldown')) {
         return OnboardingResult.failure('請稍後再試，驗證碼發送過於頻繁');
       }

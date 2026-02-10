@@ -46,7 +46,4 @@ class GroupsRow extends SupabaseDataRow {
   set goalCloseAt(DateTime? value) =>
       setField<DateTime>('goal_close_at', value);
 
-  DateTime? get goalCheckCloseAt => getField<DateTime>('goal_check_close_at');
-  set goalCheckCloseAt(DateTime? value) =>
-      setField<DateTime>('goal_check_close_at', value);
 }

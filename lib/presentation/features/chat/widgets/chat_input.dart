@@ -82,6 +82,7 @@ class _ChatInputState extends State<ChatInput> {
                 child: TextFormField(
                   controller: _controller,
                   focusNode: _focusNode,
+                  cursorColor: colors.primaryText,
                   textInputAction: TextInputAction.send,
                   onFieldSubmitted: (_) => _handleSend(),
                   style: textTheme.bodyLarge?.copyWith(

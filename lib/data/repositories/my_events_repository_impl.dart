@@ -346,7 +346,6 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
       venueAddress: row.venueAddress,
       venueGoogleMapUrl: row.venueGoogleMapUrl,
       goalCloseAt: row.goalCloseAt,
-      goalCheckCloseAt: row.goalCheckCloseAt,
       feedbackSentAt: row.feedbackSentAt,
       hasEventFeedback: row.hasEventFeedback ?? false,
       hasPeerFeedbackAll: row.hasPeerFeedbackAll ?? false,

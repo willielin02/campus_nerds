@@ -23,8 +23,6 @@ abstract class AppRoutes {
 
   // Payment
   static const String checkout = '/checkout';
-  static const String paymentWebView = '/payment-web-view';
-
   // Ticket History
   static const String ticketHistory = '/ticket-history';
 
@@ -52,7 +50,6 @@ abstract class AppRouteNames {
   static const String studyBookingConfirmation = 'studyBookingConfirmation';
   static const String gamesBookingConfirmation = 'gamesBookingConfirmation';
   static const String checkout = 'checkout';
-  static const String paymentWebView = 'paymentWebView';
   static const String ticketHistory = 'ticketHistory';
   static const String facebookBinding = 'facebookBinding';
   static const String contactSupport = 'contactSupport';

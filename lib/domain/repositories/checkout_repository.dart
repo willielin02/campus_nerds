@@ -12,7 +12,4 @@ abstract class CheckoutRepository {
   /// Calls the ecpay_create_order edge function
   Future<CreateOrderResult> createOrder(String productId);
 
-  /// Get payment HTML for WebView rendering
-  /// Calls the ecpay_pay edge function with checkout token
-  Future<PaymentHtmlResult> getPaymentHtml(String token);
 }

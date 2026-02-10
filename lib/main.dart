@@ -72,6 +72,7 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
+          lazy: false,
           create: (_) => getIt<AuthBloc>()..add(const AuthCheckStatus()),
         ),
         BlocProvider<OnboardingBloc>(
