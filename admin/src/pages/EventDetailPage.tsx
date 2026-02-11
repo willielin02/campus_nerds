@@ -24,7 +24,7 @@ export default function EventDetailPage() {
   const [venues, setVenues] = useState<Venue[]>([])
   const [bookingStats, setBookingStats] = useState({ total: 0, male: 0, female: 0 })
   const [loading, setLoading] = useState(true)
-  const [expandedGroup, setExpandedGroup] = useState<string | null>(null)
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [selectedVenues, setSelectedVenues] = useState<Record<string, string>>({})
   const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({})
   const [unmatchedBookings, setUnmatchedBookings] = useState<UnmatchedBooking[]>([])
@@ -459,7 +459,7 @@ export default function EventDetailPage() {
             const members = groupMembers[group.id] || []
             const maleCount = members.filter((m) => m.bookings?.users?.gender === 'male').length
             const femaleCount = members.filter((m) => m.bookings?.users?.gender === 'female').length
-            const isExpanded = expandedGroup === group.id
+            const isExpanded = expandedGroups.has(group.id)
             const venueName = (group.venue as unknown as Venue)?.name
             const isDraft = group.status === 'draft'
 
@@ -468,7 +468,12 @@ export default function EventDetailPage() {
                 {/* Collapsed header */}
                 <div
                   className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-alternate/30 transition-colors"
-                  onClick={() => setExpandedGroup(isExpanded ? null : group.id)}
+                  onClick={() => setExpandedGroups(prev => {
+                    const next = new Set(prev)
+                    if (isExpanded) next.delete(group.id)
+                    else next.add(group.id)
+                    return next
+                  })}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-mono text-tertiary-text">{group.id.slice(0, 8)}</span>
