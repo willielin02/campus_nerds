@@ -272,8 +272,9 @@ export default function EventDetailPage() {
           }
           const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
           const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-          if (days > 0) return ` ${days} 天 ${hours} 小時後執行`
-          return ` ${hours} 小時後執行`
+          const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+          if (days > 0) return ` ${days} 天 ${hours} 小時 ${minutes} 分後執行`
+          return ` ${hours} 小時 ${minutes} 分後執行`
         })()}）</p>
       ) : (
         <div className="space-y-3">
