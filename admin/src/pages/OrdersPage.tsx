@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Order, EcpayPayment, OrderStatus } from '../types/database'
+import type { Order, EcpayPayment, OrderStatus, UserProfile } from '../types/database'
 import { ORDER_STATUS_LABELS } from '../types/database'
 import StatusBadge, { orderStatusColor } from '../components/StatusBadge'
 import { formatDateTime } from '../lib/date'
@@ -11,6 +11,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('')
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [payments, setPayments] = useState<Record<string, EcpayPayment[]>>({})
+  const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({})
 
   useEffect(() => {
     loadOrders()
@@ -31,6 +32,22 @@ export default function OrdersPage() {
     const { data } = await query
     if (data) {
       setOrders(data as unknown as (Order & { users: { nickname: string | null } | null })[])
+
+      // Fetch user profiles for age & university
+      const userIds = [...new Set(data.map((d) => (d as any).user_id).filter(Boolean))]
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('user_profile_v')
+          .select('id, nickname, gender, age, university_name')
+          .in('id', userIds)
+        if (profiles) {
+          const map: Record<string, UserProfile> = {}
+          for (const p of profiles) {
+            map[(p as any).id] = p as unknown as UserProfile
+          }
+          setUserProfiles(map)
+        }
+      }
     }
     setLoading(false)
   }
@@ -100,7 +117,16 @@ export default function OrdersPage() {
                     onClick={() => toggleExpand(order.id)}
                   >
                     <td className="px-4 py-3 font-mono text-xs">{order.merchant_trade_no}</td>
-                    <td className="px-4 py-3">{order.users?.nickname || '(未設定)'}</td>
+                    <td className="px-4 py-3">
+                      <p>{order.users?.nickname || '(未設定)'}</p>
+                      {userProfiles[order.user_id] && (
+                        <p className="text-xs text-tertiary-text">
+                          {userProfiles[order.user_id].gender === 'male' ? '男' : '女'} ·{' '}
+                          {userProfiles[order.user_id].age ?? '-'}歲 ·{' '}
+                          {userProfiles[order.user_id].university_name || '-'}
+                        </p>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-secondary-text">{order.title_snapshot}</td>
                     <td className="px-4 py-3 text-right">NT$ {order.total_amount}</td>
                     <td className="px-4 py-3">

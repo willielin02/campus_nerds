@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase, invokeConfirmGroup } from '../lib/supabase'
-import type { Event, Group, GroupMemberRow, Venue, Gender } from '../types/database'
+import type { Event, Group, GroupMemberRow, Venue, Gender, UserProfile } from '../types/database'
 import { CATEGORY_LABELS, TIME_SLOT_LABELS, EVENT_STATUS_LABELS, GROUP_STATUS_LABELS } from '../types/database'
 import StatusBadge, { eventStatusColor, groupStatusColor } from '../components/StatusBadge'
 import { formatEventDate, formatDateTime } from '../lib/date'
@@ -17,6 +17,7 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true)
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null)
   const [selectedVenues, setSelectedVenues] = useState<Record<string, string>>({})
+  const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({})
   const [confirming, setConfirming] = useState<string | null>(null)
   const [transitioning, setTransitioning] = useState(false)
 
@@ -48,23 +49,41 @@ export default function EventDetailPage() {
       .select('*, venue:venues(id, name, address, start_at)')
       .eq('event_id', id!)
       .order('created_at')
-    if (data) {
-      setGroups(data as unknown as Group[])
-      // Load members for each group
-      for (const group of data) {
-        loadGroupMembers(group.id)
-      }
-    }
-  }
+    if (!data) return
+    setGroups(data as unknown as Group[])
 
-  async function loadGroupMembers(groupId: string) {
-    const { data } = await supabase
+    const groupIds = data.map((g) => g.id)
+    if (groupIds.length === 0) return
+
+    // Load all members at once
+    const { data: membersData } = await supabase
       .from('group_members')
       .select('id, group_id, booking_id, bookings!inner(user_id, users!inner(id, nickname, gender))')
-      .eq('group_id', groupId)
+      .in('group_id', groupIds)
       .is('left_at', null)
-    if (data) {
-      setGroupMembers((prev) => ({ ...prev, [groupId]: data as unknown as GroupMemberRow[] }))
+    if (!membersData) return
+
+    const membersMap: Record<string, GroupMemberRow[]> = {}
+    for (const m of membersData) {
+      const gid = (m as any).group_id
+      if (!membersMap[gid]) membersMap[gid] = []
+      membersMap[gid].push(m as unknown as GroupMemberRow)
+    }
+    setGroupMembers(membersMap)
+
+    // Fetch user profiles for age & university
+    const userIds = membersData.map((m) => (m as any).bookings?.users?.id).filter(Boolean)
+    if (userIds.length === 0) return
+    const { data: profiles } = await supabase
+      .from('user_profile_v')
+      .select('id, nickname, gender, age, university_name')
+      .in('id', userIds)
+    if (profiles) {
+      const map: Record<string, UserProfile> = {}
+      for (const p of profiles) {
+        map[(p as any).id] = p as unknown as UserProfile
+      }
+      setUserProfiles(map)
     }
   }
 
@@ -313,14 +332,23 @@ export default function EventDetailPage() {
                     {/* Members */}
                     <p className="text-xs font-medium text-secondary-text mb-2">成員</p>
                     <div className="space-y-1 mb-4">
-                      {members.map((m) => (
-                        <div key={m.id} className="flex items-center gap-3 text-sm">
-                          <span className="text-xs text-tertiary-text">
-                            {m.bookings?.users?.gender === 'male' ? '♂' : '♀'}
-                          </span>
-                          <span>{m.bookings?.users?.nickname || '(未設定暱稱)'}</span>
-                        </div>
-                      ))}
+                      {members.map((m) => {
+                        const userId = m.bookings?.users?.id
+                        const profile = userId ? userProfiles[userId] : null
+                        return (
+                          <div key={m.id} className="flex items-center gap-3 text-sm">
+                            <span className="text-xs text-tertiary-text">
+                              {m.bookings?.users?.gender === 'male' ? '♂' : '♀'}
+                            </span>
+                            <span>{m.bookings?.users?.nickname || '(未設定暱稱)'}</span>
+                            <span className="text-xs text-tertiary-text">
+                              {profile?.age != null ? `${profile.age}歲` : '-'}
+                              {' · '}
+                              {profile?.university_name || '-'}
+                            </span>
+                          </div>
+                        )
+                      })}
                     </div>
 
                     {/* Confirm controls for draft groups */}
