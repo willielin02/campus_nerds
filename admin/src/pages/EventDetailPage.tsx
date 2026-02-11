@@ -229,7 +229,7 @@ export default function EventDetailPage() {
               <button
                 onClick={handleTransitionToNotified}
                 disabled={transitioning}
-                className="px-3 py-2 bg-success text-white rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                className="px-3 py-2 bg-secondary-text text-white rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
               >
                 {transitioning ? '處理中...' : '發送通知'}
               </button>

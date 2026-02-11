@@ -29,19 +29,25 @@ serve(async (req) => {
   }
 
   try {
-    // This function should only be called with service role key
+    // This function should only be called with service role key.
+    // Decode the JWT payload and verify the role claim.
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.includes('service_role')) {
-      // Verify it's a service role call by checking the key
-      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-
-      if (!authHeader?.includes(serviceRoleKey.substring(0, 20))) {
-        return new Response(JSON.stringify({ error: 'Unauthorized - service role required' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
+    const token = authHeader?.replace('Bearer ', '') ?? ''
+    let isServiceRole = false
+    try {
+      const parts = token.split('.')
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]))
+        isServiceRole = payload.role === 'service_role'
       }
+    } catch { /* invalid JWT */ }
+
+    if (!isServiceRole) {
+      console.error('Auth failed: not a service_role JWT')
+      return new Response(JSON.stringify({ error: 'Unauthorized - service role required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
     }
 
     // Initialize Supabase client with service role
@@ -50,10 +56,13 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Calculate target date (2 days from now in Taipei timezone)
-    const now = new Date()
+    // Get server time (mock-time aware) for target date calculation
+    const { data: serverNowStr } = await supabaseClient.rpc('get_server_now')
+    const serverNow = serverNowStr ? new Date(serverNowStr as string) : new Date()
+
+    // Calculate target date (2 days from server-now in Taipei timezone)
     const taipeiOffset = 8 * 60 * 60 * 1000 // UTC+8
-    const taipeiNow = new Date(now.getTime() + taipeiOffset)
+    const taipeiNow = new Date(serverNow.getTime() + taipeiOffset)
     const targetDate = new Date(taipeiNow)
     targetDate.setDate(targetDate.getDate() + 2)
     const targetDateStr = targetDate.toISOString().split('T')[0]

@@ -3,12 +3,12 @@ interface StatusBadgeProps {
   color: 'green' | 'yellow' | 'red' | 'gray' | 'blue'
 }
 
-// Solid background + contrasting text — matches Flutter's StatusBadge style
-// (solid bg, white text, 8px radius)
+// Low-saturation badge palette matching the app's gray theme.
+// Differentiation via shade: dark gray (active), light gray (pending), medium gray (inactive).
 const colorMap = {
-  green: 'bg-success text-white',
-  yellow: 'bg-warning text-primary-text',
-  red: 'bg-error text-white',
+  green: 'bg-secondary-text text-white',
+  yellow: 'bg-tertiary text-secondary-text',
+  red: 'bg-tertiary-text text-white',
   gray: 'bg-tertiary-text text-white',
   blue: 'bg-secondary-text text-white',
 }

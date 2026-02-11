@@ -124,7 +124,7 @@ export default function OrdersPage() {
                               {payments[order.id].map((p) => (
                                 <div key={p.id} className="flex items-center gap-4 bg-secondary rounded-lg px-3 py-2">
                                   <span className="text-tertiary-text">TradeNo: {p.trade_no || '-'}</span>
-                                  <span className={p.rtn_code === 1 ? 'text-success' : 'text-error'}>
+                                  <span className={p.rtn_code === 1 ? 'text-secondary-text' : 'text-tertiary-text'}>
                                     Code: {p.rtn_code ?? '-'}
                                   </span>
                                   <span className="text-secondary-text">{p.rtn_msg || '-'}</span>
@@ -137,7 +137,7 @@ export default function OrdersPage() {
                             </div>
                           )}
                           {order.paid_at && (
-                            <p className="text-success mt-2">
+                            <p className="text-secondary-text mt-2">
                               付款時間：{formatDateTime(order.paid_at)}
                             </p>
                           )}

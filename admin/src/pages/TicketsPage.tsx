@@ -201,7 +201,7 @@ export default function TicketsPage() {
                           <span className="text-tertiary-text text-xs ml-2">{type}票</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className={delta > 0 ? 'text-success font-medium' : 'text-error font-medium'}>
+                          <span className={delta > 0 ? 'text-secondary-text font-medium' : 'text-tertiary-text font-medium'}>
                             {delta > 0 ? '+' : ''}{delta}
                           </span>
                           <span className="text-xs text-tertiary-text">
