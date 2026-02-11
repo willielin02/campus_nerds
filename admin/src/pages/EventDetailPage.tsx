@@ -31,6 +31,7 @@ export default function EventDetailPage() {
   const [selectedAddMember, setSelectedAddMember] = useState<Record<string, string>>({})
   const [confirming, setConfirming] = useState<string | null>(null)
   const [transitioning, setTransitioning] = useState(false)
+  const [editingMaxSize, setEditingMaxSize] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (id) loadAll()
@@ -192,6 +193,19 @@ export default function EventDetailPage() {
     }
   }
 
+  async function handleUpdateMaxSize(groupId: string, newSize: number) {
+    if (newSize < 1) return
+    const { error } = await supabase
+      .from('groups')
+      .update({ max_size: newSize })
+      .eq('id', groupId)
+    if (error) {
+      alert(`更新失敗: ${error.message}`)
+    } else {
+      await loadGroups()
+    }
+  }
+
   async function handleConfirmGroup(groupId: string) {
     const venueId = selectedVenues[groupId]
     if (!venueId) {
@@ -205,7 +219,25 @@ export default function EventDetailPage() {
       return
     }
 
-    if (!confirm('確定要確認此分組嗎？系統會先同步 Facebook 好友再驗證。')) return
+    // Check for warnings before confirming
+    const group = groups.find((g) => g.id === groupId)
+    const members = groupMembers[groupId] || []
+    const maleCount = members.filter((m) => m.bookings?.users?.gender === 'male').length
+    const femaleCount = members.filter((m) => m.bookings?.users?.gender === 'female').length
+    const warnings: string[] = []
+
+    if (group && group.max_size % 2 !== 0) {
+      warnings.push(`分組人數為奇數（${group.max_size}人）`)
+    }
+    if (maleCount !== femaleCount) {
+      warnings.push(`性別比不為 1:1（男性 ${maleCount} · 女性 ${femaleCount}）`)
+    }
+
+    if (warnings.length > 0) {
+      if (!confirm(`⚠ 注意：\n${warnings.map((w) => `• ${w}`).join('\n')}\n\n確定仍要確認此分組嗎？系統會先同步 Facebook 好友再驗證。`)) return
+    } else {
+      if (!confirm('確定要確認此分組嗎？系統會先同步 Facebook 好友再驗證。')) return
+    }
 
     setConfirming(groupId)
 
@@ -438,6 +470,31 @@ export default function EventDetailPage() {
                         )
                       })}
                     </div>
+
+                    {/* Edit max_size for draft groups */}
+                    {group.status === 'draft' && (
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-xs text-secondary-text">分組人數上限</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={editingMaxSize[group.id] ?? group.max_size}
+                          onChange={(e) => setEditingMaxSize((prev) => ({ ...prev, [group.id]: Number(e.target.value) }))}
+                          className="w-20 border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-1.5 text-sm bg-secondary text-center"
+                        />
+                        {(editingMaxSize[group.id] != null && editingMaxSize[group.id] !== group.max_size) && (
+                          <button
+                            onClick={() => handleUpdateMaxSize(group.id, editingMaxSize[group.id])}
+                            className="px-3 py-1.5 bg-alternate text-primary-text rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 transition-opacity"
+                          >
+                            儲存
+                          </button>
+                        )}
+                        {editingMaxSize[group.id] != null && editingMaxSize[group.id] % 2 !== 0 && (
+                          <span className="text-xs text-tertiary-text">⚠ 奇數人數，性別比將無法 1:1</span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Add member from unmatched bookings (draft groups only) */}
                     {group.status === 'draft' && unmatchedBookings.length > 0 && (
