@@ -121,8 +121,8 @@ export default function OrdersPage() {
                       <p>{order.users?.nickname || '(未設定)'}</p>
                       {userProfiles[order.user_id] && (
                         <p className="text-xs text-tertiary-text">
-                          {userProfiles[order.user_id].gender === 'male' ? '男性' : '女性'} ·{' '}
                           {userProfiles[order.user_id].age ?? '-'}歲 ·{' '}
+                          {userProfiles[order.user_id].gender === 'male' ? '男性' : '女性'} ·{' '}
                           {userProfiles[order.user_id].university_name || '-'}
                         </p>
                       )}

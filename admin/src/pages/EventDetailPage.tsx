@@ -418,12 +418,11 @@ export default function EventDetailPage() {
                         const profile = userId ? userProfiles[userId] : null
                         return (
                           <div key={m.id} className="flex items-center gap-3 text-sm">
-                            <span className="text-xs text-tertiary-text">
-                              {m.bookings?.users?.gender === 'male' ? '男性' : '女性'}
-                            </span>
                             <span>{m.bookings?.users?.nickname || '(未設定暱稱)'}</span>
                             <span className="text-xs text-tertiary-text">
                               {profile?.age != null ? `${profile.age}歲` : '-'}
+                              {' · '}
+                              {m.bookings?.users?.gender === 'male' ? '男性' : '女性'}
                               {' · '}
                               {profile?.university_name || '-'}
                             </span>
@@ -455,8 +454,7 @@ export default function EventDetailPage() {
                             <option value="">選擇要加入的用戶...</option>
                             {unmatchedBookings.map((ub) => (
                               <option key={ub.booking_id} value={ub.booking_id}>
-                                {ub.gender === 'male' ? '男性' : '女性'}{' '}
-                                {ub.nickname || '(未設定暱稱)'} · {ub.age != null ? `${ub.age}歲` : '-'} · {ub.university_name || '-'}
+                                {ub.nickname || '(未設定暱稱)'} {ub.age != null ? `${ub.age}歲` : '-'} · {ub.gender === 'male' ? '男性' : '女性'} · {ub.university_name || '-'}
                               </option>
                             ))}
                           </select>
