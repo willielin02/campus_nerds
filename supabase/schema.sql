@@ -1760,69 +1760,56 @@ CREATE OR REPLACE FUNCTION "public"."set_group_times"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-  v_event_date     date;
-  v_time_slot      public.events.time_slot%type;
-  v_venue_start_at timestamptz;
+  v_event_date       date;
+  v_time_slot        public.events.time_slot%type;
+  v_venue_start_time time;
+  v_actual_start     timestamptz;
 BEGIN
+  -- Always fetch event info (needed for multiple calculations)
+  SELECT e.event_date, e.time_slot
+  INTO v_event_date, v_time_slot
+  FROM public.events e
+  WHERE e.id = NEW.event_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Event % for group % not found', NEW.event_id, NEW.id;
+  END IF;
+
+  IF v_event_date IS NULL THEN
+    RAISE EXCEPTION 'Event % has no event_date; cannot compute group times', NEW.event_id;
+  END IF;
+
   --------------------------------------------------------------------
-  -- 依 venue.start_at 自動填 chat_open_at / goal_close_at（若尚未填）
+  -- 依 venue.start_at (time) + event_date 自動填 chat_open_at / goal_close_at
   --------------------------------------------------------------------
   IF NEW.venue_id IS NOT NULL THEN
     SELECT v.start_at
-    INTO v_venue_start_at
+    INTO v_venue_start_time
     FROM public.venues v
     WHERE v.id = NEW.venue_id;
 
-    -- 只有 venue 有設定 start_at 才自動帶入
-    IF v_venue_start_at IS NOT NULL THEN
+    IF v_venue_start_time IS NOT NULL THEN
+      v_actual_start := (v_event_date + v_venue_start_time) AT TIME ZONE 'Asia/Taipei';
+
       IF NEW.chat_open_at IS NULL THEN
-        NEW.chat_open_at := v_venue_start_at - interval '1 hour';
+        NEW.chat_open_at := v_actual_start - interval '1 hour';
       END IF;
 
       IF NEW.goal_close_at IS NULL THEN
-        NEW.goal_close_at := v_venue_start_at + interval '1 hour';
+        NEW.goal_close_at := v_actual_start + interval '1 hour';
       END IF;
     END IF;
   END IF;
 
   --------------------------------------------------------------------
-  -- 依 event_date + time_slot 自動填：
-  --   feedback_sent_at    ：活動日 12 / 17 / 22
-  --   goal_check_close_at ：活動日 13 / 18 / 23（關閉目標打勾）
-  --------------------------------------------------------------------
-  IF NEW.feedback_sent_at IS NULL OR NEW.goal_check_close_at IS NULL THEN
-    SELECT e.event_date, e.time_slot
-    INTO v_event_date, v_time_slot
-    FROM public.events e
-    WHERE e.id = NEW.event_id;
-
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'Event % for group % not found', NEW.event_id, NEW.id;
-    END IF;
-
-    IF v_event_date IS NULL THEN
-      RAISE EXCEPTION 'Event % has no event_date; cannot compute group times', NEW.event_id;
-    END IF;
-  END IF;
-
   -- feedback_sent_at：活動日 12:00 / 17:00 / 22:00（Asia/Taipei）
+  --------------------------------------------------------------------
   IF NEW.feedback_sent_at IS NULL THEN
     NEW.feedback_sent_at :=
       CASE v_time_slot
         WHEN 'morning'   THEN (v_event_date + time '12:00') AT TIME ZONE 'Asia/Taipei'
         WHEN 'afternoon' THEN (v_event_date + time '17:00') AT TIME ZONE 'Asia/Taipei'
         WHEN 'evening'   THEN (v_event_date + time '22:00') AT TIME ZONE 'Asia/Taipei'
-        ELSE NULL
-      END;
-  END IF;
-
-  -- goal_check_close_at：活動日 13:00 / 18:00 / 23:00（Asia/Taipei）
-  IF NEW.goal_check_close_at IS NULL THEN
-    NEW.goal_check_close_at :=
-      CASE v_time_slot
-        WHEN 'morning'   THEN (v_event_date + time '13:00') AT TIME ZONE 'Asia/Taipei'
-        WHEN 'afternoon' THEN (v_event_date + time '18:00') AT TIME ZONE 'Asia/Taipei'
-        WHEN 'evening'   THEN (v_event_date + time '23:00') AT TIME ZONE 'Asia/Taipei'
         ELSE NULL
       END;
   END IF;
@@ -2467,7 +2454,7 @@ CREATE TABLE IF NOT EXISTS "public"."venues" (
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "category" "public"."event_category" NOT NULL,
-    "start_at" timestamp with time zone,
+    "start_at" time without time zone,
     CONSTRAINT "CHK_venues_type_constraints" CHECK (((("type" = 'university_library'::"public"."venue_type") AND ("university_id" IS NOT NULL)) OR (("type" = 'public_library'::"public"."venue_type") AND ("university_id" IS NULL)) OR (("type" = ANY (ARRAY['cafe'::"public"."venue_type", 'boardgame'::"public"."venue_type", 'escape'::"public"."venue_type"])) AND ("university_id" IS NULL)))),
     CONSTRAINT "chk_venues_google_map_url_http" CHECK (("google_map_url" ~~ 'http%'::"text"))
 );
@@ -2491,7 +2478,7 @@ CREATE OR REPLACE VIEW "public"."my_events_v" WITH ("security_invoker"='on') AS
     "e"."location_detail",
     "e"."status" AS "event_status",
     "g"."id" AS "group_id",
-    "v"."start_at" AS "group_start_at",
+    CASE WHEN "v"."start_at" IS NOT NULL THEN ("e"."event_date" + "v"."start_at") AT TIME ZONE 'Asia/Taipei' ELSE NULL END AS "group_start_at",
     "g"."status" AS "group_status",
     "g"."chat_open_at",
     "g"."venue_id",

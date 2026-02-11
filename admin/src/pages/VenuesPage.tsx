@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase'
 import type { Venue, VenueType, EventCategory, City } from '../types/database'
 import { VENUE_TYPE_LABELS, CATEGORY_LABELS } from '../types/database'
 import StatusBadge from '../components/StatusBadge'
-import { formatDateTime } from '../lib/date'
 
 interface University {
   id: string
@@ -142,7 +141,7 @@ export default function VenuesPage() {
     setEditCategory(venue.category)
     setEditType(venue.type)
     setEditUniversityId(venue.university_id || '')
-    setEditStartAt(venue.start_at ? toLocalDatetime(venue.start_at) : '')
+    setEditStartAt(venue.start_at ? venue.start_at.slice(0, 5) : '')
   }
 
   async function handleSaveEdit() {
@@ -186,14 +185,6 @@ export default function VenuesPage() {
     } else {
       loadVenues()
     }
-  }
-
-  // Convert ISO string to datetime-local input value (Taipei time)
-  function toLocalDatetime(iso: string): string {
-    const d = new Date(iso)
-    const taipeiOffset = 8 * 60
-    const local = new Date(d.getTime() + (taipeiOffset - d.getTimezoneOffset()) * 60000)
-    return local.toISOString().slice(0, 16)
   }
 
   const inputClass = 'mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary'
@@ -256,8 +247,8 @@ export default function VenuesPage() {
               </label>
             )}
             <label className="block">
-              <span className="text-xs text-secondary-text">開始時間（可選）</span>
-              <input type="datetime-local" value={newStartAt} onChange={(e) => setNewStartAt(e.target.value)} className={inputClass} />
+              <span className="text-xs text-secondary-text">營業時間（可選）</span>
+              <input type="time" value={newStartAt} onChange={(e) => setNewStartAt(e.target.value)} className={inputClass} />
             </label>
           </div>
           <div className="mt-4 flex justify-end">
@@ -294,7 +285,7 @@ export default function VenuesPage() {
               <th className="text-left px-4 py-3 font-medium text-secondary-text">城市</th>
               <th className="text-left px-4 py-3 font-medium text-secondary-text">類別</th>
               <th className="text-left px-4 py-3 font-medium text-secondary-text">類型</th>
-              <th className="text-left px-4 py-3 font-medium text-secondary-text">開始時間</th>
+              <th className="text-left px-4 py-3 font-medium text-secondary-text">營業時間</th>
               <th className="text-left px-4 py-3 font-medium text-secondary-text">狀態</th>
             </tr>
           </thead>
@@ -324,7 +315,7 @@ export default function VenuesPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-tertiary-text text-xs">
-                      {venue.start_at ? formatDateTime(venue.start_at) : '-'}
+                      {venue.start_at ? venue.start_at.slice(0, 5) : '-'}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge
@@ -380,8 +371,8 @@ export default function VenuesPage() {
                             </label>
                           )}
                           <label className="block">
-                            <span className="text-xs text-secondary-text">開始時間</span>
-                            <input type="datetime-local" value={editStartAt} onChange={(e) => setEditStartAt(e.target.value)} className={inputClass} />
+                            <span className="text-xs text-secondary-text">營業時間</span>
+                            <input type="time" value={editStartAt} onChange={(e) => setEditStartAt(e.target.value)} className={inputClass} />
                           </label>
                         </div>
                         <div className="mt-4 flex items-center gap-3">
