@@ -230,14 +230,25 @@ export default function EventDetailPage() {
     }
   }
 
-  async function handleConfirmGroup(groupId: string) {
+  async function handleCreateGroup() {
+    if (!event) return
+    const { error } = await supabase
+      .from('groups')
+      .insert({ event_id: event.id, max_size: event.default_group_size, status: 'draft' })
+    if (error) {
+      alert(`建立失敗: ${error.message}`)
+    } else {
+      await Promise.all([loadGroups(), loadUnmatchedBookings()])
+    }
+  }
+
+  async function handleLockGroup(groupId: string) {
     const group = groups.find((g) => g.id === groupId)
     if (!group?.venue_id) {
       alert('請先儲存場地')
       return
     }
 
-    // Check for warnings before confirming
     const members = groupMembers[groupId] || []
     const maleCount = members.filter((m) => m.bookings?.users?.gender === 'male').length
     const femaleCount = members.filter((m) => m.bookings?.users?.gender === 'female').length
@@ -251,9 +262,9 @@ export default function EventDetailPage() {
     }
 
     if (warnings.length > 0) {
-      if (!confirm(`⚠ 注意：\n${warnings.map((w) => `• ${w}`).join('\n')}\n\n確定仍要確認此分組嗎？系統會先同步 Facebook 好友再驗證。`)) return
+      if (!confirm(`⚠ 注意：\n${warnings.map((w) => `• ${w}`).join('\n')}\n\n確定仍要鎖定此分組嗎？系統會先同步 Facebook 好友再驗證。`)) return
     } else {
-      if (!confirm('確定要確認此分組嗎？系統會先同步 Facebook 好友再驗證。')) return
+      if (!confirm('確定要鎖定此分組嗎？系統會先同步 Facebook 好友再驗證。')) return
     }
 
     setConfirming(groupId)
@@ -261,10 +272,27 @@ export default function EventDetailPage() {
     const result = await invokeConfirmGroup({ group_id: groupId })
 
     if (result.success) {
-      alert('分組確認成功！')
+      alert('分組已鎖定！')
       loadGroups()
     } else {
-      alert(`確認失敗: ${result.details || result.message || result.error}`)
+      alert(`鎖定失敗: ${result.details || result.message || result.error}`)
+    }
+    setConfirming(null)
+  }
+
+  async function handleUnlockGroup(groupId: string) {
+    if (!confirm('確定要解除鎖定此分組嗎？解除後可重新編輯成員與場地。')) return
+
+    setConfirming(groupId)
+    const { error } = await supabase
+      .from('groups')
+      .update({ status: 'draft' })
+      .eq('id', groupId)
+
+    if (error) {
+      alert(`解除鎖定失敗: ${error.message}`)
+    } else {
+      await loadGroups()
     }
     setConfirming(null)
   }
@@ -293,7 +321,7 @@ export default function EventDetailPage() {
 
     const draftGroups = groups.filter((g) => g.status === 'draft')
     if (draftGroups.length > 0) {
-      alert(`還有 ${draftGroups.length} 個未確認的分組，請先全部確認。`)
+      alert(`還有 ${draftGroups.length} 個未鎖定的分組，請先全部鎖定。`)
       return
     }
 
@@ -354,15 +382,20 @@ export default function EventDetailPage() {
                 {transitioning ? '處理中...' : '開放報名'}
               </button>
             )}
-            {event.status === 'scheduled' && (
-              <button
-                onClick={handleTransitionToNotified}
-                disabled={transitioning}
-                className="px-3 py-1.5 bg-secondary-text text-white rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
-              >
-                {transitioning ? '處理中...' : '發送通知'}
-              </button>
-            )}
+            {event.status === 'scheduled' && (() => {
+              const lockedCount = groups.filter((g) => g.status === 'scheduled').length
+              const allLocked = groups.length > 0 && lockedCount === groups.length
+              return (
+                <button
+                  onClick={handleTransitionToNotified}
+                  disabled={transitioning || !allLocked}
+                  title={!allLocked ? `尚有 ${groups.length - lockedCount} 個未鎖定的分組` : ''}
+                  className="px-3 py-1.5 bg-secondary-text text-white rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                >
+                  {transitioning ? '處理中...' : '發送通知'}
+                </button>
+              )
+            })()}
           </div>
         </div>
 
@@ -380,7 +413,22 @@ export default function EventDetailPage() {
       </div>
 
       {/* Groups section */}
-      <h3 className="text-base font-semibold mb-3">分組列表 ({groups.length})</h3>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <h3 className="text-base font-semibold">分組列表 ({groups.length})</h3>
+          {groups.length > 0 && (
+            <span className="text-xs text-secondary-text">
+              已鎖定 {groups.filter((g) => g.status === 'scheduled').length}/{groups.length}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={handleCreateGroup}
+          className="px-3 py-1.5 bg-alternate text-primary-text rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 transition-opacity"
+        >
+          新增分組
+        </button>
+      </div>
 
       {groups.length === 0 ? (
         <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] px-5 py-8 text-center">
@@ -566,28 +614,41 @@ export default function EventDetailPage() {
                       </div>
                     )}
 
-                    {/* ── Scheduled: Venue info (read-only) ── */}
-                    {!isDraft && venueName && (
-                      <div className="px-4 py-3 border-t border-tertiary text-sm text-secondary-text">
-                        場地：{venueName}
-                        {(group.venue as unknown as Venue)?.address && (
-                          <span className="text-tertiary-text"> · {(group.venue as unknown as Venue).address}</span>
-                        )}
+                    {/* ── Scheduled: Venue info + unlock ── */}
+                    {!isDraft && (
+                      <div className="px-4 py-3 border-t-2 border-tertiary bg-alternate/10 flex items-center justify-between">
+                        <div className="text-sm text-secondary-text">
+                          {venueName && (
+                            <>
+                              場地：{venueName}
+                              {(group.venue as unknown as Venue)?.address && (
+                                <span className="text-tertiary-text"> · {(group.venue as unknown as Venue).address}</span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleUnlockGroup(group.id)}
+                          disabled={confirming === group.id}
+                          className="px-4 py-2 bg-secondary border-2 border-tertiary text-secondary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                        >
+                          {confirming === group.id ? '處理中...' : '解除鎖定'}
+                        </button>
                       </div>
                     )}
 
-                    {/* ── Draft: Confirm action bar ── */}
+                    {/* ── Draft: Lock action bar ── */}
                     {isDraft && group.venue_id && (
                       <div className="px-4 py-3 border-t-2 border-tertiary bg-alternate/10 flex items-center justify-between">
                         <p className="text-xs text-tertiary-text">
-                          確認後將同步 Facebook 好友並驗證分組
+                          鎖定後將同步 Facebook 好友並驗證分組
                         </p>
                         <button
-                          onClick={() => handleConfirmGroup(group.id)}
+                          onClick={() => handleLockGroup(group.id)}
                           disabled={confirming === group.id}
                           className="px-5 py-2 bg-secondary-text text-white rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
                         >
-                          {confirming === group.id ? '確認中...' : '確認分組'}
+                          {confirming === group.id ? '鎖定中...' : '鎖定分組'}
                         </button>
                       </div>
                     )}

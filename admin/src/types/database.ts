@@ -147,7 +147,7 @@ export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
 
 export const GROUP_STATUS_LABELS: Record<GroupStatus, string> = {
   draft: '草稿',
-  scheduled: '已確認',
+  scheduled: '已鎖定',
   cancelled: '已取消',
 }
 
