@@ -261,7 +261,7 @@ export default function EventDetailPage() {
           groupingAt.setDate(groupingAt.getDate() - 2)
           const now = new Date()
           const diffMs = groupingAt.getTime() - now.getTime()
-          if (diffMs <= 0) return '報名截止後執行'
+          if (diffMs <= 0) return '已執行，本次未成功分組'
           const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
           const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
           if (days > 0) return ` ${days} 天 ${hours} 小時後執行`
