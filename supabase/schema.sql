@@ -1395,15 +1395,42 @@ $$;
 ALTER FUNCTION "public"."handle_event_status_notified"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."check_group_for_facebook_friends"("p_group_id" "uuid")
+RETURNS TABLE("user_a_id" "uuid", "user_b_id" "uuid")
+    LANGUAGE "plpgsql" STABLE
+    SET "search_path" TO 'public'
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT DISTINCT
+    LEAST(b1.user_id, b2.user_id) as user_a_id,
+    GREATEST(b1.user_id, b2.user_id) as user_b_id
+  FROM public.group_members gm1
+  JOIN public.bookings b1 ON b1.id = gm1.booking_id
+  JOIN public.group_members gm2
+    ON gm1.group_id = gm2.group_id AND b1.user_id < (SELECT user_id FROM public.bookings WHERE id = gm2.booking_id)
+  JOIN public.bookings b2 ON b2.id = gm2.booking_id
+  JOIN public.friendships f
+    ON f.user_low_id = LEAST(b1.user_id, b2.user_id)
+    AND f.user_high_id = GREATEST(b1.user_id, b2.user_id)
+  WHERE gm1.group_id = p_group_id
+    AND gm1.left_at IS NULL
+    AND gm2.left_at IS NULL;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."check_group_for_facebook_friends"("p_group_id" "uuid") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."handle_group_status_scheduled"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     SET "search_path" TO 'public'
     AS $$
 DECLARE
   v_member_count  integer;
-  v_male_count    integer;
-  v_female_count  integer;
   v_category      public.event_category;
+  v_fb_conflict   RECORD;
 BEGIN
   -- 只在變成 scheduled 的那一刻處理
   IF NEW.status <> 'scheduled'::public.group_status THEN
@@ -1430,36 +1457,12 @@ BEGIN
   END IF;
 
   --------------------------------------------------------------------
-  -- 2. 性別必須 1:1（目前 gender enum 只有 male / female）
+  -- 2. (已移除) 性別比與偶數 max_size 檢查
+  --    改由後台 UI 以警告方式提示，管理員可執意放行
   --------------------------------------------------------------------
-  IF NEW.max_size % 2 <> 0 THEN
-    RAISE EXCEPTION
-      'group % max_size % is not even; cannot enforce 1:1 gender',
-      NEW.id, NEW.max_size;
-  END IF;
-
-  SELECT
-    COUNT(*) FILTER (WHERE up.gender = 'male')   AS male_count,
-    COUNT(*) FILTER (WHERE up.gender = 'female') AS female_count
-  INTO v_male_count, v_female_count
-  FROM public.group_members gm
-  JOIN public.bookings b
-    ON b.id = gm.booking_id
-  JOIN public.user_profile_v up
-    ON up.id = b.user_id
-  WHERE gm.group_id = NEW.id
-    AND gm.left_at IS NULL;
-
-  IF v_male_count <> v_female_count
-     OR v_male_count + v_female_count <> NEW.max_size THEN
-    RAISE EXCEPTION
-      'group % gender ratio must be 1:1, got male=% female=% total=%',
-      NEW.id, v_male_count, v_female_count, NEW.max_size;
-  END IF;
 
   --------------------------------------------------------------------
   -- 3. 場地與時間欄位不得為 NULL
-  --    （venue_id 其實已有另一顆 BEFORE trigger 在檢查，但這裡再保險一次）
   --------------------------------------------------------------------
   IF NEW.venue_id IS NULL THEN
     RAISE EXCEPTION 'groups.venue_id is required when status = scheduled (group=%)', NEW.id;
@@ -1474,7 +1477,18 @@ BEGIN
   END IF;
 
   --------------------------------------------------------------------
-  -- 4. 依活動類型建立學習內容 / 題目
+  -- 4. 檢查群組中是否有臉書好友
+  --------------------------------------------------------------------
+  FOR v_fb_conflict IN
+    SELECT * FROM public.check_group_for_facebook_friends(NEW.id)
+  LOOP
+    RAISE EXCEPTION
+      'group % contains Facebook friends: user % and user % are friends',
+      NEW.id, v_fb_conflict.user_a_id, v_fb_conflict.user_b_id;
+  END LOOP;
+
+  --------------------------------------------------------------------
+  -- 5. 依活動類型建立學習內容 / 題目
   --------------------------------------------------------------------
   SELECT e.category
   INTO v_category
