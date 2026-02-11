@@ -64,6 +64,13 @@ export default function EventDetailPage() {
     if (!data) return
     setGroups(data as unknown as Group[])
 
+    // Pre-populate venue selections from saved venue_id
+    const venueSelections: Record<string, string> = {}
+    for (const g of data) {
+      if (g.venue_id) venueSelections[g.id] = g.venue_id as string
+    }
+    setSelectedVenues((prev) => ({ ...venueSelections, ...prev }))
+
     const groupIds = data.map((g) => g.id)
     if (groupIds.length === 0) return
 
@@ -206,27 +213,37 @@ export default function EventDetailPage() {
     }
   }
 
-  async function handleConfirmGroup(groupId: string) {
+  async function handleSaveVenue(groupId: string) {
     const venueId = selectedVenues[groupId]
-    if (!venueId) {
-      alert('請先選擇場地')
-      return
-    }
+    if (!venueId) return
 
-    const venue = venues.find((v) => v.id === venueId)
-    if (!venue?.start_at || !event) {
-      alert('場地缺少開始時間')
+    // Clear timing fields so trg_set_group_times recalculates from new venue
+    const { error } = await supabase
+      .from('groups')
+      .update({ venue_id: venueId, chat_open_at: null, goal_close_at: null, feedback_sent_at: null })
+      .eq('id', groupId)
+
+    if (error) {
+      alert(`場地儲存失敗: ${error.message}`)
+    } else {
+      await loadGroups()
+    }
+  }
+
+  async function handleConfirmGroup(groupId: string) {
+    const group = groups.find((g) => g.id === groupId)
+    if (!group?.venue_id) {
+      alert('請先儲存場地')
       return
     }
 
     // Check for warnings before confirming
-    const group = groups.find((g) => g.id === groupId)
     const members = groupMembers[groupId] || []
     const maleCount = members.filter((m) => m.bookings?.users?.gender === 'male').length
     const femaleCount = members.filter((m) => m.bookings?.users?.gender === 'female').length
     const warnings: string[] = []
 
-    if (group && group.max_size % 2 !== 0) {
+    if (group.max_size % 2 !== 0) {
       warnings.push(`分組人數為奇數（${group.max_size}人）`)
     }
     if (maleCount !== femaleCount) {
@@ -241,23 +258,7 @@ export default function EventDetailPage() {
 
     setConfirming(groupId)
 
-    // Compute timing fields from venue start_at and event time_slot
-    const startAt = new Date(venue.start_at)
-    const chatOpenAt = new Date(startAt.getTime() - 60 * 60 * 1000).toISOString()
-    const goalCloseAt = new Date(startAt.getTime() + 60 * 60 * 1000).toISOString()
-
-    // feedback_sent_at: event_date at 12:00/17:00/22:00 based on time_slot
-    const feedbackHour = event.time_slot === 'morning' ? 12 : event.time_slot === 'afternoon' ? 17 : 22
-    const feedbackDate = new Date(`${event.event_date}T${String(feedbackHour).padStart(2, '0')}:00:00+08:00`)
-    const feedbackSentAt = feedbackDate.toISOString()
-
-    const result = await invokeConfirmGroup({
-      group_id: groupId,
-      venue_id: venueId,
-      chat_open_at: chatOpenAt,
-      goal_close_at: goalCloseAt,
-      feedback_sent_at: feedbackSentAt,
-    })
+    const result = await invokeConfirmGroup({ group_id: groupId })
 
     if (result.success) {
       alert('分組確認成功！')
@@ -526,11 +527,11 @@ export default function EventDetailPage() {
                       </div>
                     )}
 
-                    {/* Confirm controls for draft groups */}
+                    {/* Venue selection for draft groups */}
                     {group.status === 'draft' && (
                       <div className="flex items-end gap-3 pt-3 border-t border-tertiary">
                         <label className="flex-1">
-                          <span className="text-xs text-secondary-text">選擇場地</span>
+                          <span className="text-xs text-secondary-text">場地</span>
                           <select
                             value={selectedVenues[group.id] || ''}
                             onChange={(e) => setSelectedVenues((prev) => ({ ...prev, [group.id]: e.target.value }))}
@@ -544,10 +545,27 @@ export default function EventDetailPage() {
                             ))}
                           </select>
                         </label>
+                        {selectedVenues[group.id] && selectedVenues[group.id] !== group.venue_id && (
+                          <button
+                            onClick={() => handleSaveVenue(group.id)}
+                            className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 transition-opacity"
+                          >
+                            儲存場地
+                          </button>
+                        )}
+                        {group.venue_id && selectedVenues[group.id] === group.venue_id && (
+                          <span className="px-3 py-2 text-xs text-tertiary-text">已儲存</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Confirm button for draft groups (only when venue is saved) */}
+                    {group.status === 'draft' && group.venue_id && (
+                      <div className="flex justify-end pt-3">
                         <button
                           onClick={() => handleConfirmGroup(group.id)}
-                          disabled={confirming === group.id || !selectedVenues[group.id]}
-                          className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                          disabled={confirming === group.id}
+                          className="px-4 py-3 bg-secondary-text text-white rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
                         >
                           {confirming === group.id ? '確認中...' : '確認分組'}
                         </button>

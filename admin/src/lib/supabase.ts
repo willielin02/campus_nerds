@@ -11,10 +11,6 @@ export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
 
 export async function invokeConfirmGroup(params: {
   group_id: string
-  venue_id: string
-  chat_open_at: string
-  goal_close_at: string
-  feedback_sent_at: string
 }) {
   const res = await fetch(`${supabaseUrl}/functions/v1/confirm-group`, {
     method: 'POST',

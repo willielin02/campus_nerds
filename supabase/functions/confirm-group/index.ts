@@ -24,10 +24,6 @@ interface FacebookFriendsResponse {
 
 interface GroupConfirmRequest {
   group_id: string;
-  venue_id: string;
-  chat_open_at: string;
-  goal_close_at: string;
-  feedback_sent_at: string;
 }
 
 Deno.serve(async (req) => {
@@ -57,8 +53,7 @@ Deno.serve(async (req) => {
 
     // Get request body
     const body: GroupConfirmRequest = await req.json();
-    const { group_id, venue_id, chat_open_at, goal_close_at, feedback_sent_at } =
-      body;
+    const { group_id } = body;
 
     if (!group_id) {
       return new Response(JSON.stringify({ error: "Missing group_id" }), {
@@ -199,9 +194,9 @@ Deno.serve(async (req) => {
     console.log("Friend sync results:", syncResults);
 
     // 3. Now update the group status to 'scheduled'
+    // venue_id and timing fields should already be set via admin venue save
     // The trigger handle_group_status_scheduled will validate:
     // - Group is full (members = max_size)
-    // - Gender ratio is 1:1
     // - venue_id is set
     // - Times are set
     // - NO Facebook friends in the group (will fail if friends found)
@@ -209,10 +204,6 @@ Deno.serve(async (req) => {
       .from("groups")
       .update({
         status: "scheduled",
-        venue_id: venue_id,
-        chat_open_at: chat_open_at,
-        goal_close_at: goal_close_at,
-        feedback_sent_at: feedback_sent_at,
       })
       .eq("id", group_id);
 
