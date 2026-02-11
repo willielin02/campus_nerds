@@ -4,6 +4,7 @@ import { supabase, invokeConfirmGroup } from '../lib/supabase'
 import type { Event, Group, GroupMemberRow, Venue, Gender } from '../types/database'
 import { CATEGORY_LABELS, TIME_SLOT_LABELS, EVENT_STATUS_LABELS, GROUP_STATUS_LABELS } from '../types/database'
 import StatusBadge, { eventStatusColor, groupStatusColor } from '../components/StatusBadge'
+import { formatEventDate, formatDateTime } from '../lib/date'
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -202,14 +203,14 @@ export default function EventDetailPage() {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold">
-              {event.event_date} {TIME_SLOT_LABELS[event.time_slot]}
+              {formatEventDate(event.event_date)} {TIME_SLOT_LABELS[event.time_slot]}
             </h2>
             <p className="text-sm text-secondary-text mt-1">
               {CATEGORY_LABELS[event.category]} · {cityName} · 分組大小 {event.default_group_size} 人
             </p>
             <p className="text-xs text-tertiary-text mt-2">
-              報名開放：{new Date(event.signup_open_at).toLocaleString('zh-TW')}<br />
-              報名截止：{new Date(event.signup_deadline_at).toLocaleString('zh-TW')}
+              報名開放：{formatDateTime(event.signup_open_at)}<br />
+              報名截止：{formatDateTime(event.signup_deadline_at)}
             </p>
           </div>
           <div className="flex items-center gap-3">

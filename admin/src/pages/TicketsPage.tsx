@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { UserProfile, TicketBalance, TicketLedgerEntry, TicketType } from '../types/database'
 import { REASON_LABELS } from '../types/database'
+import { formatDateTime } from '../lib/date'
 
 export default function TicketsPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -204,7 +205,7 @@ export default function TicketsPage() {
                             {delta > 0 ? '+' : ''}{delta}
                           </span>
                           <span className="text-xs text-tertiary-text">
-                            {new Date(entry.created_at).toLocaleDateString('zh-TW')}
+                            {formatDateTime(entry.created_at)}
                           </span>
                         </div>
                       </div>

@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import type { Order, EcpayPayment, OrderStatus } from '../types/database'
 import { ORDER_STATUS_LABELS } from '../types/database'
 import StatusBadge, { orderStatusColor } from '../components/StatusBadge'
+import { formatDateTime } from '../lib/date'
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<(Order & { users: { nickname: string | null } | null })[]>([])
@@ -106,7 +107,7 @@ export default function OrdersPage() {
                       <StatusBadge label={ORDER_STATUS_LABELS[order.status]} color={orderStatusColor(order.status)} />
                     </td>
                     <td className="px-4 py-3 text-tertiary-text text-xs">
-                      {new Date(order.created_at).toLocaleString('zh-TW')}
+                      {formatDateTime(order.created_at)}
                     </td>
                   </tr>
                   {expandedOrder === order.id && (
@@ -129,7 +130,7 @@ export default function OrdersPage() {
                                   <span className="text-secondary-text">{p.rtn_msg || '-'}</span>
                                   <span className="text-tertiary-text">NT$ {p.trade_amt ?? '-'}</span>
                                   <span className="text-tertiary-text ml-auto">
-                                    {new Date(p.created_at).toLocaleString('zh-TW')}
+                                    {formatDateTime(p.created_at)}
                                   </span>
                                 </div>
                               ))}
@@ -137,7 +138,7 @@ export default function OrdersPage() {
                           )}
                           {order.paid_at && (
                             <p className="text-success mt-2">
-                              付款時間：{new Date(order.paid_at).toLocaleString('zh-TW')}
+                              付款時間：{formatDateTime(order.paid_at)}
                             </p>
                           )}
                         </div>

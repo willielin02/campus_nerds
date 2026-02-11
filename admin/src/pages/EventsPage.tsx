@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import type { Event, EventStatus, EventCategory, EventTimeSlot, City } from '../types/database'
 import { CATEGORY_LABELS, TIME_SLOT_LABELS, EVENT_STATUS_LABELS } from '../types/database'
 import StatusBadge, { eventStatusColor } from '../components/StatusBadge'
+import { formatEventDate, formatDate } from '../lib/date'
 
 export default function EventsPage() {
   const [events, setEvents] = useState<(Event & { booking_count: number })[]>([])
@@ -86,10 +87,10 @@ export default function EventsPage() {
 
   // Preview computed signup times
   const previewSignupOpen = newDate
-    ? new Date(new Date(newDate).getTime() - 23 * 24 * 60 * 60 * 1000).toLocaleDateString('zh-TW')
+    ? formatDate(new Date(new Date(newDate).getTime() - 23 * 24 * 60 * 60 * 1000).toISOString())
     : ''
   const previewSignupDeadline = newDate
-    ? new Date(new Date(newDate).getTime() - 3 * 24 * 60 * 60 * 1000).toLocaleDateString('zh-TW')
+    ? formatDate(new Date(new Date(newDate).getTime() - 3 * 24 * 60 * 60 * 1000).toISOString())
     : ''
 
   return (
@@ -226,7 +227,7 @@ export default function EventsPage() {
                 <tr key={event.id} className="border-b border-tertiary last:border-0 hover:bg-alternate/30 transition-colors">
                   <td className="px-4 py-3">
                     <Link to={`/events/${event.id}`} className="text-primary-text hover:underline font-medium">
-                      {event.event_date}
+                      {formatEventDate(event.event_date)}
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-secondary-text">{TIME_SLOT_LABELS[event.time_slot]}</td>
