@@ -325,14 +325,14 @@ export default function EventDetailPage() {
   const cityName = (event.city as unknown as { name: string })?.name ?? '-'
 
   return (
-    <div>
-      <div className="mb-6">
-        <Link to="/events" className="text-sm text-secondary-text hover:text-primary-text">
+    <div className="max-w-4xl">
+      <div className="mb-4">
+        <Link to="/events" className="text-sm text-secondary-text hover:text-primary-text transition-colors">
           ← 返回活動列表
         </Link>
       </div>
 
-      {/* Event info card */}
+      {/* Event header card */}
       <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-5 mb-6">
         <div className="flex items-start justify-between">
           <div>
@@ -340,20 +340,16 @@ export default function EventDetailPage() {
               {formatEventDate(event.event_date)} {TIME_SLOT_LABELS[event.time_slot]}
             </h2>
             <p className="text-sm text-secondary-text mt-1">
-              {CATEGORY_LABELS[event.category]} · {cityName} · 分組大小 {event.default_group_size} 人
-            </p>
-            <p className="text-xs text-tertiary-text mt-2">
-              報名開放：{formatDateTime(event.signup_open_at)}<br />
-              報名截止：{formatDateTime(event.signup_deadline_at)}
+              {CATEGORY_LABELS[event.category]} · {cityName} · 預設分組 {event.default_group_size} 人
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <StatusBadge label={EVENT_STATUS_LABELS[event.status]} color={eventStatusColor(event.status)} />
             {event.status === 'draft' && (
               <button
                 onClick={handleTransitionToScheduled}
                 disabled={transitioning}
-                className="px-3 py-2 bg-alternate text-primary-text rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                className="px-3 py-1.5 bg-alternate text-primary-text rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
               >
                 {transitioning ? '處理中...' : '開放報名'}
               </button>
@@ -362,55 +358,53 @@ export default function EventDetailPage() {
               <button
                 onClick={handleTransitionToNotified}
                 disabled={transitioning}
-                className="px-3 py-2 bg-secondary-text text-white rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                className="px-3 py-1.5 bg-secondary-text text-white rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
               >
                 {transitioning ? '處理中...' : '發送通知'}
               </button>
             )}
           </div>
         </div>
-      </div>
 
-      {/* Booking stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
-          <p className="text-2xl font-semibold">{bookingStats.total}</p>
-          <p className="text-xs text-secondary-text">總報名</p>
-        </div>
-        <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
-          <p className="text-2xl font-semibold">{bookingStats.male}</p>
-          <p className="text-xs text-secondary-text">男性</p>
-        </div>
-        <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
-          <p className="text-2xl font-semibold">{bookingStats.female}</p>
-          <p className="text-xs text-secondary-text">女性</p>
+        {/* Inline stats + signup window */}
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-tertiary">
+          <div className="flex items-center gap-4 text-sm">
+            <span>報名 <strong>{bookingStats.total}</strong> 人</span>
+            <span className="text-secondary-text">男性 {bookingStats.male}</span>
+            <span className="text-secondary-text">女性 {bookingStats.female}</span>
+          </div>
+          <p className="text-xs text-tertiary-text">
+            {formatDateTime(event.signup_open_at)} ~ {formatDateTime(event.signup_deadline_at)}
+          </p>
         </div>
       </div>
 
-      {/* Groups */}
+      {/* Groups section */}
       <h3 className="text-base font-semibold mb-3">分組列表 ({groups.length})</h3>
+
       {groups.length === 0 ? (
-        <p className="text-sm text-tertiary-text">尚無分組（自動分組會在{(() => {
-          // Auto-grouping runs at event_date - 2 days, 00:00 Taipei time (UTC+8)
-          const groupingAt = new Date(`${event.event_date}T00:00:00+08:00`)
-          groupingAt.setDate(groupingAt.getDate() - 2)
-          const now = serverNow()
-          const diffMs = groupingAt.getTime() - now.getTime()
-          if (diffMs <= 0) {
-            let reason = '其他'
-            if (bookingStats.total === 0) {
-              reason = '無人報名'
-            } else {
-              reason = `報名人數不足；目前男性 ${bookingStats.male} 女性 ${bookingStats.female}`
+        <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] px-5 py-8 text-center">
+          <p className="text-sm text-tertiary-text">尚無分組（自動分組會在{(() => {
+            const groupingAt = new Date(`${event.event_date}T00:00:00+08:00`)
+            groupingAt.setDate(groupingAt.getDate() - 2)
+            const now = serverNow()
+            const diffMs = groupingAt.getTime() - now.getTime()
+            if (diffMs <= 0) {
+              let reason = '其他'
+              if (bookingStats.total === 0) {
+                reason = '無人報名'
+              } else {
+                reason = `報名人數不足；目前男性 ${bookingStats.male} 女性 ${bookingStats.female}`
+              }
+              return `已執行，未成功分組（原因：${reason}）`
             }
-            return `已執行，未成功分組（原因：${reason}）`
-          }
-          const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-          const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-          const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-          if (days > 0) return ` ${days} 天 ${hours} 小時 ${minutes} 分鐘後執行`
-          return ` ${hours} 小時 ${minutes} 分鐘後執行`
-        })()}）</p>
+            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+            const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+            if (days > 0) return ` ${days} 天 ${hours} 小時 ${minutes} 分鐘後執行`
+            return ` ${hours} 小時 ${minutes} 分鐘後執行`
+          })()}）</p>
+        </div>
       ) : (
         <div className="space-y-3">
           {groups.map((group) => {
@@ -419,20 +413,25 @@ export default function EventDetailPage() {
             const femaleCount = members.filter((m) => m.bookings?.users?.gender === 'female').length
             const isExpanded = expandedGroup === group.id
             const venueName = (group.venue as unknown as Venue)?.name
+            const isDraft = group.status === 'draft'
 
             return (
               <div key={group.id} className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] overflow-hidden">
+                {/* Collapsed header */}
                 <div
                   className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-alternate/30 transition-colors"
                   onClick={() => setExpandedGroup(isExpanded ? null : group.id)}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <span className="text-xs font-mono text-tertiary-text">{group.id.slice(0, 8)}</span>
-                    <span className="text-sm">
-                      {members.length}/{group.max_size} 人（男性 {maleCount} · 女性 {femaleCount}）
+                    <span className="text-sm font-medium">
+                      {members.length}/{group.max_size} 人
+                    </span>
+                    <span className="text-xs text-secondary-text">
+                      男 {maleCount} · 女 {femaleCount}
                     </span>
                     {venueName && (
-                      <span className="text-xs text-tertiary-text">{venueName}</span>
+                      <span className="text-xs text-tertiary-text">· {venueName}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -441,101 +440,81 @@ export default function EventDetailPage() {
                   </div>
                 </div>
 
+                {/* Expanded panel */}
                 {isExpanded && (
-                  <div className="border-t border-tertiary px-4 py-3 bg-alternate/20">
-                    {/* Members */}
-                    <p className="text-xs font-medium text-secondary-text mb-2">成員</p>
-                    <div className="space-y-1 mb-4">
-                      {members.map((m) => {
-                        const userId = m.bookings?.users?.id
-                        const profile = userId ? userProfiles[userId] : null
-                        return (
-                          <div key={m.id} className="flex items-center gap-3 text-sm">
-                            <span>{m.bookings?.users?.nickname || '(未設定暱稱)'}</span>
-                            <span className="text-xs text-tertiary-text">
-                              {profile?.age != null ? `${profile.age}歲` : '-'}
-                              {' · '}
-                              {m.bookings?.users?.gender === 'male' ? '男性' : '女性'}
-                              {' · '}
-                              {profile?.university_name || '-'}
-                            </span>
-                            {group.status === 'draft' && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleRemoveMember(m.id) }}
-                                className="ml-auto px-2 py-0.5 text-xs text-tertiary-text hover:text-primary-text border border-tertiary rounded-lg hover:bg-alternate transition-colors"
-                              >
-                                移除
-                              </button>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
+                  <div className="border-t-2 border-tertiary">
+                    {/* ── Members table ── */}
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-alternate/40">
+                          <th className="text-left px-4 py-2 text-xs font-medium text-secondary-text w-[28%]">暱稱</th>
+                          <th className="text-left px-4 py-2 text-xs font-medium text-secondary-text w-[12%]">年齡</th>
+                          <th className="text-left px-4 py-2 text-xs font-medium text-secondary-text w-[12%]">性別</th>
+                          <th className="text-left px-4 py-2 text-xs font-medium text-secondary-text">學校</th>
+                          {isDraft && <th className="w-14" />}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {members.map((m) => {
+                          const userId = m.bookings?.users?.id
+                          const profile = userId ? userProfiles[userId] : null
+                          return (
+                            <tr key={m.id} className="border-t border-tertiary/50 hover:bg-alternate/20 transition-colors">
+                              <td className="px-4 py-2 font-medium">{m.bookings?.users?.nickname || '(未設定)'}</td>
+                              <td className="px-4 py-2 text-secondary-text">{profile?.age != null ? `${profile.age}` : '-'}</td>
+                              <td className="px-4 py-2 text-secondary-text">{m.bookings?.users?.gender === 'male' ? '男' : '女'}</td>
+                              <td className="px-4 py-2 text-secondary-text">{profile?.university_name || '-'}</td>
+                              {isDraft && (
+                                <td className="px-4 py-2 text-right">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleRemoveMember(m.id) }}
+                                    className="text-xs text-tertiary-text hover:text-error transition-colors"
+                                  >
+                                    移除
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
 
-                    {/* Edit max_size for draft groups */}
-                    {group.status === 'draft' && (
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="text-xs text-secondary-text">分組人數上限</span>
-                        <input
-                          type="number"
-                          min={1}
-                          value={editingMaxSize[group.id] ?? group.max_size}
-                          onChange={(e) => setEditingMaxSize((prev) => ({ ...prev, [group.id]: Number(e.target.value) }))}
-                          className="w-20 border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-1.5 text-sm bg-secondary text-center"
-                        />
-                        {(editingMaxSize[group.id] != null && editingMaxSize[group.id] !== group.max_size) && (
-                          <button
-                            onClick={() => handleUpdateMaxSize(group.id, editingMaxSize[group.id])}
-                            className="px-3 py-1.5 bg-alternate text-primary-text rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 transition-opacity"
-                          >
-                            儲存
-                          </button>
-                        )}
-                        {editingMaxSize[group.id] != null && editingMaxSize[group.id] % 2 !== 0 && (
-                          <span className="text-xs text-tertiary-text">⚠ 奇數人數，性別比將無法 1:1</span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Add member from unmatched bookings (draft groups only) */}
-                    {group.status === 'draft' && unmatchedBookings.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-xs font-medium text-secondary-text mb-2">
-                          未分組用戶 ({unmatchedBookings.length})
-                        </p>
-                        <div className="flex items-end gap-3">
-                          <select
-                            value={selectedAddMember[group.id] || ''}
-                            onChange={(e) => setSelectedAddMember((prev) => ({ ...prev, [group.id]: e.target.value }))}
-                            className="flex-1 border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
-                          >
-                            <option value="">選擇要加入的用戶...</option>
-                            {unmatchedBookings.map((ub) => (
-                              <option key={ub.booking_id} value={ub.booking_id}>
-                                {ub.nickname || '(未設定暱稱)'} {ub.age != null ? `${ub.age}歲` : '-'} · {ub.gender === 'male' ? '男性' : '女性'} · {ub.university_name || '-'}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            onClick={() => handleAddMember(group.id)}
-                            disabled={!selectedAddMember[group.id]}
-                            className="px-4 py-2 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
-                          >
-                            新增
-                          </button>
+                    {/* ── Draft: Settings toolbar ── */}
+                    {isDraft && (
+                      <div className="px-4 py-3 border-t-2 border-tertiary bg-alternate/20 flex items-center gap-6 flex-wrap">
+                        {/* Max size */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-secondary-text whitespace-nowrap">人數上限</span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={editingMaxSize[group.id] ?? group.max_size}
+                            onChange={(e) => setEditingMaxSize((prev) => ({ ...prev, [group.id]: Number(e.target.value) }))}
+                            className="w-16 border-2 border-tertiary rounded-lg px-2 py-1 text-sm bg-secondary text-center"
+                          />
+                          {(editingMaxSize[group.id] != null && editingMaxSize[group.id] !== group.max_size) && (
+                            <button
+                              onClick={() => handleUpdateMaxSize(group.id, editingMaxSize[group.id])}
+                              className="px-2 py-1 bg-alternate text-primary-text rounded-lg text-xs font-semibold hover:opacity-80 transition-opacity"
+                            >
+                              儲存
+                            </button>
+                          )}
+                          {editingMaxSize[group.id] != null && editingMaxSize[group.id] % 2 !== 0 && (
+                            <span className="text-xs text-warning">奇數</span>
+                          )}
                         </div>
-                      </div>
-                    )}
 
-                    {/* Venue selection for draft groups */}
-                    {group.status === 'draft' && (
-                      <div className="flex items-end gap-3 pt-3 border-t border-tertiary">
-                        <label className="flex-1">
-                          <span className="text-xs text-secondary-text">場地</span>
+                        <div className="h-4 w-px bg-tertiary" />
+
+                        {/* Venue */}
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span className="text-xs text-secondary-text whitespace-nowrap">場地</span>
                           <select
                             value={selectedVenues[group.id] || ''}
                             onChange={(e) => setSelectedVenues((prev) => ({ ...prev, [group.id]: e.target.value }))}
-                            className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
+                            className="flex-1 min-w-0 border-2 border-tertiary rounded-lg px-2 py-1 text-sm bg-secondary"
                           >
                             <option value="">選擇場地...</option>
                             {venues.map((v) => (
@@ -544,28 +523,69 @@ export default function EventDetailPage() {
                               </option>
                             ))}
                           </select>
-                        </label>
-                        {selectedVenues[group.id] && selectedVenues[group.id] !== group.venue_id && (
-                          <button
-                            onClick={() => handleSaveVenue(group.id)}
-                            className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 transition-opacity"
-                          >
-                            儲存場地
-                          </button>
-                        )}
-                        {group.venue_id && selectedVenues[group.id] === group.venue_id && (
-                          <span className="px-3 py-2 text-xs text-tertiary-text">已儲存</span>
+                          {selectedVenues[group.id] && selectedVenues[group.id] !== group.venue_id && (
+                            <button
+                              onClick={() => handleSaveVenue(group.id)}
+                              className="px-2 py-1 bg-alternate text-primary-text rounded-lg text-xs font-semibold hover:opacity-80 transition-opacity whitespace-nowrap"
+                            >
+                              儲存場地
+                            </button>
+                          )}
+                          {group.venue_id && selectedVenues[group.id] === group.venue_id && (
+                            <span className="text-xs text-success whitespace-nowrap">已儲存</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Draft: Unmatched users ── */}
+                    {isDraft && unmatchedBookings.length > 0 && (
+                      <div className="px-4 py-3 border-t border-tertiary flex items-center gap-3">
+                        <span className="text-xs text-secondary-text whitespace-nowrap">
+                          未分組 ({unmatchedBookings.length})
+                        </span>
+                        <select
+                          value={selectedAddMember[group.id] || ''}
+                          onChange={(e) => setSelectedAddMember((prev) => ({ ...prev, [group.id]: e.target.value }))}
+                          className="flex-1 min-w-0 border-2 border-tertiary rounded-lg px-2 py-1.5 text-sm bg-secondary"
+                        >
+                          <option value="">選擇要加入的用戶...</option>
+                          {unmatchedBookings.map((ub) => (
+                            <option key={ub.booking_id} value={ub.booking_id}>
+                              {ub.nickname || '(未設定)'} · {ub.age != null ? `${ub.age}歲` : '-'} · {ub.gender === 'male' ? '男' : '女'} · {ub.university_name || '-'}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => handleAddMember(group.id)}
+                          disabled={!selectedAddMember[group.id]}
+                          className="px-3 py-1.5 bg-alternate text-primary-text rounded-lg text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity whitespace-nowrap"
+                        >
+                          新增成員
+                        </button>
+                      </div>
+                    )}
+
+                    {/* ── Scheduled: Venue info (read-only) ── */}
+                    {!isDraft && venueName && (
+                      <div className="px-4 py-3 border-t border-tertiary text-sm text-secondary-text">
+                        場地：{venueName}
+                        {(group.venue as unknown as Venue)?.address && (
+                          <span className="text-tertiary-text"> · {(group.venue as unknown as Venue).address}</span>
                         )}
                       </div>
                     )}
 
-                    {/* Confirm button for draft groups (only when venue is saved) */}
-                    {group.status === 'draft' && group.venue_id && (
-                      <div className="flex justify-end pt-3">
+                    {/* ── Draft: Confirm action bar ── */}
+                    {isDraft && group.venue_id && (
+                      <div className="px-4 py-3 border-t-2 border-tertiary bg-alternate/10 flex items-center justify-between">
+                        <p className="text-xs text-tertiary-text">
+                          確認後將同步 Facebook 好友並驗證分組
+                        </p>
                         <button
                           onClick={() => handleConfirmGroup(group.id)}
                           disabled={confirming === group.id}
-                          className="px-4 py-3 bg-secondary-text text-white rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                          className="px-5 py-2 bg-secondary-text text-white rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
                         >
                           {confirming === group.id ? '確認中...' : '確認分組'}
                         </button>
