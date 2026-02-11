@@ -283,17 +283,33 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
       return _buildEmptyState(colors, textTheme);
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.only(top: 16, bottom: 24),
-      itemCount: entries.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final entry = entries[index];
-        return _TicketHistoryCard(
-          entry: entry,
-          isStudy: isStudy,
-        );
+    return ShaderMask(
+      shaderCallback: (Rect bounds) {
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black,
+            Colors.black,
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.03, 0.97, 1.0],
+        ).createShader(bounds);
       },
+      blendMode: BlendMode.dstIn,
+      child: ListView.separated(
+        padding: const EdgeInsets.only(top: 16, bottom: 24),
+        itemCount: entries.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
+        itemBuilder: (context, index) {
+          final entry = entries[index];
+          return _TicketHistoryCard(
+            entry: entry,
+            isStudy: isStudy,
+          );
+        },
+      ),
     );
   }
 

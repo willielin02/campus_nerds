@@ -511,21 +511,37 @@ class _HomePageState extends State<HomePage>
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.only(top: 24, bottom: 24),
-      shrinkWrap: true,
-      itemCount: events.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final event = events[index];
-        return InkWell(
-          onTap: () => _handleEventTap(event),
-          child: EventCard(
-            event: event,
-            onTap: () => _handleEventTap(event),
-          ),
-        );
+    return ShaderMask(
+      shaderCallback: (Rect bounds) {
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black,
+            Colors.black,
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.03, 0.97, 1.0],
+        ).createShader(bounds);
       },
+      blendMode: BlendMode.dstIn,
+      child: ListView.separated(
+        padding: const EdgeInsets.only(top: 24, bottom: 24),
+        shrinkWrap: true,
+        itemCount: events.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
+        itemBuilder: (context, index) {
+          final event = events[index];
+          return InkWell(
+            onTap: () => _handleEventTap(event),
+            child: EventCard(
+              event: event,
+              onTap: () => _handleEventTap(event),
+            ),
+          );
+        },
+      ),
     );
   }
 }

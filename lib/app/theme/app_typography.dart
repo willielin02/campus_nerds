@@ -87,7 +87,7 @@ class AppTypography {
   TextStyle get labelMedium => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.normal,
-        fontSize: 16.0,
+        fontSize: 20.0,
       );
 
   TextStyle get labelSmall => GoogleFonts.notoSansTc(

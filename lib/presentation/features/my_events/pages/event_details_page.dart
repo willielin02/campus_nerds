@@ -8,6 +8,7 @@ import '../../../../app/theme/app_theme.dart';
 import '../../../../domain/entities/booking.dart';
 import '../../../../domain/entities/event.dart';
 import '../../chat/widgets/chat_tab.dart';
+import '../../home/bloc/bloc.dart' show HomeBloc, HomeRefresh;
 import '../bloc/bloc.dart';
 import '../widgets/cancel_booking_dialog.dart';
 import '../widgets/edit_goal_dialog.dart';
@@ -234,6 +235,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
           );
           context.read<MyEventsBloc>().add(const MyEventsClearSuccess());
           if (state.successMessage == '已取消報名') {
+            context.read<HomeBloc>().add(const HomeRefresh());
             context.pop();
           }
         }
@@ -650,92 +652,124 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     if (studyPlans.isEmpty) {
-      return ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: colors.secondaryBackground,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: colors.tertiary,
-                width: 2,
+      return ShaderMask(
+        shaderCallback: (Rect bounds) {
+          return LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              Colors.black,
+              Colors.black,
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.03, 0.97, 1.0],
+          ).createShader(bounds);
+        },
+        blendMode: BlendMode.dstIn,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: colors.secondaryBackground,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: colors.tertiary,
+                  width: 2,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '尚無目標',
+                            style: textTheme.labelLarge?.copyWith(
+                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 16),
+                      child: Row(
+                        children: [
+                          Text(
+                            '等待小組成員設定目標',
+                            style: textTheme.bodyLarge?.copyWith(
+                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              color: colors.secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '尚無目標',
-                          style: textTheme.labelLarge?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12, bottom: 16),
-                    child: Row(
-                      children: [
-                        Text(
-                          '等待小組成員設定目標',
-                          style: textTheme.bodyLarge?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                            color: colors.secondaryText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 
     final isPreGrouping = event.groupId == null;
 
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(8, 24, 8, 24),
-      itemCount: studyPlans.length + (isPreGrouping ? 1 : 0),
-      itemBuilder: (context, index) {
-        // Hint text below the cards in pre-grouping phase
-        if (index == studyPlans.length) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 24),
-            child: Text(
-              '請先寫下活動期間你希望完成的 3 個待辦事項，分組後你將看到其他夥伴的待辦事項。',
-              style: textTheme.bodyMedium?.copyWith(
-                fontFamily: fontFamily,
-                color: colors.tertiaryText,
+    return ShaderMask(
+      shaderCallback: (Rect bounds) {
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black,
+            Colors.black,
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.03, 0.97, 1.0],
+        ).createShader(bounds);
+      },
+      blendMode: BlendMode.dstIn,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(8, 24, 8, 24),
+        itemCount: studyPlans.length + (isPreGrouping ? 1 : 0),
+        itemBuilder: (context, index) {
+          // Hint text below the cards in pre-grouping phase
+          if (index == studyPlans.length) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: Text(
+                '請先寫下活動期間你希望完成的 3 個待辦事項，分組後你將看到其他夥伴的待辦事項。',
+                style: textTheme.bodyMedium?.copyWith(
+                  fontFamily: fontFamily,
+                  color: colors.tertiaryText,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
+            );
+          }
+
+          final plan = studyPlans[index];
+          return Padding(
+            padding: EdgeInsets.only(top: index > 0 ? 16 : 0),
+            child: StudyPlanCard(
+              plan: plan,
+              canEditGoalContent: event.canEditGoalContent,
+              canCheckGoal: event.canCheckGoal,
+              onGoalTap: (slot, planId, content, isDone) =>
+                  _handleGoalTap(event, slot, planId, content, isDone),
             ),
           );
-        }
-
-        final plan = studyPlans[index];
-        return Padding(
-          padding: EdgeInsets.only(top: index > 0 ? 16 : 0),
-          child: StudyPlanCard(
-            plan: plan,
-            canEditGoalContent: event.canEditGoalContent,
-            canCheckGoal: event.canCheckGoal,
-            onGoalTap: (slot, planId, content, isDone) =>
-                _handleGoalTap(event, slot, planId, content, isDone),
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 

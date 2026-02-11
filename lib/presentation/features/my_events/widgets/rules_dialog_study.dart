@@ -50,7 +50,7 @@ class RulesDialogStudy extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '鐵打的規則',
+                  '活動規則與流程',
                   style: textTheme.titleMedium?.copyWith(
                     fontFamily: fontFamily,
                   ),
@@ -66,11 +66,26 @@ class RulesDialogStudy extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    primary: false,
-                    shrinkWrap: true,
-                    children: [
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black,
+                          Colors.black,
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.03, 0.97, 1.0],
+                      ).createShader(bounds);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      primary: false,
+                      shrinkWrap: true,
+                      children: [
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: SingleChildScrollView(
@@ -86,26 +101,26 @@ class RulesDialogStudy extends StatelessWidget {
                               Divider(thickness: 2, color: colors.alternate),
                               _buildRule(
                                 context,
-                                '2. 寫下讀書計畫',
-                                '開始前，寫下本時段要完成的 3 個讀書目標。',
+                                '2. 寫下 3 個待辦事項',
+                                '開始前，寫下本時段要完成的 3 個待辦事項。',
                               ),
                               Divider(thickness: 2, color: colors.alternate),
                               _buildRule(
                                 context,
-                                '3. 全程專心讀書',
+                                '3. 全程專心學習',
                                 '讀書期間不講話、不滑手機、不打擾他人，需要離席請安靜離開。',
                               ),
                               Divider(thickness: 2, color: colors.alternate),
                               _buildRule(
                                 context,
                                 '4. 中場檢查進度',
-                                '讀書一個段落後，一起吃飯／休息，互相檢查是否完成當初寫下的 3 個讀書計畫，可以簡短分享成果。',
+                                '讀書一個段落後，一起吃飯/ 休息，互相檢查是否完成當初寫下的 3 個待辦事項，可以簡短分享成果。',
                               ),
                               Divider(thickness: 2, color: colors.alternate),
                               _buildRule(
                                 context,
-                                '5. 活動結束回饋',
-                                '活動後請為同桌夥伴留下回饋，包含：專注程度、達標程度、是否有搖腳/ 講話等影響他人專心的重複行為',
+                                '5. 活動結束後匿名回饋',
+                                '活動後請為同桌夥伴留下回饋，包含：專注程度、達標程度、是否有抖腳/ 講話等影響他人的行為',
                               ),
                               Divider(thickness: 2, color: colors.alternate),
                               _buildRule(
@@ -118,6 +133,7 @@ class RulesDialogStudy extends StatelessWidget {
                         ),
                       ),
                     ],
+                    ),
                   ),
                 ),
               ),

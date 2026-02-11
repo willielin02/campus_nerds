@@ -5,6 +5,7 @@ import type { Event, Group, GroupMemberRow, Venue, Gender } from '../types/datab
 import { CATEGORY_LABELS, TIME_SLOT_LABELS, EVENT_STATUS_LABELS, GROUP_STATUS_LABELS } from '../types/database'
 import StatusBadge, { eventStatusColor, groupStatusColor } from '../components/StatusBadge'
 import { formatEventDate, formatDateTime } from '../lib/date'
+import { serverNow } from '../lib/serverClock'
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -260,7 +261,7 @@ export default function EventDetailPage() {
           // Auto-grouping runs at event_date - 2 days, 00:00 Taipei time (UTC+8)
           const groupingAt = new Date(`${event.event_date}T00:00:00+08:00`)
           groupingAt.setDate(groupingAt.getDate() - 2)
-          const now = new Date()
+          const now = serverNow()
           const diffMs = groupingAt.getTime() - now.getTime()
           if (diffMs <= 0) {
             let reason = '其他'

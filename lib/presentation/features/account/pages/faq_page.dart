@@ -38,9 +38,24 @@ class FaqPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          children: [
+        child: ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black,
+                Colors.black,
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.03, 0.97, 1.0],
+            ).createShader(bounds);
+          },
+          blendMode: BlendMode.dstIn,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            children: [
             // 活動報名
             _FaqCategory(
               title: '活動報名',
@@ -207,6 +222,7 @@ class FaqPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
           ],
+          ),
         ),
       ),
     );

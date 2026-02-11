@@ -90,8 +90,60 @@ class _FacebookBindingView extends StatelessWidget {
                           ),
                           onPressed: () => context.pop(),
                         ),
-                        // 64px spacer on right
-                        const SizedBox(width: 64, height: 64),
+                        // More menu (only when linked)
+                        BlocBuilder<FacebookBindingBloc,
+                            FacebookBindingState>(
+                          builder: (context, state) {
+                            if (!state.isLinked) {
+                              return const SizedBox(width: 64, height: 64);
+                            }
+                            return IconButton(
+                              iconSize: 64,
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: colors.secondaryText,
+                                size: 24,
+                              ),
+                              onPressed: () {
+                                showModalBottomSheet<void>(
+                                  context: context,
+                                  backgroundColor: colors.secondaryBackground,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16),
+                                    ),
+                                  ),
+                                  builder: (sheetContext) => SafeArea(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8),
+                                      child: ListTile(
+                                        leading: Icon(
+                                          Icons.link_off,
+                                          color: colors.secondaryText,
+                                        ),
+                                        title: Text(
+                                          '解除綁定',
+                                          style:
+                                              textTheme.bodyLarge?.copyWith(
+                                            fontFamily:
+                                                GoogleFonts.notoSansTc()
+                                                    .fontFamily,
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          Navigator.of(sheetContext).pop();
+                                          _showUnlinkConfirmDialog(
+                                              context, colors, textTheme);
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -168,81 +220,21 @@ class _FacebookBindingView extends StatelessWidget {
                               child:
                                   _buildFacebookButton(context, colors, textTheme),
                             ),
-                            // Status info
+                            // Synced friends count (subtle info when linked)
                             BlocBuilder<FacebookBindingBloc,
                                 FacebookBindingState>(
                               builder: (context, state) {
-                                if (state.isLinked) {
+                                if (state.isLinked &&
+                                    state.syncedFriendsCount != null) {
                                   return Padding(
-                                    padding: const EdgeInsets.only(top: 24),
-                                    child: Column(
-                                      children: [
-                                        // Linked status
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: colors.alternate,
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            border: Border.all(
-                                              color: colors.tertiary,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.check_circle,
-                                                color: colors.secondaryText,
-                                                size: 24,
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      '臉書帳號已綁定',
-                                                      style: textTheme.bodyLarge
-                                                          ?.copyWith(
-                                                        fontFamily: GoogleFonts
-                                                                .notoSansTc()
-                                                            .fontFamily,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                    if (state.syncedFriendsCount !=
-                                                        null)
-                                                      Text(
-                                                        '已同步 ${state.syncedFriendsCount} 位好友',
-                                                        style: textTheme
-                                                            .bodySmall
-                                                            ?.copyWith(
-                                                          fontFamily: GoogleFonts
-                                                                  .notoSansTc()
-                                                              .fontFamily,
-                                                          color: colors
-                                                              .secondaryText,
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Unlink button
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 12),
-                                          child: _buildUnlinkButton(
-                                              context, colors, textTheme),
-                                        ),
-                                      ],
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(
+                                      '已同步 ${state.syncedFriendsCount} 位好友',
+                                      style: textTheme.bodySmall?.copyWith(
+                                        fontFamily:
+                                            GoogleFonts.notoSansTc().fontFamily,
+                                        color: colors.secondaryText,
+                                      ),
                                     ),
                                   );
                                 }
@@ -330,72 +322,6 @@ class _FacebookBindingView extends StatelessWidget {
                               color:
                                   isLinked ? colors.primaryText : Colors.white,
                               fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildUnlinkButton(
-    BuildContext context,
-    AppColorsTheme colors,
-    TextTheme textTheme,
-  ) {
-    return BlocBuilder<FacebookBindingBloc, FacebookBindingState>(
-      builder: (context, state) {
-        final isLoading =
-            state.isLoading && state.status == FacebookBindingStatus.unlinking;
-
-        return InkWell(
-          splashColor: Colors.transparent,
-          focusColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          onTap: isLoading
-              ? null
-              : () {
-                  _showUnlinkConfirmDialog(context, colors, textTheme);
-                },
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: colors.tertiary, width: 1),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: isLoading
-                  ? Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: colors.secondaryText,
-                        ),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.link_off,
-                          color: colors.secondaryText,
-                          size: 24,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Text(
-                            '解除綁定',
-                            style: textTheme.bodyLarge?.copyWith(
-                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                              color: colors.secondaryText,
                             ),
                           ),
                         ),

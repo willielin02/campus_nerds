@@ -1,4 +1,5 @@
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/services/supabase_service.dart';
 import '../../core/utils/app_clock.dart';
@@ -81,6 +82,11 @@ class FacebookRepositoryImpl implements FacebookRepository {
       await _syncFriendsToBackend(accessToken);
 
       return FacebookLinkResult.success(fbUserId);
+    } on PostgrestException catch (e) {
+      if (e.code == '23505' && e.message.contains('users_fb_user_id_key')) {
+        return FacebookLinkResult.failure('此 Facebook 帳號已被其他用戶綁定。若您之前的帳號遺失或有任何疑問，請寄信至 team@campusnerds.app 聯絡客服。');
+      }
+      return FacebookLinkResult.failure('臉書綁定失敗：${e.message}');
     } catch (e) {
       return FacebookLinkResult.failure('臉書綁定失敗：${e.toString()}');
     }

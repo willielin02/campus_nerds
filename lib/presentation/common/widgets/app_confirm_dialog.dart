@@ -18,7 +18,8 @@ import '../../../app/theme/app_theme.dart';
 Future<bool?> showAppConfirmDialog({
   required BuildContext context,
   required String title,
-  required String message,
+  String message = '',
+  Widget? messageWidget,
   String cancelText = '取消',
   String confirmText = '確定',
   VoidCallback? onConfirm,
@@ -32,6 +33,7 @@ Future<bool?> showAppConfirmDialog({
       child: AppConfirmDialog(
         title: title,
         message: message,
+        messageWidget: messageWidget,
         cancelText: cancelText,
         confirmText: confirmText,
         onCancel: () => Navigator.of(dialogContext).pop(false),
@@ -52,7 +54,8 @@ class AppConfirmDialog extends StatelessWidget {
   const AppConfirmDialog({
     super.key,
     required this.title,
-    required this.message,
+    this.message = '',
+    this.messageWidget,
     this.cancelText = '取消',
     this.confirmText = '確定',
     required this.onCancel,
@@ -61,6 +64,7 @@ class AppConfirmDialog extends StatelessWidget {
 
   final String title;
   final String message;
+  final Widget? messageWidget;
   final String cancelText;
   final String confirmText;
   final VoidCallback onCancel;
@@ -101,12 +105,13 @@ class AppConfirmDialog extends StatelessWidget {
             // Message
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Text(
-                message,
-                style: textTheme.bodyLarge?.copyWith(
-                  fontFamily: fontFamily,
-                ),
-              ),
+              child: messageWidget ??
+                  Text(
+                    message,
+                    style: textTheme.bodyLarge?.copyWith(
+                      fontFamily: fontFamily,
+                    ),
+                  ),
             ),
             // Buttons row
             Padding(

@@ -51,28 +51,7 @@ class _MyEventsPageState extends State<MyEventsPage>
     final colors = context.appColors;
     final textTheme = context.textTheme;
 
-    return BlocListener<MyEventsBloc, MyEventsState>(
-      listener: (context, state) {
-        if (state.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: colors.error,
-            ),
-          );
-          context.read<MyEventsBloc>().add(const MyEventsClearError());
-        }
-        if (state.successMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.successMessage!),
-              backgroundColor: colors.secondaryText,
-            ),
-          );
-          context.read<MyEventsBloc>().add(const MyEventsClearSuccess());
-        }
-      },
-      child: GestureDetector(
+    return GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
           FocusManager.instance.primaryFocus?.unfocus();
@@ -155,7 +134,6 @@ class _MyEventsPageState extends State<MyEventsPage>
             ),
           ),
         ),
-      ),
     );
   }
 
@@ -186,18 +164,34 @@ class _MyEventsPageState extends State<MyEventsPage>
                   : const _MyEventCardEmptyHistory()
             else
               Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.only(top: 24, bottom: 24),
-                  shrinkWrap: true,
-                  itemCount: events.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final event = events[index];
-                    return MyEventCard(
-                      event: event,
-                      onTap: () => _handleEventTap(event),
-                    );
+                child: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black,
+                        Colors.black,
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.03, 0.97, 1.0],
+                    ).createShader(bounds);
                   },
+                  blendMode: BlendMode.dstIn,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.only(top: 24, bottom: 24),
+                    shrinkWrap: true,
+                    itemCount: events.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final event = events[index];
+                      return MyEventCard(
+                        event: event,
+                        onTap: () => _handleEventTap(event),
+                      );
+                    },
+                  ),
                 ),
               ),
           ],

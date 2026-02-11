@@ -132,38 +132,36 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
     required EventCategory category,
   }) async {
     try {
-      // Call RPC function to create booking
+      // Call RPC function — returns booking UUID directly
       final response = await SupabaseService.client.rpc(
-        'rpc_create_booking',
+        'create_booking_and_consume_ticket',
         params: {
           'p_event_id': eventId,
         },
       );
 
-      // Response should contain the booking ID
-      if (response != null) {
-        final bookingId = response['booking_id'] as String?;
-        return BookingResult.success(bookingId);
-      }
-
-      return BookingResult.success();
+      final bookingId = response as String?;
+      return BookingResult.success(bookingId);
     } catch (e) {
       final errorString = e.toString().toLowerCase();
 
-      if (errorString.contains('already')) {
-        return BookingResult.failure('您已經報名此活動');
+      if (errorString.contains('not_authenticated')) {
+        return BookingResult.failure('請先登入');
       }
-      if (errorString.contains('full') || errorString.contains('額滿')) {
-        return BookingResult.failure('活動已額滿');
+      if (errorString.contains('university_id_required')) {
+        return BookingResult.failure('請先完成學校認證');
       }
-      if (errorString.contains('closed') || errorString.contains('截止')) {
-        return BookingResult.failure('報名已截止');
+      if (errorString.contains('event_not_open_or_forbidden')) {
+        return BookingResult.failure('活動不在報名期間或不開放報名');
       }
-      if (errorString.contains('balance') || errorString.contains('ticket')) {
-        return BookingResult.failure('票券餘額不足');
+      if (errorString.contains('conflict_same_date_slot')) {
+        return BookingResult.failure('與同日同時段的活動衝突');
       }
-      if (errorString.contains('conflict') || errorString.contains('衝突')) {
-        return BookingResult.failure('與其他活動時段衝突');
+      if (errorString.contains('insufficient_study_tickets')) {
+        return BookingResult.failure('Study 票券不足');
+      }
+      if (errorString.contains('insufficient_games_tickets')) {
+        return BookingResult.failure('Games 票券不足');
       }
 
       return BookingResult.failure('報名失敗，請稍後再試');
@@ -177,7 +175,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
     try {
       // Call RPC function to cancel booking
       await SupabaseService.client.rpc(
-        'rpc_cancel_booking',
+        'cancel_booking_and_refund_ticket',
         params: {
           'p_booking_id': bookingId,
         },

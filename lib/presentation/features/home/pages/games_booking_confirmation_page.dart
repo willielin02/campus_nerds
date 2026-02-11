@@ -70,24 +70,40 @@ class _GamesBookingConfirmationPageState
                           _buildDescriptionRow(textTheme),
                           // ListView with event card, rules, and notice
                           Expanded(
-                            child: ListView(
-                              controller: _listViewController,
-                              padding: EdgeInsets.zero,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Column(
-                                    children: [
-                                      // Event info card
-                                      _buildEventCard(colors, textTheme),
-                                      // Rules card
-                                      _buildRulesCard(colors, textTheme),
-                                      // Notice section
-                                      _buildNoticeSection(textTheme),
-                                    ],
+                            child: ShaderMask(
+                              shaderCallback: (Rect bounds) {
+                                return LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black,
+                                    Colors.black,
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.03, 0.97, 1.0],
+                                ).createShader(bounds);
+                              },
+                              blendMode: BlendMode.dstIn,
+                              child: ListView(
+                                controller: _listViewController,
+                                padding: EdgeInsets.zero,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Column(
+                                      children: [
+                                        // Event info card
+                                        _buildEventCard(colors, textTheme),
+                                        // Rules card
+                                        _buildRulesCard(colors, textTheme),
+                                        // Notice section
+                                        _buildNoticeSection(textTheme),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],

@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../../domain/entities/event.dart';
+import '../../../../domain/repositories/my_events_repository.dart';
+import '../../../common/widgets/app_alert_dialog.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
+import '../../my_events/bloc/bloc.dart' show MyEventsBloc, MyEventsRefresh;
 import '../bloc/bloc.dart';
 
 /// Booking confirmation page for Focused Study events
@@ -29,6 +35,7 @@ class _StudyBookingConfirmationPageState
     extends State<StudyBookingConfirmationPage> {
   final ScrollController _listViewController = ScrollController();
   final ScrollController _columnController = ScrollController();
+  bool _isConfirming = false;
 
   @override
   void dispose() {
@@ -70,24 +77,40 @@ class _StudyBookingConfirmationPageState
                           _buildDescriptionRow(textTheme),
                           // ListView with event card, rules, and notice
                           Expanded(
-                            child: ListView(
-                              controller: _listViewController,
-                              padding: EdgeInsets.zero,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Column(
-                                    children: [
-                                      // Event info card
-                                      _buildEventCard(colors, textTheme),
-                                      // Rules card
-                                      _buildRulesCard(colors, textTheme),
-                                      // Notice section
-                                      _buildNoticeSection(textTheme),
-                                    ],
+                            child: ShaderMask(
+                              shaderCallback: (Rect bounds) {
+                                return LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black,
+                                    Colors.black,
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.03, 0.97, 1.0],
+                                ).createShader(bounds);
+                              },
+                              blendMode: BlendMode.dstIn,
+                              child: ListView(
+                                controller: _listViewController,
+                                padding: EdgeInsets.zero,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Column(
+                                      children: [
+                                        // Event info card
+                                        _buildEventCard(colors, textTheme),
+                                        // Rules card
+                                        _buildRulesCard(colors, textTheme),
+                                        // Notice section
+                                        _buildNoticeSection(textTheme),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -120,13 +143,17 @@ class _StudyBookingConfirmationPageState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_rounded,
-              color: colors.secondaryText,
-              size: 24,
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_rounded,
+                color: colors.secondaryText,
+                size: 24,
+              ),
+              onPressed: () => context.pop(),
             ),
-            onPressed: () => context.pop(),
           ),
           Text(
             '確認報名',
@@ -181,7 +208,7 @@ class _StudyBookingConfirmationPageState
     HomeState state,
   ) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 0, 0),
+      padding: const EdgeInsets.fromLTRB(8, 16, 0, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -195,6 +222,10 @@ class _StudyBookingConfirmationPageState
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: InkWell(
+              splashColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
               onTap: () {
                 context.push('${AppRoutes.checkout}?tabIndex=0');
               },
@@ -252,7 +283,7 @@ class _StudyBookingConfirmationPageState
 
   Widget _buildDescriptionRow(TextTheme textTheme) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.fromLTRB(0, 0, 8, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -379,8 +410,8 @@ class _StudyBookingConfirmationPageState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '規則',
-                    style: textTheme.labelLarge?.copyWith(
+                    '活動流程',
+                    style: textTheme.titleMedium?.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
                   ),
@@ -400,20 +431,17 @@ class _StudyBookingConfirmationPageState
                       children: [
                         _buildRuleRow(
                           textTheme,
-                          '1. ',
-                          '開始讀書前：設立 3 個目標，並將手機設為靜音，置於桌面中央',
+                          '開始學習前：\n寫下 3 個待辦事項，並將手機設為靜音，置於桌面中央。',
                         ),
                         Divider(thickness: 2, color: colors.alternate),
                         _buildRuleRow(
                           textTheme,
-                          '2. ',
-                          '讀書期間：專注讀書，不干擾他人',
+                          '學習期間：\n專注學習，不干擾他人。',
                         ),
                         Divider(thickness: 2, color: colors.alternate),
                         _buildRuleRow(
                           textTheme,
-                          '3. ',
-                          '中午一起吃飯時：互相檢查是否完成當初設的 3 個目標',
+                          '中午一起吃飯時：\n互相檢查是否完成開始前寫下的 3 個待辦事項。',
                         ),
                       ],
                     ),
@@ -427,29 +455,28 @@ class _StudyBookingConfirmationPageState
     );
   }
 
-  Widget _buildRuleRow(TextTheme textTheme, String number, String text) {
+  Widget _buildRuleRow(TextTheme textTheme, String text) {
+    final parts = text.split('\n');
+    final title = parts[0];
+    final body = parts.length > 1 ? parts.sublist(1).join('\n') : '';
+    final titleStyle = textTheme.labelLarge?.copyWith(
+      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+    );
+    final bodyStyle = textTheme.bodyLarge?.copyWith(
+      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            number,
-            style: textTheme.bodyLarge?.copyWith(
-              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+          Text(title, style: titleStyle),
+          if (body.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(body, style: bodyStyle),
             ),
-          ),
-          Expanded(
-            child: Container(
-              decoration: const BoxDecoration(),
-              child: Text(
-                text,
-                style: textTheme.bodyLarge?.copyWith(
-                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -531,136 +558,201 @@ class _StudyBookingConfirmationPageState
         width: 192,
         height: 64,
         child: ElevatedButton(
-          onPressed: () async {
-            // Scroll to bottom first
-            await _listViewController.animateTo(
-              _listViewController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 666),
-              curve: Curves.ease,
-            );
-            await Future.delayed(const Duration(milliseconds: 2222));
+          onPressed: _isConfirming
+              ? null
+              : () async {
+                  setState(() => _isConfirming = true);
 
-            if (!context.mounted) return;
+                  // Scroll to bottom first
+                  await _listViewController.animateTo(
+                    _listViewController.position.maxScrollExtent,
+                    duration: const Duration(milliseconds: 666),
+                    curve: Curves.ease,
+                  );
+                  await Future.delayed(const Duration(milliseconds: 2222));
 
-            // Check ticket balance
-            if (state.ticketBalance.studyBalance <= 0) {
-              // No tickets - navigate to checkout
-              context.push('${AppRoutes.checkout}?tabIndex=0');
-              return;
-            }
+                  if (!context.mounted) return;
+                  setState(() => _isConfirming = false);
 
-            // Show confirmation dialog
-            _showConfirmDialog(context, colors, textTheme);
-          },
+                  // Check ticket balance
+                  if (state.ticketBalance.studyBalance <= 0) {
+                    // No tickets - navigate to checkout
+                    context.push('${AppRoutes.checkout}?tabIndex=0');
+                    return;
+                  }
+
+                  // Show confirmation dialog
+                  final weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+                  final wd =
+                      weekdays[widget.event.eventDate.weekday - 1];
+                  final dateStr =
+                      '${widget.event.eventDate.month} 月 ${widget.event.eventDate.day} 日 ( $wd )';
+                  final cityName =
+                      state.selectedCityName;
+                  final fontFamily =
+                      GoogleFonts.notoSansTc().fontFamily;
+                  final confirmed = await showAppConfirmDialog(
+                    context: context,
+                    title: '確定報名本場Focused Study嗎？',
+                    messageWidget: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '您將花費一張 Study 票券報名',
+                          style: textTheme.bodyLarge?.copyWith(
+                            fontFamily: fontFamily,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text.rich(
+                            TextSpan(
+                              style: textTheme.bodyLarge?.copyWith(
+                                fontFamily: fontFamily,
+                              ),
+                              children: [
+                                TextSpan(text: '$dateStr Focused Study '),
+                                TextSpan(
+                                  text: '( $cityName )',
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    fontFamily: fontFamily,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed != true || !context.mounted) return;
+
+                  // Show loading while calling API
+                  setState(() => _isConfirming = true);
+
+                  final result = await GetIt.I<MyEventsRepository>()
+                      .createBooking(
+                    eventId: widget.event.id,
+                    category: EventCategory.focusedStudy,
+                  );
+
+                  if (!context.mounted) return;
+                  setState(() => _isConfirming = false);
+
+                  if (result.success) {
+                    // Show success alert, then navigate to my events
+                    await showAppAlertDialog(
+                      context: context,
+                      title: '報名成功！',
+                      message:
+                          '活動確切時間與地點將於活動日兩天前透過 App 通知，你可以在「我的活動」頁面查看最新資訊。',
+                    );
+                    if (!context.mounted) return;
+
+                    // Refresh home (events + balance) and my events
+                    context
+                        .read<HomeBloc>()
+                        .add(const HomeRefresh());
+                    context
+                        .read<MyEventsBloc>()
+                        .add(const MyEventsRefresh());
+
+                    // Check Facebook binding status before navigating
+                    bool shouldPromptFb = false;
+                    try {
+                      final userId = SupabaseService.currentUserId;
+                      if (userId != null) {
+                        final row = await SupabaseService.client
+                            .from('users')
+                            .select('fb_user_id')
+                            .eq('id', userId)
+                            .limit(1)
+                            .maybeSingle();
+                        shouldPromptFb = row?['fb_user_id'] == null;
+                      }
+                    } catch (_) {
+                      // Don't block navigation if FB check fails
+                    }
+
+                    if (!context.mounted) return;
+
+                    // Capture root navigator (survives route changes)
+                    final rootNav = Navigator.of(
+                      context,
+                      rootNavigator: true,
+                    );
+
+                    // Navigate to my events first
+                    context.go(AppRoutes.myEvents);
+
+                    // Show FB prompt on top of MyEvents page
+                    if (shouldPromptFb) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        if (!rootNav.mounted) return;
+                        // Block interaction with transparent barrier
+                        showDialog<void>(
+                          context: rootNav.context,
+                          barrierDismissible: false,
+                          barrierColor: Colors.transparent,
+                          builder: (_) => const SizedBox.shrink(),
+                        );
+                        await Future.delayed(
+                            const Duration(milliseconds: 666));
+                        if (!rootNav.mounted) return;
+                        // Remove barrier, then show real dialog
+                        Navigator.of(rootNav.context,
+                                rootNavigator: true)
+                            .pop();
+                        final wantBind = await showAppConfirmDialog(
+                          context: rootNav.context,
+                          title: '綁定 Facebook 以避免遇到熟人',
+                          message:
+                              '在綁定您的 Facebook 帳號後，系統分組時會自動避開你的 Facebook 好友，讓你在活動上認識更多新朋友。',
+                          confirmText: '前往綁定',
+                        );
+                        if (wantBind == true && rootNav.mounted) {
+                          GoRouter.of(rootNav.context)
+                              .push(AppRoutes.facebookBinding);
+                        }
+                      });
+                    }
+                  } else {
+                    // Show error alert, stay on current page
+                    await showAppAlertDialog(
+                      context: context,
+                      title: '報名失敗',
+                      message: result.errorMessage ?? '報名失敗，請稍後再試',
+                    );
+                  }
+                },
           style: ElevatedButton.styleFrom(
             backgroundColor: colors.tertiary,
             foregroundColor: colors.primaryText,
+            disabledBackgroundColor: colors.tertiary,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          child: Text(
-            '確認報名',
-            style: textTheme.labelLarge?.copyWith(
-              color: colors.primaryText,
-              fontFamily: GoogleFonts.notoSansTc().fontFamily,
-            ),
-          ),
+          child: _isConfirming
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  '確認報名',
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colors.primaryText,
+                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                  ),
+                ),
         ),
       ),
-    );
-  }
-
-  void _showConfirmDialog(
-    BuildContext context,
-    AppColorsTheme colors,
-    TextTheme textTheme,
-  ) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return Dialog(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: colors.secondaryBackground,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '確認報名',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '報名後將使用 1 張專注讀書票券。',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colors.secondaryText,
-                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.secondaryText,
-                          side: BorderSide(color: colors.tertiary, width: 2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          '取消',
-                          style: textTheme.labelLarge?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(dialogContext).pop();
-                          // TODO: Call booking API
-                          context.pop(true); // Return success
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          '確認',
-                          style: textTheme.labelLarge?.copyWith(
-                            color: Colors.white,
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -696,6 +788,6 @@ class _StudyBookingConfirmationPageState
       'library_or_cafe': '圖書館/ 咖啡廳',
       'boardgame_or_escape_room': '桌遊店/ 密室逃脫',
     };
-    return locationMap[locationDetail] ?? locationDetail;
+    return locationMap[locationDetail] ?? '';
   }
 }

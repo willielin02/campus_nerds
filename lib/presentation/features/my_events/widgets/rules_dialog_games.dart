@@ -44,7 +44,7 @@ class RulesDialogGames extends StatelessWidget {
             children: [
               // Title
               Text(
-                '鐵打的規則',
+                '活動規則與流程',
                 style: textTheme.titleMedium?.copyWith(
                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                 ),
@@ -52,39 +52,55 @@ class RulesDialogGames extends StatelessWidget {
               const SizedBox(height: 4),
               // Rules list
               Flexible(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Rule 1
-                          _buildRule(
-                            context,
-                            '1. 手機集中管理',
-                            '入座後交出手機，關靜音，放在桌子中央大家都看得到的地方。',
-                          ),
-                          Divider(thickness: 2, color: colors.alternate),
-                          // Rule 2
-                          _buildRule(
-                            context,
-                            '2. 領取今日單字／片語',
-                            '開始前，每人會拿到一個 實用英文單字或片語，本場遊戲中盡量多次使用。',
-                          ),
-                          Divider(thickness: 2, color: colors.alternate),
-                          // Rule 3
-                          _buildRule(
-                            context,
-                            '3. 全程對話一律英文',
-                            '遊戲過程中，所有討論與聊天都用英文（即使和店員溝通可以也要說英文）。',
-                          ),
-                        ],
+                child: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black,
+                        Colors.black,
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.03, 0.97, 1.0],
+                    ).createShader(bounds);
+                  },
+                  blendMode: BlendMode.dstIn,
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Rule 1
+                            _buildRule(
+                              context,
+                              '1. 手機集中管理',
+                              '入座後交出手機，關靜音，放在桌子中央大家都看得到的地方。',
+                            ),
+                            Divider(thickness: 2, color: colors.alternate),
+                            // Rule 2
+                            _buildRule(
+                              context,
+                              '2. 領取今日單字／片語',
+                              '開始前，每人會拿到一個 實用英文單字或片語，本場遊戲中盡量多次使用。',
+                            ),
+                            Divider(thickness: 2, color: colors.alternate),
+                            // Rule 3
+                            _buildRule(
+                              context,
+                              '3. 全程對話一律英文',
+                              '遊戲過程中，所有討論與聊天都用英文（即使和店員溝通可以也要說英文）。',
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
