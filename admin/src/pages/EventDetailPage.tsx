@@ -346,11 +346,11 @@ export default function EventDetailPage() {
         </div>
         <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
           <p className="text-2xl font-semibold">{bookingStats.male}</p>
-          <p className="text-xs text-secondary-text">男生</p>
+          <p className="text-xs text-secondary-text">男性</p>
         </div>
         <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4 text-center">
           <p className="text-2xl font-semibold">{bookingStats.female}</p>
-          <p className="text-xs text-secondary-text">女生</p>
+          <p className="text-xs text-secondary-text">女性</p>
         </div>
       </div>
 
@@ -368,7 +368,7 @@ export default function EventDetailPage() {
             if (bookingStats.total === 0) {
               reason = '無人報名'
             } else {
-              reason = `報名人數不足；目前男 ${bookingStats.male} 女 ${bookingStats.female}`
+              reason = `報名人數不足；目前男性 ${bookingStats.male} 女性 ${bookingStats.female}`
             }
             return `已執行，未成功分組（原因：${reason}）`
           }
@@ -396,7 +396,7 @@ export default function EventDetailPage() {
                   <div className="flex items-center gap-4">
                     <span className="text-xs font-mono text-tertiary-text">{group.id.slice(0, 8)}</span>
                     <span className="text-sm">
-                      {members.length}/{group.max_size} 人（男 {maleCount} · 女 {femaleCount}）
+                      {members.length}/{group.max_size} 人（男性 {maleCount} · 女性 {femaleCount}）
                     </span>
                     {venueName && (
                       <span className="text-xs text-tertiary-text">{venueName}</span>
@@ -419,7 +419,7 @@ export default function EventDetailPage() {
                         return (
                           <div key={m.id} className="flex items-center gap-3 text-sm">
                             <span className="text-xs text-tertiary-text">
-                              {m.bookings?.users?.gender === 'male' ? '♂' : '♀'}
+                              {m.bookings?.users?.gender === 'male' ? '男性' : '女性'}
                             </span>
                             <span>{m.bookings?.users?.nickname || '(未設定暱稱)'}</span>
                             <span className="text-xs text-tertiary-text">
@@ -455,7 +455,7 @@ export default function EventDetailPage() {
                             <option value="">選擇要加入的用戶...</option>
                             {unmatchedBookings.map((ub) => (
                               <option key={ub.booking_id} value={ub.booking_id}>
-                                {ub.gender === 'male' ? '♂' : '♀'}{' '}
+                                {ub.gender === 'male' ? '男性' : '女性'}{' '}
                                 {ub.nickname || '(未設定暱稱)'} · {ub.age != null ? `${ub.age}歲` : '-'} · {ub.university_name || '-'}
                               </option>
                             ))}

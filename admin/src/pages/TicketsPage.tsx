@@ -115,7 +115,7 @@ export default function TicketsPage() {
                 >
                   <p className="text-sm font-medium">{user.nickname || '(未設定暱稱)'}</p>
                   <p className="text-xs text-tertiary-text">
-                    {user.gender === 'male' ? '男' : user.gender === 'female' ? '女' : '-'} ·{' '}
+                    {user.gender === 'male' ? '男性' : user.gender === 'female' ? '女性' : '-'} ·{' '}
                     {user.age ? `${user.age}歲` : '-'} · {user.university_name || '-'}
                   </p>
                 </div>
@@ -133,7 +133,7 @@ export default function TicketsPage() {
                 <h3 className="text-sm font-semibold mb-2">用戶資訊</h3>
                 <p className="text-sm">{selectedUser.nickname || '(未設定暱稱)'}</p>
                 <p className="text-xs text-secondary-text">
-                  {selectedUser.gender === 'male' ? '男' : '女'} · {selectedUser.age}歲 ·{' '}
+                  {selectedUser.gender === 'male' ? '男性' : '女性'} · {selectedUser.age}歲 ·{' '}
                   {selectedUser.university_name || '-'}
                 </p>
                 <p className="text-xs text-tertiary-text mt-1">{selectedUser.school_email}</p>
