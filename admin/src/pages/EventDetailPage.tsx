@@ -255,7 +255,18 @@ export default function EventDetailPage() {
       {/* Groups */}
       <h3 className="text-base font-semibold mb-3">分組列表 ({groups.length})</h3>
       {groups.length === 0 ? (
-        <p className="text-sm text-tertiary-text">尚無分組（自動分組會在報名截止後執行）</p>
+        <p className="text-sm text-tertiary-text">尚無分組（自動分組會在{(() => {
+          // Auto-grouping runs at event_date - 2 days, 00:00 Taipei time (UTC+8)
+          const groupingAt = new Date(`${event.event_date}T00:00:00+08:00`)
+          groupingAt.setDate(groupingAt.getDate() - 2)
+          const now = new Date()
+          const diffMs = groupingAt.getTime() - now.getTime()
+          if (diffMs <= 0) return '報名截止後執行'
+          const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+          const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+          if (days > 0) return ` ${days} 天 ${hours} 小時後執行`
+          return ` ${hours} 小時後執行`
+        })()}）</p>
       ) : (
         <div className="space-y-3">
           {groups.map((group) => {
