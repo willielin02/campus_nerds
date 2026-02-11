@@ -230,6 +230,37 @@ export default function EventDetailPage() {
     }
   }
 
+  async function handleDeleteGroup(groupId: string) {
+    const members = groupMembers[groupId] || []
+    const msg = members.length > 0
+      ? `此分組有 ${members.length} 位成員，刪除後成員將回到未分組狀態。確定要刪除嗎？`
+      : '確定要刪除此空分組嗎？'
+    if (!confirm(msg)) return
+
+    // Remove members first (FK is NO ACTION)
+    if (members.length > 0) {
+      const { error: memError } = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+      if (memError) {
+        alert(`刪除成員失敗: ${memError.message}`)
+        return
+      }
+    }
+
+    const { error } = await supabase
+      .from('groups')
+      .delete()
+      .eq('id', groupId)
+
+    if (error) {
+      alert(`刪除分組失敗: ${error.message}`)
+    } else {
+      await Promise.all([loadGroups(), loadUnmatchedBookings()])
+    }
+  }
+
   async function handleCreateGroup() {
     if (!event) return
     const { error } = await supabase
@@ -588,6 +619,15 @@ export default function EventDetailPage() {
                             <span className="text-xs text-success whitespace-nowrap">已儲存</span>
                           )}
                         </div>
+
+                        <div className="h-4 w-px bg-tertiary" />
+
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id) }}
+                          className="text-xs text-tertiary-text hover:text-error transition-colors whitespace-nowrap"
+                        >
+                          刪除分組
+                        </button>
                       </div>
                     )}
 
