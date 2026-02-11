@@ -261,7 +261,14 @@ export default function EventDetailPage() {
           groupingAt.setDate(groupingAt.getDate() - 2)
           const now = new Date()
           const diffMs = groupingAt.getTime() - now.getTime()
-          if (diffMs <= 0) return '已執行，本次未成功分組'
+          if (diffMs <= 0) {
+            const needed = event.default_group_size
+            const half = needed / 2
+            if (bookingStats.total === 0) return '已執行，無人報名'
+            if (bookingStats.total < needed) return `已執行，報名人數不足（需至少 ${needed} 人，目前 ${bookingStats.total} 人）`
+            if (bookingStats.male < half || bookingStats.female < half) return `已執行，男女比例不符（需各 ${half} 人，目前男 ${bookingStats.male} 女 ${bookingStats.female}）`
+            return '已執行，未成功分組'
+          }
           const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
           const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
           if (days > 0) return ` ${days} 天 ${hours} 小時後執行`
