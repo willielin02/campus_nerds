@@ -81,7 +81,7 @@ export default function VenuesPage() {
     setLoading(true)
     let query = supabase
       .from('venues')
-      .select('*, city:cities(name), university:universities(name)')
+      .select('*, city:cities!FK_venues_city_id(name), university:universities!FK_venues_university_id(name)')
       .order('city_id')
       .order('category')
       .order('name')
@@ -90,7 +90,8 @@ export default function VenuesPage() {
     if (categoryFilter) query = query.eq('category', categoryFilter)
     if (activeFilter) query = query.eq('is_active', activeFilter === 'true')
 
-    const { data } = await query
+    const { data, error } = await query
+    if (error) console.error('Failed to load venues:', error)
     if (data) setVenues(data as unknown as Venue[])
     setLoading(false)
   }
