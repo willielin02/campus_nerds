@@ -134,6 +134,25 @@ export default function EventDetailPage() {
     setConfirming(null)
   }
 
+  async function handleTransitionToScheduled() {
+    if (!event) return
+    if (!confirm('確定要開放報名嗎？活動將對用戶顯示在首頁。')) return
+
+    setTransitioning(true)
+    const { error } = await supabase
+      .from('events')
+      .update({ status: 'scheduled' })
+      .eq('id', event.id)
+
+    if (error) {
+      alert(`狀態更新失敗: ${error.message}`)
+    } else {
+      alert('已開放報名！')
+      loadEvent()
+    }
+    setTransitioning(false)
+  }
+
   async function handleTransitionToNotified() {
     if (!event) return
 
@@ -195,6 +214,15 @@ export default function EventDetailPage() {
           </div>
           <div className="flex items-center gap-3">
             <StatusBadge label={EVENT_STATUS_LABELS[event.status]} color={eventStatusColor(event.status)} />
+            {event.status === 'draft' && (
+              <button
+                onClick={handleTransitionToScheduled}
+                disabled={transitioning}
+                className="px-3 py-2 bg-alternate text-primary-text rounded-[var(--radius-app)] text-xs font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+              >
+                {transitioning ? '處理中...' : '開放報名'}
+              </button>
+            )}
             {event.status === 'scheduled' && (
               <button
                 onClick={handleTransitionToNotified}
