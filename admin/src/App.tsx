@@ -4,6 +4,7 @@ import EventsPage from './pages/EventsPage'
 import EventDetailPage from './pages/EventDetailPage'
 import TicketsPage from './pages/TicketsPage'
 import OrdersPage from './pages/OrdersPage'
+import VenuesPage from './pages/VenuesPage'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/events/:id" element={<EventDetailPage />} />
           <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/venues" element={<VenuesPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -7,6 +7,15 @@ import StatusBadge, { eventStatusColor, groupStatusColor } from '../components/S
 import { formatEventDate, formatDateTime } from '../lib/date'
 import { serverNow } from '../lib/serverClock'
 
+interface UnmatchedBooking {
+  booking_id: string
+  user_id: string
+  nickname: string | null
+  gender: Gender | null
+  age: number | null
+  university_name: string | null
+}
+
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
   const [event, setEvent] = useState<Event | null>(null)
@@ -18,6 +27,8 @@ export default function EventDetailPage() {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null)
   const [selectedVenues, setSelectedVenues] = useState<Record<string, string>>({})
   const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({})
+  const [unmatchedBookings, setUnmatchedBookings] = useState<UnmatchedBooking[]>([])
+  const [selectedAddMember, setSelectedAddMember] = useState<Record<string, string>>({})
   const [confirming, setConfirming] = useState<string | null>(null)
   const [transitioning, setTransitioning] = useState(false)
 
@@ -27,7 +38,7 @@ export default function EventDetailPage() {
 
   async function loadAll() {
     setLoading(true)
-    await Promise.all([loadEvent(), loadGroups(), loadBookingStats()])
+    await Promise.all([loadEvent(), loadGroups(), loadBookingStats(), loadUnmatchedBookings()])
     setLoading(false)
   }
 
@@ -108,6 +119,76 @@ export default function EventDetailPage() {
       const male = data.filter((b) => (b.users as unknown as { gender: Gender }).gender === 'male').length
       const female = data.filter((b) => (b.users as unknown as { gender: Gender }).gender === 'female').length
       setBookingStats({ total: data.length, male, female })
+    }
+  }
+
+  async function loadUnmatchedBookings() {
+    const { data: bookings } = await supabase
+      .from('bookings')
+      .select('id, user_id')
+      .eq('event_id', id!)
+      .eq('status', 'active')
+    if (!bookings) { setUnmatchedBookings([]); return }
+
+    const { data: activeMembers } = await supabase
+      .from('group_members')
+      .select('booking_id')
+      .eq('event_id', id!)
+      .is('left_at', null)
+    const groupedIds = new Set((activeMembers || []).map((m) => m.booking_id))
+
+    const unmatched = bookings.filter((b) => !groupedIds.has(b.id))
+    if (unmatched.length === 0) { setUnmatchedBookings([]); return }
+
+    const userIds = unmatched.map((b) => b.user_id)
+    const { data: profiles } = await supabase
+      .from('user_profile_v')
+      .select('id, nickname, gender, age, university_name')
+      .in('id', userIds)
+    const pMap: Record<string, any> = {}
+    for (const p of profiles || []) pMap[(p as any).id] = p
+
+    setUnmatchedBookings(
+      unmatched.map((b) => ({
+        booking_id: b.id,
+        user_id: b.user_id,
+        nickname: pMap[b.user_id]?.nickname ?? null,
+        gender: pMap[b.user_id]?.gender ?? null,
+        age: pMap[b.user_id]?.age ?? null,
+        university_name: pMap[b.user_id]?.university_name ?? null,
+      }))
+    )
+  }
+
+  async function handleRemoveMember(memberId: string) {
+    if (!confirm('確定要從分組中移除此成員嗎？')) return
+
+    const { error } = await supabase
+      .from('group_members')
+      .update({ left_at: new Date().toISOString() })
+      .eq('id', memberId)
+      .is('left_at', null)
+
+    if (error) {
+      alert(`移除失敗: ${error.message}`)
+    } else {
+      await Promise.all([loadGroups(), loadUnmatchedBookings()])
+    }
+  }
+
+  async function handleAddMember(groupId: string) {
+    const bookingId = selectedAddMember[groupId]
+    if (!bookingId) return
+
+    const { error } = await supabase
+      .from('group_members')
+      .insert({ group_id: groupId, booking_id: bookingId, event_id: id! })
+
+    if (error) {
+      alert(`新增失敗: ${error.message}`)
+    } else {
+      setSelectedAddMember((prev) => ({ ...prev, [groupId]: '' }))
+      await Promise.all([loadGroups(), loadUnmatchedBookings()])
     }
   }
 
@@ -346,10 +427,49 @@ export default function EventDetailPage() {
                               {' · '}
                               {profile?.university_name || '-'}
                             </span>
+                            {group.status === 'draft' && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRemoveMember(m.id) }}
+                                className="ml-auto px-2 py-0.5 text-xs text-tertiary-text hover:text-primary-text border border-tertiary rounded-lg hover:bg-alternate transition-colors"
+                              >
+                                移除
+                              </button>
+                            )}
                           </div>
                         )
                       })}
                     </div>
+
+                    {/* Add member from unmatched bookings (draft groups only) */}
+                    {group.status === 'draft' && unmatchedBookings.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-xs font-medium text-secondary-text mb-2">
+                          未分組用戶 ({unmatchedBookings.length})
+                        </p>
+                        <div className="flex items-end gap-3">
+                          <select
+                            value={selectedAddMember[group.id] || ''}
+                            onChange={(e) => setSelectedAddMember((prev) => ({ ...prev, [group.id]: e.target.value }))}
+                            className="flex-1 border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
+                          >
+                            <option value="">選擇要加入的用戶...</option>
+                            {unmatchedBookings.map((ub) => (
+                              <option key={ub.booking_id} value={ub.booking_id}>
+                                {ub.gender === 'male' ? '♂' : '♀'}{' '}
+                                {ub.nickname || '(未設定暱稱)'} · {ub.age != null ? `${ub.age}歲` : '-'} · {ub.university_name || '-'}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => handleAddMember(group.id)}
+                            disabled={!selectedAddMember[group.id]}
+                            className="px-4 py-2 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                          >
+                            新增
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Confirm controls for draft groups */}
                     {group.status === 'draft' && (
@@ -363,7 +483,9 @@ export default function EventDetailPage() {
                           >
                             <option value="">選擇場地...</option>
                             {venues.map((v) => (
-                              <option key={v.id} value={v.id}>{v.name}</option>
+                              <option key={v.id} value={v.id}>
+                                {v.name}{v.start_at ? ` (${new Date(v.start_at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })})` : ''}
+                              </option>
                             ))}
                           </select>
                         </label>

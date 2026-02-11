@@ -6,6 +6,7 @@ export type BookingStatus = 'active' | 'cancelled' | 'unmatched' | 'event_cancel
 export type OrderStatus = 'pending' | 'paid' | 'cancelled' | 'refunded'
 export type Gender = 'male' | 'female'
 export type TicketType = 'study' | 'games'
+export type VenueType = 'university_library' | 'public_library' | 'cafe' | 'boardgame' | 'escape'
 export type TicketLedgerReason = 'purchase_credit' | 'booking_debit' | 'booking_refund' | 'admin_adjust'
 
 export interface Event {
@@ -53,11 +54,16 @@ export interface Venue {
   id: string
   name: string
   address: string
+  google_map_url: string
   city_id: string
   category: EventCategory
-  type: string
+  type: VenueType
+  university_id: string | null
   start_at: string | null
   is_active: boolean
+  created_at: string
+  city?: { name: string }
+  university?: { name: string } | null
 }
 
 export interface Order {
@@ -150,6 +156,14 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   paid: '已付款',
   cancelled: '已取消',
   refunded: '已退款',
+}
+
+export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
+  university_library: '大學圖書館',
+  public_library: '公共圖書館',
+  cafe: '咖啡廳',
+  boardgame: '桌遊店',
+  escape: '密室逃脫',
 }
 
 export const REASON_LABELS: Record<TicketLedgerReason, string> = {
