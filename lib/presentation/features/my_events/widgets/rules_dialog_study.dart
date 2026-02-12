@@ -5,7 +5,7 @@ import '../../../../app/theme/app_theme.dart';
 
 /// Rules dialog for focused study events
 /// Matches FlutterFlow RulesDialogStudy design exactly
-class RulesDialogStudy extends StatelessWidget {
+class RulesDialogStudy extends StatefulWidget {
   const RulesDialogStudy({super.key});
 
   static void show(BuildContext context) {
@@ -19,6 +19,34 @@ class RulesDialogStudy extends StatelessWidget {
         child: RulesDialogStudy(),
       ),
     );
+  }
+
+  @override
+  State<RulesDialogStudy> createState() => _RulesDialogStudyState();
+}
+
+class _RulesDialogStudyState extends State<RulesDialogStudy> {
+  final ScrollController _scrollController = ScrollController();
+  bool _isClosing = false;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleClose() async {
+    if (_isClosing) return;
+    setState(() => _isClosing = true);
+
+    await _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 666),
+      curve: Curves.ease,
+    );
+
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   @override
@@ -82,6 +110,7 @@ class RulesDialogStudy extends StatelessWidget {
                     },
                     blendMode: BlendMode.dstIn,
                     child: ListView(
+                      controller: _scrollController,
                       padding: EdgeInsets.zero,
                       primary: false,
                       shrinkWrap: true,
@@ -145,7 +174,7 @@ class RulesDialogStudy extends StatelessWidget {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: _isClosing ? null : _handleClose,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.alternate,
                     foregroundColor: colors.primaryText,

@@ -5,7 +5,7 @@ import '../../../../app/theme/app_theme.dart';
 
 /// Rules dialog for english games events
 /// Matches FlutterFlow design exactly
-class RulesDialogGames extends StatelessWidget {
+class RulesDialogGames extends StatefulWidget {
   const RulesDialogGames({super.key});
 
   static void show(BuildContext context) {
@@ -17,6 +17,34 @@ class RulesDialogGames extends StatelessWidget {
         child: RulesDialogGames(),
       ),
     );
+  }
+
+  @override
+  State<RulesDialogGames> createState() => _RulesDialogGamesState();
+}
+
+class _RulesDialogGamesState extends State<RulesDialogGames> {
+  final ScrollController _scrollController = ScrollController();
+  bool _isClosing = false;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleClose() async {
+    if (_isClosing) return;
+    setState(() => _isClosing = true);
+
+    await _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 666),
+      curve: Curves.ease,
+    );
+
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   @override
@@ -68,6 +96,7 @@ class RulesDialogGames extends StatelessWidget {
                   },
                   blendMode: BlendMode.dstIn,
                   child: ListView(
+                    controller: _scrollController,
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
                     children: [
@@ -110,7 +139,7 @@ class RulesDialogGames extends StatelessWidget {
                   width: 144,
                   height: 48,
                   child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: _isClosing ? null : _handleClose,
                     style: OutlinedButton.styleFrom(
                       backgroundColor: colors.secondaryBackground,
                       foregroundColor: colors.secondaryText,
