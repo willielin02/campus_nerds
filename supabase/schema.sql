@@ -1209,10 +1209,9 @@ end $$;
 ALTER FUNCTION "public"."gen_merchant_trade_no"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_group_focused_study_plans"("p_group_id" "uuid") RETURNS TABLE("group_id" "uuid", "booking_id" "uuid", "user_id" "uuid", "display_name" "text", "is_me" boolean, "sort_key" integer, "joined_at" timestamp with time zone, "plan1_id" "uuid", "plan1_content" "text", "plan1_done" boolean, "plan2_id" "uuid", "plan2_content" "text", "plan2_done" boolean, "plan3_id" "uuid", "plan3_content" "text", "plan3_done" boolean)
-    LANGUAGE "sql" SECURITY DEFINER
+CREATE OR REPLACE FUNCTION "public"."get_group_focused_study_plans"("p_group_id" "uuid") RETURNS TABLE("group_id" "uuid", "booking_id" "uuid", "user_id" "uuid", "display_name" "text", "is_me" boolean, "sort_key" integer, "joined_at" timestamp with time zone, "gender" "text", "university_name" "text", "age" integer, "plan1_id" "uuid", "plan1_content" "text", "plan1_done" boolean, "plan2_id" "uuid", "plan2_content" "text", "plan2_done" boolean, "plan3_id" "uuid", "plan3_content" "text", "plan3_done" boolean)
+    LANGUAGE "sql" STABLE
     SET "search_path" TO 'public'
-    SET "row_security" TO 'off'
     AS $$
   select
     gm.group_id,
@@ -1222,49 +1221,43 @@ CREATE OR REPLACE FUNCTION "public"."get_group_focused_study_plans"("p_group_id"
     (b.user_id = auth.uid()) as is_me,
     case when b.user_id = auth.uid() then 0 else 1 end as sort_key,
     gm.joined_at,
+    up.gender::text as gender,
+    up.university_name as university_name,
+    up.age as age,
 
-    -- slot 1
     (max(case when fsp.slot = 1 then fsp.id::text end))::uuid as plan1_id,
     max(case when fsp.slot = 1 then fsp.content end)          as plan1_content,
     bool_or(fsp.slot = 1 and fsp.is_done)                     as plan1_done,
 
-    -- slot 2
     (max(case when fsp.slot = 2 then fsp.id::text end))::uuid as plan2_id,
     max(case when fsp.slot = 2 then fsp.content end)          as plan2_content,
     bool_or(fsp.slot = 2 and fsp.is_done)                     as plan2_done,
 
-    -- slot 3
     (max(case when fsp.slot = 3 then fsp.id::text end))::uuid as plan3_id,
     max(case when fsp.slot = 3 then fsp.content end)          as plan3_content,
     bool_or(fsp.slot = 3 and fsp.is_done)                     as plan3_done
 
   from public.group_members gm
-  join public.bookings b
-    on b.id = gm.booking_id
-  left join public.user_profile_v up
-    on up.id = b.user_id
-  join public.focused_study_plans fsp
-    on fsp.booking_id = gm.booking_id
+  join public.bookings b on b.id = gm.booking_id
+  join public.groups grp on grp.id = gm.group_id
+  join public.events ev on ev.id = grp.event_id
+  left join public.user_profile_v up on up.id = b.user_id
+  join public.focused_study_plans fsp on fsp.booking_id = gm.booking_id
 
   where gm.group_id = p_group_id
     and gm.left_at is null
-    -- 防止亂打 group_id：只有自己也在這個 group 才能查
+    and ev.status in ('notified', 'completed')
     and exists (
-      select 1
-      from public.group_members gm_me
-      join public.bookings b_me
-        on b_me.id = gm_me.booking_id
+      select 1 from public.group_members gm_me
+      join public.bookings b_me on b_me.id = gm_me.booking_id
       where gm_me.group_id = p_group_id
         and gm_me.left_at is null
         and b_me.user_id = auth.uid()
     )
 
-  group by
-    gm.group_id,
-    gm.booking_id,
-    b.user_id,
-    up.nickname,
-    gm.joined_at
+  group by gm.group_id, gm.booking_id, b.user_id, up.nickname, gm.joined_at,
+           up.gender, up.university_name, up.age
+  order by sort_key, gm.joined_at;
 $$;
 
 
@@ -2503,7 +2496,6 @@ CREATE OR REPLACE VIEW "public"."my_events_v" WITH ("security_invoker"='on') AS
     "e"."signup_deadline_at",
     "g"."feedback_sent_at",
     "g"."goal_close_at",
-    "g"."goal_check_close_at",
     (("gm"."id" IS NOT NULL) AND ("g"."id" IS NOT NULL) AND (EXISTS ( SELECT 1
            FROM "public"."event_feedbacks" "ef"
           WHERE (("ef"."group_id" = "g"."id") AND ("ef"."member_id" = "gm"."id"))))) AS "has_event_feedback",
@@ -2523,7 +2515,7 @@ CREATE OR REPLACE VIEW "public"."my_events_v" WITH ("security_invoker"='on') AS
           WHERE (("m2"."group_id" = "g"."id") AND ("m2"."left_at" IS NULL))))) AS "has_filled_feedback_all"
    FROM (((("public"."bookings" "b"
      JOIN "public"."events" "e" ON (("e"."id" = "b"."event_id")))
-     LEFT JOIN "public"."group_members" "gm" ON (("gm"."booking_id" = "b"."id")))
+     LEFT JOIN "public"."group_members" "gm" ON (("gm"."booking_id" = "b"."id") AND ("gm"."left_at" IS NULL) AND ("e"."status" IN ('notified', 'completed'))))
      LEFT JOIN "public"."groups" "g" ON (("g"."id" = "gm"."group_id")))
      LEFT JOIN "public"."venues" "v" ON (("v"."id" = "g"."venue_id")))
   ORDER BY "b"."id", "gm"."joined_at" DESC NULLS LAST;
