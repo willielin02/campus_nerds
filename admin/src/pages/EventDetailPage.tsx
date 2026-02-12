@@ -630,14 +630,6 @@ export default function EventDetailPage() {
                           )}
                         </div>
 
-                        <div className="h-4 w-px bg-tertiary" />
-
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id) }}
-                          className="text-xs text-tertiary-text hover:text-error transition-colors whitespace-nowrap"
-                        >
-                          刪除分組
-                        </button>
                       </div>
                     )}
 
@@ -698,13 +690,21 @@ export default function EventDetailPage() {
                         <p className="text-xs text-tertiary-text">
                           {group.venue_id ? '鎖定後將同步 Facebook 好友並驗證分組' : '請先選擇並儲存場地'}
                         </p>
-                        <button
-                          onClick={() => handleLockGroup(group.id)}
-                          disabled={confirming === group.id || !group.venue_id}
-                          className="px-5 py-2 bg-secondary-text text-white rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
-                        >
-                          {confirming === group.id ? '鎖定中...' : '鎖定分組'}
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id) }}
+                            className="px-4 py-2 bg-secondary border-2 border-tertiary text-secondary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 transition-opacity"
+                          >
+                            刪除分組
+                          </button>
+                          <button
+                            onClick={() => handleLockGroup(group.id)}
+                            disabled={confirming === group.id || !group.venue_id}
+                            className="px-5 py-2 bg-secondary-text text-white rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                          >
+                            {confirming === group.id ? '鎖定中...' : '鎖定分組'}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
