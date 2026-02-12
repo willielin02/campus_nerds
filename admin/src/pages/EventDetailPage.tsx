@@ -535,7 +535,7 @@ export default function EventDetailPage() {
                           <th className="text-left px-4 py-2 text-xs font-medium text-secondary-text w-[12%]">年齡</th>
                           <th className="text-left px-4 py-2 text-xs font-medium text-secondary-text w-[12%]">性別</th>
                           <th className="text-left px-4 py-2 text-xs font-medium text-secondary-text">學校</th>
-                          {isDraft && <th className="w-14" />}
+                          <th className="w-14" />
                         </tr>
                       </thead>
                       <tbody>
@@ -548,19 +548,29 @@ export default function EventDetailPage() {
                               <td className="px-4 py-2 text-secondary-text">{profile?.age != null ? `${profile.age}` : '-'}</td>
                               <td className="px-4 py-2 text-secondary-text">{m.bookings?.users?.gender === 'male' ? '男' : '女'}</td>
                               <td className="px-4 py-2 text-secondary-text">{profile?.university_name || '-'}</td>
-                              {isDraft && (
-                                <td className="px-4 py-2 text-right">
+                              <td className="px-4 py-2 text-right">
+                                {isDraft && (
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleRemoveMember(m.id) }}
                                     className="text-xs text-tertiary-text hover:text-error transition-colors"
                                   >
                                     移除
                                   </button>
-                                </td>
-                              )}
+                                )}
+                              </td>
                             </tr>
                           )
                         })}
+                        {/* Empty placeholder rows for unfilled slots */}
+                        {Array.from({ length: group.max_size - members.length }).map((_, i) => (
+                          <tr key={`empty-${i}`} className="border-t border-tertiary/50">
+                            <td className="px-4 py-2 text-tertiary-text italic">(空位)</td>
+                            <td className="px-4 py-2">-</td>
+                            <td className="px-4 py-2">-</td>
+                            <td className="px-4 py-2">-</td>
+                            <td className="w-14" />
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
 
@@ -603,7 +613,7 @@ export default function EventDetailPage() {
                             <option value="">選擇場地...</option>
                             {venues.map((v) => (
                               <option key={v.id} value={v.id}>
-                                {v.name}{v.start_at ? ` (${new Date(v.start_at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })})` : ''}
+                                {v.name}{v.start_at ? ` (${v.start_at.slice(0, 5)})` : ''}
                               </option>
                             ))}
                           </select>
@@ -683,14 +693,14 @@ export default function EventDetailPage() {
                     )}
 
                     {/* ── Draft: Lock action bar ── */}
-                    {isDraft && group.venue_id && (
+                    {isDraft && (
                       <div className="px-4 py-3 border-t-2 border-tertiary bg-alternate/10 flex items-center justify-between">
                         <p className="text-xs text-tertiary-text">
-                          鎖定後將同步 Facebook 好友並驗證分組
+                          {group.venue_id ? '鎖定後將同步 Facebook 好友並驗證分組' : '請先選擇並儲存場地'}
                         </p>
                         <button
                           onClick={() => handleLockGroup(group.id)}
-                          disabled={confirming === group.id}
+                          disabled={confirming === group.id || !group.venue_id}
                           className="px-5 py-2 bg-secondary-text text-white rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
                         >
                           {confirming === group.id ? '鎖定中...' : '鎖定分組'}
