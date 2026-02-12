@@ -237,16 +237,14 @@ export default function EventDetailPage() {
       : '確定要刪除此空分組嗎？'
     if (!confirm(msg)) return
 
-    // Remove members first (FK is NO ACTION)
-    if (members.length > 0) {
-      const { error: memError } = await supabase
-        .from('group_members')
-        .delete()
-        .eq('group_id', groupId)
-      if (memError) {
-        alert(`刪除成員失敗: ${memError.message}`)
-        return
-      }
+    // Remove ALL members first (including left_at IS NOT NULL) — FK is NO ACTION
+    const { error: memError } = await supabase
+      .from('group_members')
+      .delete()
+      .eq('group_id', groupId)
+    if (memError) {
+      alert(`刪除成員失敗: ${memError.message}`)
+      return
     }
 
     const { error } = await supabase
