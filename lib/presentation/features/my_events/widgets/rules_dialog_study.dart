@@ -44,6 +44,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
       duration: const Duration(milliseconds: 666),
       curve: Curves.ease,
     );
+    await Future.delayed(const Duration(milliseconds: 666));
 
     if (!mounted) return;
     Navigator.of(context).pop();
