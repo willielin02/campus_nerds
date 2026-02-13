@@ -1,5 +1,9 @@
 # Campus Nerds - Project Guide for AI Agents
 
+## Communication
+
+- 以繁體中文回答，用戶看不懂英文
+
 ## Project Overview
 
 Campus Nerds (校園裡的書呆子) is a university student social event platform built with Flutter + Supabase, targeting Taiwanese college students. Users register for two types of events: **Focused Study (專注讀書)** and **English Games (英文遊戲)**, are auto-grouped with strangers, and interact through group chat.
@@ -33,6 +37,15 @@ Campus Nerds (校園裡的書呆子) is a university student social event platfo
 - **Type-safe Supabase access:** `SupabaseTable<T>` / `SupabaseDataRow` wrappers in `lib/data/models/tables/`
 
 ## Intentional Design Decisions
+
+### Keyboard Behavior on Chat Page (EventDetailsPage)
+
+**Design:** When the keyboard opens on the EventDetailsPage, the **entire page shifts upward** (including the header) via `Stack` + `Positioned`. The chat area must **never be compressed/shrunk** by the keyboard. This is intentional — it maximizes visible chat space by letting the header scroll off-screen.
+
+- `resizeToAvoidBottomInset: false` + `LayoutBuilder` → `Stack(clipBehavior: Clip.hardEdge)` → `Positioned(top: -bottomInset)`
+- Uses **layout-based** positioning (not paint-based `Transform.translate`) to avoid GPU rendering issues on older devices like Pixel 5
+- **NEVER change to `resizeToAvoidBottomInset: true`** — that compresses the chat area
+- **NEVER use `Transform.translate`** for keyboard shifting — causes black screen on Pixel 5 (Adreno 620 GPU)
 
 ### Facebook Friend Avoidance (Permanent)
 
@@ -267,8 +280,11 @@ A global mock time system allows testing the entire event lifecycle without wait
 -- Set mock time (Supabase SQL Editor or Admin Dashboard)
 SELECT test_set_now('2026-02-20 10:00:00+08');
 
--- Check current mock time
-SELECT now();
+-- Check current mock time — MUST use public.now()
+SELECT public.now();
+
+-- Compare mock time vs real time
+SELECT public.now() AS mock_now, pg_catalog.now() AS real_now;
 
 -- Clear mock time (revert to real time)
 SELECT test_clear_now();
@@ -276,11 +292,23 @@ SELECT test_clear_now();
 
 After setting/clearing mock time, **restart the Flutter app** to re-sync `AppClock`.
 
+### search_path Caveat (IMPORTANT)
+
+Bare `SELECT now()` may resolve to `pg_catalog.now()` (real time) depending on the session's `search_path`. This happens in:
+- Supabase SQL Editor
+- MCP `execute_sql` tool
+- Any session where `pg_catalog` precedes `public` in `search_path`
+
+**Always use `SELECT public.now()` to check mock time.** Do NOT use bare `SELECT now()` — it will mislead you into thinking mock time is broken when it's actually working.
+
+Database functions, triggers, views, and RLS policies all have `search_path = 'public', 'pg_catalog'`, so they correctly resolve `now()` → `public.now()` and mock time works as expected within the application.
+
 ### Security
 
 - `test_set_now()` and `test_clear_now()` are **restricted to `service_role` only** — regular authenticated/anonymous users cannot call them
 - Only accessible via Supabase SQL Editor, admin dashboard, or service_role API key
 - `get_server_now()` remains callable by authenticated users (harmless — only returns current time)
+- `public.now()` is **SECURITY DEFINER** — required because `test_config` has RLS + FORCE ROW LEVEL SECURITY with no policies; without SECURITY DEFINER the function cannot read the time offset
 - In release builds, Flutter never calls `get_server_now()` at all
 
 ### Key Rules

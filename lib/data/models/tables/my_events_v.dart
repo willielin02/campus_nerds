@@ -107,4 +107,8 @@ class MyEventsVRow extends SupabaseDataRow {
   bool? get hasFilledFeedbackAll => getField<bool>('has_filled_feedback_all');
   set hasFilledFeedbackAll(bool? value) =>
       setField<bool>('has_filled_feedback_all', value);
+
+  int? get unreadMessageCount => getField<int>('unread_message_count');
+  set unreadMessageCount(int? value) =>
+      setField<int>('unread_message_count', value);
 }

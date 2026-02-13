@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "773749778082",
+    "project_id": "campus-nerds-29593",
+    "storage_bucket": "campus-nerds-29593.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:773749778082:android:ddb833b963a23ad8bc99fb",
+        "android_client_info": {
+          "package_name": "app.campusnerds.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFDHaw-v-QldZD5mTt00B2gnlND7sGvwc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

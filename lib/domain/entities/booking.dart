@@ -114,6 +114,9 @@ class MyEvent extends Equatable {
   final bool hasPeerFeedbackAll;
   final bool hasFilledFeedbackAll;
 
+  // Unread chat messages count
+  final int unreadMessageCount;
+
   // Group members (loaded separately)
   final List<GroupMember> groupMembers;
 
@@ -144,6 +147,7 @@ class MyEvent extends Equatable {
     this.hasEventFeedback = false,
     this.hasPeerFeedbackAll = false,
     this.hasFilledFeedbackAll = false,
+    this.unreadMessageCount = 0,
     this.groupMembers = const [],
   });
 
@@ -250,6 +254,7 @@ class MyEvent extends Equatable {
       hasEventFeedback: hasEventFeedback,
       hasPeerFeedbackAll: hasPeerFeedbackAll,
       hasFilledFeedbackAll: hasFilledFeedbackAll,
+      unreadMessageCount: unreadMessageCount,
       groupMembers: members,
     );
   }
@@ -282,6 +287,7 @@ class MyEvent extends Equatable {
         hasEventFeedback,
         hasPeerFeedbackAll,
         hasFilledFeedbackAll,
+        unreadMessageCount,
         groupMembers,
       ];
 }

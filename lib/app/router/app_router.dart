@@ -245,9 +245,11 @@ class AppRouter {
           parentNavigatorKey: appNavigatorKey,
           builder: (context, state) {
             final bookingId = state.uri.queryParameters['bookingId'] ?? '';
+            final tab = int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0;
             return EventDetailsPage(
               bookingId: bookingId,
               isFocusedStudy: true,
+              initialTab: tab,
             );
           },
         ),
@@ -257,9 +259,11 @@ class AppRouter {
           parentNavigatorKey: appNavigatorKey,
           builder: (context, state) {
             final bookingId = state.uri.queryParameters['bookingId'] ?? '';
+            final tab = int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0;
             return EventDetailsPage(
               bookingId: bookingId,
               isFocusedStudy: false,
+              initialTab: tab,
             );
           },
         ),

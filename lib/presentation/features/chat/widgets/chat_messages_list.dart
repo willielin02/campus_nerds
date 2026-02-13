@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/chat.dart';
 import 'chat_message_bubble.dart';
 
@@ -127,6 +128,7 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
         final showSender = !message.isMe &&
             !message.isSystemMessage &&
             (previousMessage == null ||
+                previousMessage.isSystemMessage ||
                 previousMessage.senderUserId != message.senderUserId ||
                 showDateDivider);
 
@@ -144,6 +146,10 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
   }
 
   bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
+    final aTaipei = AppClock.toTaipei(a);
+    final bTaipei = AppClock.toTaipei(b);
+    return aTaipei.year == bTaipei.year &&
+        aTaipei.month == bTaipei.month &&
+        aTaipei.day == bTaipei.day;
   }
 }

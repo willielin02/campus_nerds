@@ -1,14 +1,24 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent, AuthState;
 
 import 'app/router/router.dart';
 import 'app/theme/app_theme.dart';
 import 'core/di/injection.dart';
+import 'core/firebase/firebase_options.dart';
+import 'core/services/notification_service.dart';
 import 'core/services/supabase_service.dart';
 import 'core/utils/app_clock.dart';
+import 'domain/entities/app_notification.dart';
+import 'domain/repositories/notification_repository.dart';
+import 'presentation/common/widgets/notification_dialog.dart';
 import 'presentation/features/account/bloc/bloc.dart';
 import 'presentation/features/auth/bloc/bloc.dart';
 import 'presentation/features/chat/bloc/bloc.dart';
@@ -33,6 +43,14 @@ void main() async {
 
 /// Initialize all app services
 Future<void> _initializeServices() async {
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Register background message handler
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   // Initialize Supabase
   await SupabaseService.initialize();
 
@@ -58,13 +76,118 @@ class CampusNerdsApp extends StatefulWidget {
       context.findAncestorStateOfType<_CampusNerdsAppState>()!;
 }
 
-class _CampusNerdsAppState extends State<CampusNerdsApp> {
+class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = AppTheme.themeMode;
+  StreamSubscription<AppNotification>? _realtimeNotifSub;
+  StreamSubscription<List<AppNotification>>? _unreadNotifSub;
+  StreamSubscription<AuthState>? _authSub;
+  bool _notificationsInitialized = false;
 
   /// Update theme mode
   void setThemeMode(ThemeMode mode) {
     setState(() => _themeMode = mode);
     AppTheme.saveThemeMode(mode);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // Listen to auth state to init/dispose notification service
+    _authSub = SupabaseService.authStateChanges.listen((authState) {
+      final event = authState.event;
+      if (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed) {
+        _initNotifications();
+      } else if (event == AuthChangeEvent.signedOut) {
+        _disposeNotifications();
+      }
+    });
+
+    // If already authenticated, init notifications
+    if (SupabaseService.isAuthenticated) {
+      // Delay to ensure navigator is ready
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initNotifications();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _realtimeNotifSub?.cancel();
+    _unreadNotifSub?.cancel();
+    _authSub?.cancel();
+    NotificationService.instance.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _notificationsInitialized) {
+      // Check for unread notifications when app resumes
+      NotificationService.instance.checkUnreadNotifications();
+    }
+  }
+
+  Future<void> _initNotifications() async {
+    if (_notificationsInitialized) return;
+    _notificationsInitialized = true;
+
+    final repository = getIt<NotificationRepository>();
+    await NotificationService.instance.initialize(repository);
+
+    // Listen for realtime notifications (foreground)
+    _realtimeNotifSub = NotificationService.instance.onNotification.listen(
+      (notification) => _showNotificationDialog(notification),
+    );
+
+    // Listen for unread notifications (on init / app resume)
+    _unreadNotifSub = NotificationService.instance.onUnreadNotifications.listen(
+      (notifications) {
+        if (notifications.isNotEmpty) {
+          _showNotificationDialog(notifications.first);
+        }
+      },
+    );
+  }
+
+  Future<void> _disposeNotifications() async {
+    _notificationsInitialized = false;
+    _realtimeNotifSub?.cancel();
+    _realtimeNotifSub = null;
+    _unreadNotifSub?.cancel();
+    _unreadNotifSub = null;
+    await NotificationService.instance.dispose();
+  }
+
+  void _showNotificationDialog(AppNotification notification) {
+    final navigatorContext = appNavigatorKey.currentContext;
+    if (navigatorContext == null) return;
+
+    showNotificationDialog(
+      context: navigatorContext,
+      notification: notification,
+      onDismiss: (notif) {
+        // Mark as read
+        NotificationService.instance.markAsRead(notif.id);
+
+        // Navigate to event details page
+        if (notif.bookingId != null) {
+          // Determine event category from notification data
+          final category = notif.data?['category'] as String?;
+          final isFocusedStudy = category != 'english_games';
+          final route = isFocusedStudy
+              ? AppRoutes.eventDetailsStudy
+              : AppRoutes.eventDetailsGames;
+          final tab = notif.type == NotificationType.chatOpen ? 1 : 0;
+          appNavigatorKey.currentContext?.go(
+            '$route?bookingId=${notif.bookingId}&tab=$tab',
+          );
+        }
+      },
+    );
   }
 
   @override

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Campus Nerds</string>
+    <string name="app_name">校園裡的書呆子</string>
     <!-- Facebook SDK Configuration -->
     <string name="facebook_app_id">1131997582237392</string>
     <string name="facebook_client_token">d53420eff7cc8572122958476233dbbc</string>

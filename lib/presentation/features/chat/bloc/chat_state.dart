@@ -16,7 +16,8 @@ class ChatState extends Equatable {
   final String? groupId;
   final List<ChatMessage> messages;
   final bool hasMore;
-  final DateTime? oldestSortTs;
+  final DateTime? oldestCreatedAt;
+  final String? oldestMessageId;
   final bool isLoadingMore;
   final bool isSending;
   final String? errorMessage;
@@ -26,7 +27,8 @@ class ChatState extends Equatable {
     this.groupId,
     this.messages = const [],
     this.hasMore = false,
-    this.oldestSortTs,
+    this.oldestCreatedAt,
+    this.oldestMessageId,
     this.isLoadingMore = false,
     this.isSending = false,
     this.errorMessage,
@@ -43,8 +45,10 @@ class ChatState extends Equatable {
     String? groupId,
     List<ChatMessage>? messages,
     bool? hasMore,
-    DateTime? oldestSortTs,
-    bool clearOldestSortTs = false,
+    DateTime? oldestCreatedAt,
+    bool clearOldestCreatedAt = false,
+    String? oldestMessageId,
+    bool clearOldestMessageId = false,
     bool? isLoadingMore,
     bool? isSending,
     String? errorMessage,
@@ -54,7 +58,10 @@ class ChatState extends Equatable {
       groupId: groupId ?? this.groupId,
       messages: messages ?? this.messages,
       hasMore: hasMore ?? this.hasMore,
-      oldestSortTs: clearOldestSortTs ? null : (oldestSortTs ?? this.oldestSortTs),
+      oldestCreatedAt:
+          clearOldestCreatedAt ? null : (oldestCreatedAt ?? this.oldestCreatedAt),
+      oldestMessageId:
+          clearOldestMessageId ? null : (oldestMessageId ?? this.oldestMessageId),
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       isSending: isSending ?? this.isSending,
       errorMessage: errorMessage,
@@ -67,7 +74,8 @@ class ChatState extends Equatable {
         groupId,
         messages,
         hasMore,
-        oldestSortTs,
+        oldestCreatedAt,
+        oldestMessageId,
         isLoadingMore,
         isSending,
         errorMessage,

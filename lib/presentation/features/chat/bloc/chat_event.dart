@@ -55,6 +55,11 @@ class ChatClearError extends ChatEvent {
   const ChatClearError();
 }
 
+/// Event to mark messages as read (user switched to chat tab)
+class ChatMarkAsRead extends ChatEvent {
+  const ChatMarkAsRead();
+}
+
 /// Event to dispose/cleanup chat
 class ChatDispose extends ChatEvent {
   const ChatDispose();

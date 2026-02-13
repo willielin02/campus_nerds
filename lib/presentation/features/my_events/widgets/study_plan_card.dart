@@ -71,9 +71,16 @@ class StudyPlanCard extends StatelessWidget {
         color: colors.secondaryBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: colors.tertiary,
+          color: plan.isMe ? colors.quaternary : colors.tertiary,
           width: 2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -93,6 +100,7 @@ class StudyPlanCard extends StatelessWidget {
                         text: '書呆子 ${plan.displayName}',
                         style: textTheme.labelLarge?.copyWith(
                           fontFamily: fontFamily,
+                          color: plan.isMe ? null : colors.secondaryText,
                         ),
                       ),
                       TextSpan(
@@ -163,6 +171,7 @@ class StudyPlanCard extends StatelessWidget {
                     content,
                     style: textTheme.bodyLarge?.copyWith(
                       fontFamily: fontFamily,
+                      color: plan.isMe ? null : colors.secondaryText,
                     ),
                   ),
           ),

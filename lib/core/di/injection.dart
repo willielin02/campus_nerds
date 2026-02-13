@@ -8,6 +8,7 @@ import '../../data/repositories/facebook_repository_impl.dart';
 import '../../data/repositories/home_repository_impl.dart';
 import '../../data/repositories/my_events_repository_impl.dart';
 import '../../data/repositories/onboarding_repository_impl.dart';
+import '../../data/repositories/notification_repository_impl.dart';
 import '../../data/repositories/ticket_history_repository_impl.dart';
 import '../../domain/repositories/account_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -16,6 +17,7 @@ import '../../domain/repositories/checkout_repository.dart';
 import '../../domain/repositories/facebook_repository.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../../domain/repositories/my_events_repository.dart';
+import '../../domain/repositories/notification_repository.dart';
 import '../../domain/repositories/onboarding_repository.dart';
 import '../../domain/repositories/ticket_history_repository.dart';
 import '../../presentation/features/account/bloc/account_bloc.dart';
@@ -85,6 +87,10 @@ void _registerRepositories() {
 
   getIt.registerLazySingleton<FacebookRepository>(
     () => FacebookRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(),
   );
 }
 

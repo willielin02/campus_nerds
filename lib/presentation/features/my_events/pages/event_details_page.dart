@@ -4,9 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/booking.dart';
 import '../../../../domain/entities/event.dart';
+import '../../chat/bloc/bloc.dart' show ChatBloc, ChatDispose, ChatInitialize, ChatMarkAsRead, ChatState, ChatStatus;
 import '../../chat/widgets/chat_tab.dart';
 import '../../home/bloc/bloc.dart' show HomeBloc, HomeRefresh;
 import '../bloc/bloc.dart';
@@ -23,10 +26,12 @@ class EventDetailsPage extends StatefulWidget {
     super.key,
     required this.bookingId,
     required this.isFocusedStudy,
+    this.initialTab = 0,
   });
 
   final String bookingId;
   final bool isFocusedStudy;
+  final int initialTab;
 
   @override
   State<EventDetailsPage> createState() => _EventDetailsPageState();
@@ -35,6 +40,9 @@ class EventDetailsPage extends StatefulWidget {
 class _EventDetailsPageState extends State<EventDetailsPage>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
+  int _chatUnreadCount = 0;
+  bool _chatInitialized = false;
+  int _lastKnownMessageCount = 0;
 
   @override
   void initState() {
@@ -44,24 +52,46 @@ class _EventDetailsPageState extends State<EventDetailsPage>
 
   void _initTabController(MyEvent event) {
     if (_tabController == null) {
-      _tabController = TabController(length: 2, vsync: this);
-      // Load study plans: group plans if grouped, own plans if not
-      if (widget.isFocusedStudy) {
-        if (event.groupId != null) {
-          context
-              .read<MyEventsBloc>()
-              .add(MyEventsLoadStudyPlans(event.groupId!));
-        } else {
-          context
-              .read<MyEventsBloc>()
-              .add(MyEventsLoadMyStudyPlans(event.bookingId));
-        }
+      _tabController = TabController(
+        length: 2,
+        initialIndex: widget.initialTab.clamp(0, 1),
+        vsync: this,
+      );
+      _tabController!.addListener(_onTabChanged);
+      // 提前初始化 ChatBloc，確保 Realtime 訂閱不論當前 tab 都啟動
+      // （TabBarView 的 cacheExtent 不足以預建 ChatTab）
+      if (event.groupId != null && event.isChatOpen) {
+        context.read<ChatBloc>().add(ChatInitialize(event.groupId!));
       }
+    }
+    // ChatBloc 初始化前都允許從 event 更新未讀數（確保用最新的伺服器資料）
+    if (!_chatInitialized) {
+      _chatUnreadCount =
+          widget.initialTab.clamp(0, 1) == 1 ? 0 : event.unreadMessageCount;
+    }
+  }
+
+  void _onTabChanged() {
+    if (_tabController?.index == 1) {
+      if (_chatUnreadCount > 0) {
+        setState(() {
+          _chatUnreadCount = 0;
+        });
+      }
+      // 切換到聊天室 tab 時標記已讀
+      context.read<ChatBloc>().add(const ChatMarkAsRead());
     }
   }
 
   @override
   void dispose() {
+    // 如果使用者在聊天室 tab，先標記已讀
+    if (_tabController?.index == 1) {
+      context.read<ChatBloc>().add(const ChatMarkAsRead());
+    }
+    // 清理 ChatBloc（取消訂閱）
+    context.read<ChatBloc>().add(const ChatDispose());
+    _tabController?.removeListener(_onTabChanged);
     _tabController?.dispose();
     super.dispose();
   }
@@ -86,9 +116,19 @@ class _EventDetailsPageState extends State<EventDetailsPage>
 
   Future<void> _openGoogleMaps(String? url) async {
     if (url == null || url.isEmpty) return;
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      // Fallback: try platform default mode (handles emulator crashes)
+      try {
+        final uri = Uri.parse(url);
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (_) {
+        // Silently fail if URL cannot be launched
+      }
     }
   }
 
@@ -171,7 +211,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
   /// Format time display: time slot for scheduled, HH:mm for notified/completed
   String _formatTimeDisplay(MyEvent event) {
     if (event.groupStartAt != null) {
-      final t = event.groupStartAt!;
+      final t = AppClock.toTaipei(event.groupStartAt!);
       return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
     }
     return event.timeSlot.displayName;
@@ -224,7 +264,36 @@ class _EventDetailsPageState extends State<EventDetailsPage>
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocConsumer<MyEventsBloc, MyEventsState>(
+    return BlocListener<ChatBloc, ChatState>(
+      listener: (context, chatState) {
+        // 等待初始載入完成，設定基準值
+        if (chatState.status == ChatStatus.loaded && !_chatInitialized) {
+          _chatInitialized = true;
+          _lastKnownMessageCount = chatState.messages.length;
+          // 如果初始 tab 就是聊天室，標記已讀
+          if (_tabController?.index == 1) {
+            context.read<ChatBloc>().add(const ChatMarkAsRead());
+          }
+          return;
+        }
+        if (!_chatInitialized) return;
+
+        final currentCount = chatState.messages.length;
+        if (currentCount > _lastKnownMessageCount) {
+          final newCount = currentCount - _lastKnownMessageCount;
+          if (_tabController?.index != 1) {
+            // 不在聊天室 tab → 增加未讀計數
+            setState(() {
+              _chatUnreadCount += newCount;
+            });
+          } else {
+            // 在聊天室 tab → 標記已讀
+            context.read<ChatBloc>().add(const ChatMarkAsRead());
+          }
+        }
+        _lastKnownMessageCount = currentCount;
+      },
+      child: BlocConsumer<MyEventsBloc, MyEventsState>(
       listener: (context, state) {
         if (state.successMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -250,11 +319,18 @@ class _EventDetailsPageState extends State<EventDetailsPage>
         }
       },
       builder: (context, state) {
-        final event = state.selectedEvent;
+        // 只在 bookingId 匹配時使用 event，避免殘留上次瀏覽的 stale 資料
+        final rawEvent = state.selectedEvent;
+        final event = rawEvent != null && rawEvent.bookingId == widget.bookingId
+            ? rawEvent
+            : null;
 
         if (event != null) {
           _initTabController(event);
         }
+
+        // Read viewInsets BEFORE Scaffold (Scaffold may consume it)
+        final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
         return GestureDetector(
           onTap: () {
@@ -262,51 +338,73 @@ class _EventDetailsPageState extends State<EventDetailsPage>
             FocusManager.instance.primaryFocus?.unfocus();
           },
           child: Scaffold(
+            resizeToAvoidBottomInset: false,
             backgroundColor: colors.primaryBackground,
             body: SafeArea(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(),
-                child: Column(
-                  children: [
-                    // Header row: back button on left, 64px spacer on right
-                    Container(
-                      width: double.infinity,
-                      height: 64,
-                      decoration: const BoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            iconSize: 64,
-                            icon: Icon(
-                              Icons.arrow_back_ios_rounded,
-                              color: colors.secondaryText,
-                              size: 24,
-                            ),
-                            onPressed: () => context.pop(),
-                          ),
-                          const SizedBox(width: 64, height: 64),
-                        ],
-                      ),
-                    ),
-                    // Main content
-                    Expanded(
-                      child: event == null
-                          ? Center(
-                              child: CircularProgressIndicator(
-                                color: colors.primary,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return ColoredBox(
+                    color: colors.primaryBackground,
+                    child: Stack(
+                      clipBehavior: Clip.hardEdge,
+                      children: [
+                        Positioned(
+                          top: -bottomInset,
+                          left: 0,
+                          right: 0,
+                          height: constraints.maxHeight,
+                          child: Column(
+                            children: [
+                              // Header row: back button on left, 64px spacer on right
+                              SizedBox(
+                                width: double.infinity,
+                                height: 64,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    IconButton(
+                                      iconSize: 64,
+                                      icon: Icon(
+                                        Icons.arrow_back_ios_rounded,
+                                        color: colors.secondaryText,
+                                        size: 24,
+                                      ),
+                                      onPressed: () {
+                                        if (context.canPop()) {
+                                          context.pop();
+                                        } else {
+                                          context.go(AppRoutes.myEvents);
+                                        }
+                                      },
+                                    ),
+                                    const SizedBox(width: 64, height: 64),
+                                  ],
+                                ),
                               ),
-                            )
-                          : _buildContent(colors, event, state),
+                              // Main content
+                              Expanded(
+                                child: event == null
+                                    ? Center(
+                                        child: CircularProgressIndicator(
+                                          color: colors.primary,
+                                        ),
+                                      )
+                                    : _buildContent(colors, event, state),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ),
         );
       },
+    ),
     );
   }
 
@@ -437,31 +535,48 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                             Flexible(
                               child: InkWell(
                                 splashColor: Colors.transparent,
-                                onTap: () => _openGoogleMaps(event.venueGoogleMapUrl),
-                                child: Container(
-                                  decoration: const BoxDecoration(),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _getLocationDisplay(event),
-                                        style: textTheme.labelMedium?.copyWith(
-                                          fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                                        ),
-                                      ),
-                                      if (event.venueAddress != null &&
-                                          event.venueAddress!.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 4),
+                                onTap: event.venueGoogleMapUrl != null
+                                    ? () => _openGoogleMaps(event.venueGoogleMapUrl)
+                                    : null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Flexible(
                                           child: Text(
-                                            ' ( ${event.venueAddress} ) ',
-                                            style: textTheme.bodyMedium?.copyWith(
+                                            _getLocationDisplay(event),
+                                            style: textTheme.labelMedium?.copyWith(
                                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                              decoration: event.venueGoogleMapUrl != null
+                                                  ? TextDecoration.underline
+                                                  : null,
                                             ),
                                           ),
                                         ),
-                                    ],
-                                  ),
+                                        if (event.venueGoogleMapUrl != null)
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 4),
+                                            child: Icon(
+                                              Icons.open_in_new_rounded,
+                                              size: 14,
+                                              color: colors.secondaryText,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    if (event.venueAddress != null &&
+                                        event.venueAddress!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text(
+                                          ' ( ${event.venueAddress} ) ',
+                                          style: textTheme.bodyMedium?.copyWith(
+                                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -603,9 +718,36 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                   ),
                                   indicatorColor: colors.secondaryText,
                                   dividerColor: Colors.transparent,
-                                  tabs: const [
-                                    Tab(text: '待辦事項'),
-                                    Tab(text: '聊天室'),
+                                  tabs: [
+                                    const Tab(text: '待辦事項'),
+                                    Tab(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('聊天室'),
+                                          if (_chatUnreadCount > 0) ...[
+                                            const SizedBox(width: 4),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 1,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: colors.tertiaryText,
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                '$_chatUnreadCount',
+                                                style: textTheme.bodySmall?.copyWith(
+                                                  color: colors.secondaryBackground,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

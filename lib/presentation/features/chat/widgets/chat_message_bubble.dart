@@ -25,6 +25,7 @@ class ChatMessageBubble extends StatefulWidget {
 
 class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   final GlobalKey _senderNameKey = GlobalKey();
+  bool _showTime = false;
 
   ChatMessage get message => widget.message;
   bool get showSender => widget.showSender;
@@ -41,16 +42,18 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   Widget _buildSystemMessage(BuildContext context) {
+    final colors = context.appColors;
     final textTheme = context.textTheme;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         message.systemMessageText,
         textAlign: TextAlign.center,
         style: textTheme.bodyMedium?.copyWith(
           fontFamily: fontFamily,
+          color: colors.secondaryText,
         ),
       ),
     );
@@ -62,50 +65,49 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
-      padding: const EdgeInsets.only(left: 16, bottom: 6),
+      padding: const EdgeInsets.only(left: 16, bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Message bubble - right-aligned
+          // Message bubble - right-aligned (tap to toggle time)
           Align(
             alignment: Alignment.centerRight,
-            child: Container(
-              decoration: BoxDecoration(
-                color: colors.tertiaryText,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: Text(
-                  message.content ?? '',
-                  style: textTheme.bodyLarge?.copyWith(
-                    fontFamily: fontFamily,
-                    color: colors.primaryBackground,
-                    shadows: [
-                      Shadow(
-                        color: colors.secondaryText,
-                        offset: const Offset(0.5, 0.5),
-                        blurRadius: 0.5,
-                      ),
-                    ],
+            child: GestureDetector(
+              onTap: () => setState(() => _showTime = !_showTime),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colors.tertiaryText,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  child: Text(
+                    message.content ?? '',
+                    style: textTheme.bodyLarge?.copyWith(
+                      fontFamily: fontFamily,
+                      color: colors.primaryBackground,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          // Time - right-aligned
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Text(
-                _formatTime(message.createdAt),
-                style: textTheme.bodyMedium?.copyWith(
-                  fontFamily: fontFamily,
+          // Time - right-aligned (shown only on tap)
+          if (_showTime)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Text(
+                  _formatTime(message.createdAt),
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontFamily: fontFamily,
+                    color: colors.secondaryText,
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -117,14 +119,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 16, bottom: 6),
+      padding: const EdgeInsets.only(right: 16, bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Sender name (tappable for profile popup)
           if (showSender)
             Padding(
-              padding: const EdgeInsets.only(left: 12),
+              padding: const EdgeInsets.only(left: 6),
               child: GestureDetector(
                 key: _senderNameKey,
                 onTap: () => _showProfilePopup(),
@@ -132,47 +134,56 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                   '書呆子 ${message.displaySender}',
                   style: textTheme.bodyMedium?.copyWith(
                     fontFamily: fontFamily,
+                    color: colors.secondaryText,
                   ),
                 ),
               ),
             ),
-          // Message bubble - left-aligned
+          // Message bubble - left-aligned (tap to toggle time)
           Align(
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colors.primaryBackground,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: colors.tertiary,
-                    width: 2,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: Text(
-                    message.content ?? '',
-                    style: textTheme.bodyLarge?.copyWith(
-                      fontFamily: fontFamily,
-                      color: colors.secondaryText,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() => _showTime = !_showTime),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colors.primaryBackground,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: colors.tertiary,
+                          width: 2,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 6),
+                        child: Text(
+                          message.content ?? '',
+                          style: textTheme.bodyLarge?.copyWith(
+                            fontFamily: fontFamily,
+                            color: colors.secondaryText,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
-          ),
-          // Time - left-aligned
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(
-                _formatTime(message.createdAt),
-                style: textTheme.bodyMedium?.copyWith(
-                  fontFamily: fontFamily,
-                ),
+                  // Time - below bubble, right-aligned with bubble
+                  if (_showTime)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Text(
+                        _formatTime(message.createdAt),
+                        style: textTheme.bodyMedium?.copyWith(
+                          fontFamily: fontFamily,
+                          color: colors.secondaryText,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -195,7 +206,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   String _formatTime(DateTime dateTime) {
-    return DateFormat('HH:mm').format(dateTime);
+    return DateFormat('HH:mm').format(AppClock.toTaipei(dateTime));
   }
 }
 
@@ -216,7 +227,7 @@ class ChatDateDivider extends StatelessWidget {
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 0),
+      padding: const EdgeInsets.only(left: 128, right: 128, bottom: 12),
       child: Column(
         children: [
           Divider(
@@ -236,17 +247,19 @@ class ChatDateDivider extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    final now = AppClock.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final nowTaipei = AppClock.toTaipei(AppClock.now());
+    final dateTaipei = AppClock.toTaipei(date);
+    final today = DateTime(nowTaipei.year, nowTaipei.month, nowTaipei.day);
     final yesterday = today.subtract(const Duration(days: 1));
-    final targetDate = DateTime(date.year, date.month, date.day);
+    final targetDate =
+        DateTime(dateTaipei.year, dateTaipei.month, dateTaipei.day);
 
     if (targetDate == today) {
       return '今天';
     } else if (targetDate == yesterday) {
       return '昨天';
     } else {
-      return DateFormat('M月d日').format(date);
+      return DateFormat('M月d日').format(dateTaipei);
     }
   }
 }

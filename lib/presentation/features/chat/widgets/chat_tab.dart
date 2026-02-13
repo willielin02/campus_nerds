@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/booking.dart';
 import '../bloc/bloc.dart';
@@ -22,26 +23,32 @@ class ChatTab extends StatefulWidget {
   State<ChatTab> createState() => _ChatTabState();
 }
 
-class _ChatTabState extends State<ChatTab> {
+class _ChatTabState extends State<ChatTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     super.initState();
     if (widget.event.groupId != null && widget.event.isChatOpen) {
-      context.read<ChatBloc>().add(ChatInitialize(widget.event.groupId!));
+      NotificationService.instance.setActiveGroupId(widget.event.groupId);
+      // ChatInitialize 已由 EventDetailsPage._initTabController 負責
     }
   }
 
   @override
   void dispose() {
-    context.read<ChatBloc>().add(const ChatDispose());
+    NotificationService.instance.setActiveGroupId(null);
+    // ChatDispose 由 EventDetailsPage.dispose 負責，這裡不呼叫
     super.dispose();
   }
 
   /// Format chatOpenAt into a smart relative/absolute time string
   String _formatOpenTime(DateTime chatOpenAt) {
-    final now = AppClock.now();
-    final local = chatOpenAt.toLocal();
-    final diff = local.difference(now);
+    final nowTaipei = AppClock.toTaipei(AppClock.now());
+    final local = AppClock.toTaipei(chatOpenAt);
+    final diff = local.difference(nowTaipei);
 
     // Already past (shouldn't normally reach here, but just in case)
     if (diff.isNegative) return '即將';
@@ -53,7 +60,7 @@ class _ChatTabState extends State<ChatTab> {
     }
 
     // Same calendar day → "X 小時 X 分鐘後"
-    final today = DateTime(now.year, now.month, now.day);
+    final today = DateTime(nowTaipei.year, nowTaipei.month, nowTaipei.day);
     final targetDay = DateTime(local.year, local.month, local.day);
     final dayDiff = targetDay.difference(today).inDays;
 
@@ -81,6 +88,7 @@ class _ChatTabState extends State<ChatTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final colors = context.appColors;
 
     // Chat not open yet
@@ -94,7 +102,7 @@ class _ChatTabState extends State<ChatTab> {
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(top: 24, bottom: 8),
+                padding: const EdgeInsets.only(top: 24),
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -144,13 +152,16 @@ class _ChatTabState extends State<ChatTab> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
-                        Text(
-                          '屆時你們會透過聊天室聯絡並確認確切碰面地點。',
-                          style: context.textTheme.bodyLarge?.copyWith(
-                            fontFamily: fontFamily,
-                            color: colors.secondaryText,
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            '屆時你們會透過聊天室聯絡並確認碰面地點。',
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              fontFamily: fontFamily,
+                              color: colors.secondaryText,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
@@ -159,12 +170,9 @@ class _ChatTabState extends State<ChatTab> {
               ),
             ),
             // Spacer matching ChatInput dimensions for border alignment
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: SafeArea(
-                top: false,
-                child: const SizedBox(height: 48),
-              ),
+            const Padding(
+              padding: EdgeInsets.only(top: 12, bottom: 24),
+              child: SizedBox(height: 48),
             ),
           ],
         ),
@@ -228,7 +236,7 @@ class _ChatTabState extends State<ChatTab> {
               // Messages list in bordered container
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 24, bottom: 8),
+                  padding: const EdgeInsets.only(top: 24),
                   child: Container(
                     decoration: BoxDecoration(
                       color: colors.secondaryBackground,

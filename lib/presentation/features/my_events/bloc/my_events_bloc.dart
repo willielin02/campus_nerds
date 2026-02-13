@@ -1,5 +1,9 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:async';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../../core/services/supabase_service.dart';
 import '../../../../domain/entities/booking.dart';
 import '../../../../domain/repositories/my_events_repository.dart';
 import 'my_events_event.dart';
@@ -8,6 +12,11 @@ import 'my_events_state.dart';
 /// MyEvents BLoC for managing user's booked events
 class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
   final MyEventsRepository _myEventsRepository;
+
+  /// Realtime: 追蹤已訂閱的 group IDs，避免重複訂閱
+  final Set<String> _subscribedGroupIds = {};
+  final List<RealtimeChannel> _realtimeChannels = [];
+  Timer? _refreshDebouncer;
 
   MyEventsBloc({
     required MyEventsRepository myEventsRepository,
@@ -46,6 +55,8 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
         pastEvents: pastEvents,
         ticketBalance: ticketBalance,
       ));
+
+      _setupRealtimeSubscriptions(upcomingEvents);
     } catch (e) {
       emit(state.copyWith(
         status: MyEventsStatus.error,
@@ -72,6 +83,8 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
         ticketBalance: ticketBalance,
         isRefreshing: false,
       ));
+
+      _setupRealtimeSubscriptions(upcomingEvents);
     } catch (e) {
       emit(state.copyWith(
         isRefreshing: false,
@@ -156,16 +169,40 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
     }
   }
 
-  /// Load event details
+  /// Load event details and study plans in one handler.
+  /// This guarantees study plans are loaded with fresh event data,
+  /// avoiding stale groupId issues from _initTabController timing.
   Future<void> _onLoadDetails(
     MyEventsLoadDetails event,
     Emitter<MyEventsState> emit,
   ) async {
+    // Clear stale data
+    emit(state.copyWith(
+      clearSelectedEvent: true,
+      studyPlans: const [],
+    ));
+
     try {
       final myEvent =
           await _myEventsRepository.getEventByBookingId(event.bookingId);
 
       emit(state.copyWith(selectedEvent: myEvent));
+
+      // Load study plans using fresh event data
+      if (myEvent != null && myEvent.isFocusedStudy) {
+        emit(state.copyWith(isLoadingStudyPlans: true));
+
+        final plans = myEvent.groupId != null
+            ? await _myEventsRepository
+                .getGroupFocusedStudyPlans(myEvent.groupId!)
+            : await _myEventsRepository
+                .getMyFocusedStudyPlans(myEvent.bookingId);
+
+        emit(state.copyWith(
+          studyPlans: plans,
+          isLoadingStudyPlans: false,
+        ));
+      }
     } catch (e) {
       emit(state.copyWith(
         errorMessage: '載入活動詳情失敗',
@@ -283,5 +320,80 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
         errorMessage: '更新失敗，請稍後再試',
       ));
     }
+  }
+
+  // ============================================
+  // Realtime Subscriptions (未讀訊息即時更新)
+  // ============================================
+
+  /// 對所有有 groupId 的活動建立 Realtime 訂閱，
+  /// 偵測到非自己的新訊息時 debounce 觸發 refresh。
+  void _setupRealtimeSubscriptions(List<MyEvent> upcomingEvents) {
+    final groupIds = upcomingEvents
+        .where((e) => e.groupId != null)
+        .map((e) => e.groupId!)
+        .toSet();
+
+    // 如果 group IDs 沒變，不重新訂閱
+    if (_subscribedGroupIds.length == groupIds.length &&
+        _subscribedGroupIds.containsAll(groupIds)) {
+      return;
+    }
+
+    _teardownSubscriptions();
+
+    if (groupIds.isEmpty) return;
+
+    final currentUserId = SupabaseService.currentUserId;
+
+    for (final groupId in groupIds) {
+      final channel = SupabaseService.channel('my-events:$groupId')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.insert,
+            schema: 'public',
+            table: 'group_messages',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'group_id',
+              value: groupId,
+            ),
+            callback: (payload) {
+              final senderId = payload.newRecord['user_id'] as String?;
+              // 自己發的訊息不觸發刷新
+              if (senderId == currentUserId) return;
+              _debouncedRefresh();
+            },
+          )
+          .subscribe();
+
+      _realtimeChannels.add(channel);
+    }
+
+    _subscribedGroupIds.addAll(groupIds);
+  }
+
+  /// Debounce 刷新，避免短時間內多條訊息造成重複查詢
+  void _debouncedRefresh() {
+    _refreshDebouncer?.cancel();
+    _refreshDebouncer = Timer(const Duration(milliseconds: 800), () {
+      if (!isClosed) {
+        add(const MyEventsRefresh());
+      }
+    });
+  }
+
+  void _teardownSubscriptions() {
+    for (final channel in _realtimeChannels) {
+      SupabaseService.removeChannel(channel);
+    }
+    _realtimeChannels.clear();
+    _subscribedGroupIds.clear();
+    _refreshDebouncer?.cancel();
+  }
+
+  @override
+  Future<void> close() {
+    _teardownSubscriptions();
+    return super.close();
   }
 }

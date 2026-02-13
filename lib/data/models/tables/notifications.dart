@@ -1,19 +1,19 @@
 import '../database.dart';
 
-class InAppNotificationsTable extends SupabaseTable<InAppNotificationsRow> {
+class NotificationsTable extends SupabaseTable<NotificationsRow> {
   @override
-  String get tableName => 'in_app_notifications';
+  String get tableName => 'notifications';
 
   @override
-  InAppNotificationsRow createRow(Map<String, dynamic> data) =>
-      InAppNotificationsRow(data);
+  NotificationsRow createRow(Map<String, dynamic> data) =>
+      NotificationsRow(data);
 }
 
-class InAppNotificationsRow extends SupabaseDataRow {
-  InAppNotificationsRow(Map<String, dynamic> data) : super(data);
+class NotificationsRow extends SupabaseDataRow {
+  NotificationsRow(Map<String, dynamic> data) : super(data);
 
   @override
-  SupabaseTable get table => InAppNotificationsTable();
+  SupabaseTable get table => NotificationsTable();
 
   String get id => getField<String>('id')!;
   set id(String value) => setField<String>('id', value);
@@ -44,4 +44,10 @@ class InAppNotificationsRow extends SupabaseDataRow {
 
   DateTime get createdAt => getField<DateTime>('created_at')!;
   set createdAt(DateTime value) => setField<DateTime>('created_at', value);
+
+  DateTime? get readAt => getField<DateTime>('read_at');
+  set readAt(DateTime? value) => setField<DateTime>('read_at', value);
+
+  DateTime? get pushSentAt => getField<DateTime>('push_sent_at');
+  set pushSentAt(DateTime? value) => setField<DateTime>('push_sent_at', value);
 }

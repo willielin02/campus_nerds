@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/booking.dart';
 import '../../../../domain/entities/event.dart';
 
@@ -69,7 +70,7 @@ class MyEventCard extends StatelessWidget {
     } else {
       // Show group start time (for notified/completed)
       if (event.groupStartAt != null) {
-        final dt = event.groupStartAt!;
+        final dt = AppClock.toTaipei(event.groupStartAt!);
         final weekdays = ['一', '二', '三', '四', '五', '六', '日'];
         final weekday = weekdays[dt.weekday - 1];
         final timeStr = '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
@@ -126,122 +127,151 @@ class MyEventCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: colors.secondaryBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: colors.tertiary,
-            width: 2,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Header row: category + city + status
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Category + City
-                    Row(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: colors.secondaryBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: colors.tertiary,
+                width: 2,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Header row: category + city + status
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          event.isFocusedStudy ? 'Focused Study' : 'English Ganes',
-                          style: textTheme.titleMedium?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                        // Category + City
+                        Row(
+                          children: [
+                            Text(
+                              event.isFocusedStudy ? 'Focused Study' : 'English Ganes',
+                              style: textTheme.labelLarge?.copyWith(
+                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              ),
+                            ),
+                            Text(
+                              '  ( ${_getCityName(event.cityId)} ) ',
+                              style: textTheme.bodyMedium?.copyWith(
+                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Status badge
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: colors.tertiaryText,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Text(
+                                _getStatusDisplayName(event.eventStatus.value),
+                                style: textTheme.bodyMedium?.copyWith(
+                                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                  color: colors.secondaryBackground,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+
+                  // Time row
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              '時間： ',
+                              style: textTheme.bodyLarge?.copyWith(
+                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              ),
+                            ),
+                            Text(
+                              _formatDate(),
+                              style: textTheme.bodyLarge?.copyWith(
+                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Location row
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 18),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          '  ( ${_getCityName(event.cityId)} ) ',
+                          '地點： ',
                           style: textTheme.bodyLarge?.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
-                      ],
-                    ),
-
-                    // Status badge
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colors.tertiaryText,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
+                        Flexible(
                           child: Text(
-                            _getStatusDisplayName(event.eventStatus.value),
-                            style: textTheme.bodyMedium?.copyWith(
+                            _getLocationDisplay(),
+                            style: textTheme.bodyLarge?.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                              color: colors.secondaryBackground,
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Time row
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          '時間： ',
-                          style: textTheme.labelMedium?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                          ),
-                        ),
-                        Text(
-                          _formatDate(),
-                          style: textTheme.labelLarge?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                          ),
-                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-
-              // Location row
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 12, 0, 18),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '地點： ',
-                      style: textTheme.labelMedium?.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                      ),
-                    ),
-                    Flexible(
-                      child: Text(
-                        _getLocationDisplay(),
-                        style: textTheme.labelMedium?.copyWith(
-                          fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          // Unread message badge (top-right corner, overlaid)
+          if (event.unreadMessageCount > 0)
+            Positioned(
+              top: -8,
+              right: -4,
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colors.tertiaryText,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '${event.unreadMessageCount}',
+                  style: textTheme.bodySmall?.copyWith(
+                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                    color: colors.secondaryBackground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

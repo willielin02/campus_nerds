@@ -32,7 +32,7 @@ export 'tables/group_members_profile_v.dart';
 export 'tables/group_messages.dart';
 export 'tables/groups.dart';
 export 'tables/home_events_v.dart';
-export 'tables/in_app_notifications.dart';
+export 'tables/notifications.dart';
 export 'tables/my_events_v.dart';
 export 'tables/orders.dart';
 export 'tables/peer_feedbacks.dart';

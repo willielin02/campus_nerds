@@ -2,14 +2,16 @@ import '../entities/chat.dart';
 
 /// Repository interface for chat operations
 abstract class ChatRepository {
-  /// Fetch a page of chat timeline messages
+  /// Fetch a page of chat messages
   ///
   /// [groupId] - The group ID to fetch messages for
-  /// [beforeSortTs] - Fetch messages before this timestamp (for pagination)
+  /// [beforeCreatedAt] - Fetch messages before this timestamp (cursor pagination)
+  /// [beforeId] - Fetch messages before this ID (cursor pagination tiebreaker)
   /// [limit] - Maximum number of messages to fetch
-  Future<ChatTimelinePage> fetchTimelinePage({
+  Future<ChatTimelinePage> fetchPage({
     required String groupId,
-    DateTime? beforeSortTs,
+    DateTime? beforeCreatedAt,
+    String? beforeId,
     int limit = 20,
   });
 
@@ -23,9 +25,16 @@ abstract class ChatRepository {
   /// This records a system message showing user joined
   Future<void> markJoined(String groupId);
 
-  /// Subscribe to real-time chat updates
+  /// Pre-load member profiles for a group into cache
+  /// Ensures Realtime messages display correct nicknames
+  Future<void> loadMemberProfiles(String groupId);
+
+  /// Subscribe to real-time chat message inserts
   /// Returns a stream of new messages
-  Stream<List<ChatMessage>> subscribeToTimeline(String groupId);
+  Stream<List<ChatMessage>> subscribeToMessages(String groupId);
+
+  /// Update last read timestamp for the current user in a group
+  Future<void> updateLastRead(String groupId);
 
   /// Unsubscribe from chat updates
   void unsubscribe();

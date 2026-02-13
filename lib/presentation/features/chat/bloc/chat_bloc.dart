@@ -22,6 +22,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatSendMessage>(_onSendMessage);
     on<ChatMessagesReceived>(_onMessagesReceived);
     on<ChatClearError>(_onClearError);
+    on<ChatMarkAsRead>(_onMarkAsRead);
     on<ChatDispose>(_onDispose);
   }
 
@@ -46,30 +47,35 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       groupId: event.groupId,
       messages: [],
       hasMore: false,
-      clearOldestSortTs: true,
+      clearOldestCreatedAt: true,
+      clearOldestMessageId: true,
     ));
 
     try {
-      // Mark user as joined
-      await _chatRepository.markJoined(event.groupId);
+      // 1. 預載群組成員 profile，確保 Realtime 訊息能顯示正確名字
+      await _chatRepository.loadMemberProfiles(event.groupId);
 
-      // Load initial messages
-      final page = await _chatRepository.fetchTimelinePage(
-        groupId: event.groupId,
-      );
-
-      // Subscribe to realtime updates
-      _subscription = _chatRepository.subscribeToTimeline(event.groupId).listen(
+      // 2. Subscribe so we catch the join system message
+      _subscription = _chatRepository.subscribeToMessages(event.groupId).listen(
         (messages) {
           add(ChatMessagesReceived(messages));
         },
+      );
+
+      // 3. Mark user as joined (inserts system message, caught by subscription)
+      await _chatRepository.markJoined(event.groupId);
+
+      // 4. Load initial messages
+      final page = await _chatRepository.fetchPage(
+        groupId: event.groupId,
       );
 
       emit(state.copyWith(
         status: ChatStatus.loaded,
         messages: page.messages,
         hasMore: page.hasMore,
-        oldestSortTs: page.oldestSortTs,
+        oldestCreatedAt: page.oldestCreatedAt,
+        oldestMessageId: page.oldestMessageId,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -89,7 +95,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(status: ChatStatus.loading));
 
     try {
-      final page = await _chatRepository.fetchTimelinePage(
+      final page = await _chatRepository.fetchPage(
         groupId: state.groupId!,
       );
 
@@ -97,7 +103,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         status: ChatStatus.loaded,
         messages: page.messages,
         hasMore: page.hasMore,
-        oldestSortTs: page.oldestSortTs,
+        oldestCreatedAt: page.oldestCreatedAt,
+        oldestMessageId: page.oldestMessageId,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -115,16 +122,17 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     if (state.groupId == null ||
         state.isLoadingMore ||
         !state.hasMore ||
-        state.oldestSortTs == null) {
+        state.oldestCreatedAt == null) {
       return;
     }
 
     emit(state.copyWith(isLoadingMore: true));
 
     try {
-      final page = await _chatRepository.fetchTimelinePage(
+      final page = await _chatRepository.fetchPage(
         groupId: state.groupId!,
-        beforeSortTs: state.oldestSortTs,
+        beforeCreatedAt: state.oldestCreatedAt,
+        beforeId: state.oldestMessageId,
       );
 
       // Merge messages (add older messages to the end)
@@ -133,7 +141,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       emit(state.copyWith(
         messages: mergedMessages,
         hasMore: page.hasMore,
-        oldestSortTs: page.oldestSortTs,
+        oldestCreatedAt: page.oldestCreatedAt,
+        oldestMessageId: page.oldestMessageId,
         isLoadingMore: false,
       ));
     } catch (e) {
@@ -169,6 +178,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         ));
       } else {
         emit(state.copyWith(isSending: false));
+        // 發送成功後更新已讀時間，避免離開時自己的訊息被算成未讀
+        _chatRepository.updateLastRead(state.groupId!).ignore();
       }
     } catch (e) {
       emit(state.copyWith(
@@ -187,14 +198,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     if (newMessages.isEmpty) return;
 
     // Filter out duplicates and add new messages at the beginning
-    final existingIds = state.messages.map((m) => m.itemId).toSet();
+    final existingIds = state.messages.map((m) => m.messageId).toSet();
     final filteredNew =
-        newMessages.where((m) => !existingIds.contains(m.itemId)).toList();
+        newMessages.where((m) => !existingIds.contains(m.messageId)).toList();
 
     if (filteredNew.isNotEmpty) {
       final mergedMessages = [...filteredNew, ...state.messages];
-      // Sort by sortTs descending (newest first)
-      mergedMessages.sort((a, b) => b.sortTs.compareTo(a.sortTs));
+      // Sort by createdAt descending (newest first)
+      mergedMessages.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       emit(state.copyWith(messages: mergedMessages));
     }
@@ -206,6 +217,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) {
     emit(state.copyWith(errorMessage: null));
+  }
+
+  /// 標記已讀（使用者切換到聊天室 tab 時呼叫）
+  Future<void> _onMarkAsRead(
+    ChatMarkAsRead event,
+    Emitter<ChatState> emit,
+  ) async {
+    if (state.groupId != null) {
+      try {
+        await _chatRepository.updateLastRead(state.groupId!);
+      } catch (_) {}
+    }
   }
 
   /// Dispose/cleanup chat

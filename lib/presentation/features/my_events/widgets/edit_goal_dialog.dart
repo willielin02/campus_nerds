@@ -208,7 +208,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                         ),
                         unselectedWidgetColor: widget.canEditCompletion
                             ? colors.tertiaryText
-                            : colors.alternate,
+                            : colors.tertiary,
                       ),
                       child: Checkbox(
                         value: _isDone,
@@ -219,7 +219,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                           width: 2,
                           color: widget.canEditCompletion
                               ? colors.tertiaryText
-                              : colors.alternate,
+                              : colors.tertiary,
                         ),
                         activeColor: colors.secondaryText,
                         checkColor: colors.primary,
@@ -239,7 +239,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                               ? (_isDone
                                   ? colors.secondaryText
                                   : colors.tertiary)
-                              : colors.alternate,
+                              : colors.tertiary,
                         ),
                       ),
                     ),

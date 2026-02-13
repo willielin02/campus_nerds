@@ -20,7 +20,7 @@ enum ChatItemType {
 
 /// Chat message entity
 class ChatMessage extends Equatable {
-  final String itemId;
+  final String messageId;
   final String groupId;
   final ChatItemType itemType;
   final String? content;
@@ -29,12 +29,11 @@ class ChatMessage extends Equatable {
   final String? senderGender;
   final String? senderUniversityName;
   final int? senderAge;
-  final DateTime sortTs;
   final DateTime createdAt;
   final bool isMe;
 
   const ChatMessage({
-    required this.itemId,
+    required this.messageId,
     required this.groupId,
     required this.itemType,
     this.content,
@@ -43,7 +42,6 @@ class ChatMessage extends Equatable {
     this.senderGender,
     this.senderUniversityName,
     this.senderAge,
-    required this.sortTs,
     required this.createdAt,
     this.isMe = false,
   });
@@ -54,11 +52,14 @@ class ChatMessage extends Equatable {
   /// Get display name for sender
   String get displaySender {
     if (isSystemMessage) return '系統';
-    return senderNickname ?? '匿名';
+    return (senderNickname != null && senderNickname!.isNotEmpty)
+        ? senderNickname!
+        : '匿名';
   }
 
-  /// Get system message text
+  /// Get system message text (prefer DB content for consistency with FlutterFlow)
   String get systemMessageText {
+    if (isSystemMessage && content != null) return content!;
     switch (itemType) {
       case ChatItemType.systemJoined:
         return '$displaySender 加入了聊天室';
@@ -73,7 +74,7 @@ class ChatMessage extends Equatable {
 
   @override
   List<Object?> get props => [
-        itemId,
+        messageId,
         groupId,
         itemType,
         content,
@@ -82,7 +83,6 @@ class ChatMessage extends Equatable {
         senderGender,
         senderUniversityName,
         senderAge,
-        sortTs,
         createdAt,
         isMe,
       ];
@@ -92,16 +92,18 @@ class ChatMessage extends Equatable {
 class ChatTimelinePage extends Equatable {
   final List<ChatMessage> messages;
   final bool hasMore;
-  final DateTime? oldestSortTs;
+  final DateTime? oldestCreatedAt;
+  final String? oldestMessageId;
 
   const ChatTimelinePage({
     required this.messages,
     required this.hasMore,
-    this.oldestSortTs,
+    this.oldestCreatedAt,
+    this.oldestMessageId,
   });
 
   @override
-  List<Object?> get props => [messages, hasMore, oldestSortTs];
+  List<Object?> get props => [messages, hasMore, oldestCreatedAt, oldestMessageId];
 }
 
 /// Send message result

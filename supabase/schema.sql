@@ -1335,7 +1335,7 @@ BEGIN
       WHEN gm.group_id IS NULL
         THEN '這次活動沒有成團'
       ELSE
-        '您已成功分組'
+        '您的活動已成功分組'
     END AS title,
 
     -- 成團 / 未成團：App 內彈窗內文

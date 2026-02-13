@@ -27,18 +27,35 @@ class AppClock {
     if (kReleaseMode) return;
 
     try {
-      final response = await SupabaseService.client
-          .rpc('get_server_now')
-          .single();
+      final response = await SupabaseService.client.rpc('get_server_now');
 
-      final serverNow = DateTime.parse(response as String);
+      final String timeStr;
+      if (response is String) {
+        timeStr = response;
+      } else if (response is List && response.isNotEmpty) {
+        timeStr = response.first.toString();
+      } else {
+        timeStr = response.toString();
+      }
+
+      final serverNow = DateTime.parse(timeStr);
       _offset = serverNow.difference(DateTime.now());
-    } catch (_) {
-      // If sync fails, use device time (offset stays 0)
+      debugPrint('[AppClock] serverNow=$serverNow, offset=$_offset');
+    } catch (e) {
+      debugPrint('[AppClock] sync failed: $e');
       _offset = Duration.zero;
     }
   }
 
   /// Reset the clock to device time (offset = 0).
   static void reset() => _offset = Duration.zero;
+
+  /// Taiwan timezone offset (UTC+8, no DST).
+  static const _taipeiOffset = Duration(hours: 8);
+
+  /// Convert a UTC DateTime to Taipei local time (UTC+8).
+  /// Use this instead of .toLocal() to avoid depending on device timezone.
+  static DateTime toTaipei(DateTime dt) {
+    return dt.toUtc().add(_taipeiOffset);
+  }
 }

@@ -348,6 +348,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
       hasEventFeedback: row.hasEventFeedback ?? false,
       hasPeerFeedbackAll: row.hasPeerFeedbackAll ?? false,
       hasFilledFeedbackAll: row.hasFilledFeedbackAll ?? false,
+      unreadMessageCount: row.unreadMessageCount ?? 0,
     );
   }
 }

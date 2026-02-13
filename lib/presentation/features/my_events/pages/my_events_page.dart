@@ -35,15 +35,14 @@ class _MyEventsPageState extends State<MyEventsPage>
   }
 
   void _handleEventTap(MyEvent event) {
-    if (event.isFocusedStudy) {
-      context.push(
-        '${AppRoutes.eventDetailsStudy}?bookingId=${event.bookingId}',
-      );
-    } else {
-      context.push(
-        '${AppRoutes.eventDetailsGames}?bookingId=${event.bookingId}',
-      );
-    }
+    final route = event.isFocusedStudy
+        ? '${AppRoutes.eventDetailsStudy}?bookingId=${event.bookingId}'
+        : '${AppRoutes.eventDetailsGames}?bookingId=${event.bookingId}';
+    context.push(route).then((_) {
+      if (mounted) {
+        context.read<MyEventsBloc>().add(const MyEventsRefresh());
+      }
+    });
   }
 
   @override

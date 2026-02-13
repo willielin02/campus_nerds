@@ -90,7 +90,26 @@
       "WebFetch(domain:developers.ecpay.com.tw)",
       "WebFetch(domain:support.ecpay.com.tw)",
       "Bash(git fetch:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git push:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite:*)",
+      "mcp__supabase__get_publishable_keys",
+      "Bash(git -C c:devcampus_nerds diff --stat)",
+      "Bash(npx:*)",
+      "Bash(copy:*)",
+      "Bash(node -e:*)",
+      "Bash(del \"c:\\\\dev\\\\campus_nerds\\\\.env.firebase-secret\")",
+      "Bash(flutter pub:*)",
+      "Bash(adb shell:*)",
+      "Bash(del \"c:\\\\dev\\\\campus_nerds\\\\assets\\\\fonts\\\\favicon.png\")",
+      "WebFetch(domain:github.com)",
+      "Bash(flutter --version:*)",
+      "Bash(git -C c:/dev/campus_nerds check-ignore:*)",
+      "Bash(echo:*)",
+      "Bash(git -C c:/dev/campus_nerds diff --name-only -- supabase/migrations/)",
+      "Bash(git -C c:/dev/campus_nerds add android/app/google-services.json android/app/src/main/res/drawable-hdpi/ android/app/src/main/res/drawable-mdpi/ android/app/src/main/res/drawable-xhdpi/ android/app/src/main/res/drawable-xxhdpi/ android/app/src/main/res/drawable-xxxhdpi/ android/app/src/main/res/mipmap-anydpi-v26/ android/app/src/main/res/values/colors.xml assets/images/campus_nerds_avatar_1024.png \"ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-50x50@1x.png\" \"ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-50x50@2x.png\" \"ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-57x57@1x.png\" \"ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-57x57@2x.png\" \"ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-72x72@1x.png\" \"ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-72x72@2x.png\" ios/Runner/GoogleService-Info.plist lib/core/firebase/ lib/core/services/notification_service.dart lib/data/models/tables/notifications.dart lib/data/repositories/notification_repository_impl.dart lib/domain/entities/app_notification.dart lib/domain/repositories/notification_repository.dart lib/presentation/common/widgets/notification_dialog.dart supabase/functions/send-chat-push/ supabase/migrations/20260212_add_notification_system.sql supabase/migrations/20260212_rename_notifications.sql)",
+      "Bash(git -C c:/dev/campus_nerds add .claude/settings.local.json CLAUDE.md android/app/build.gradle android/app/src/main/AndroidManifest.xml android/app/src/main/res/mipmap-hdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png android/app/src/main/res/values/strings.xml android/settings.gradle assets/fonts/favicon.png ios/Runner.xcodeproj/project.pbxproj ios/Runner/Assets.xcassets/AppIcon.appiconset/ lib/app/router/app_router.dart lib/core/di/injection.dart lib/core/utils/app_clock.dart lib/data/models/database.dart lib/data/models/tables/in_app_notifications.dart lib/data/models/tables/my_events_v.dart lib/data/repositories/chat_repository_impl.dart lib/data/repositories/my_events_repository_impl.dart lib/domain/entities/booking.dart lib/domain/entities/chat.dart lib/domain/repositories/chat_repository.dart lib/main.dart lib/presentation/features/chat/bloc/chat_bloc.dart lib/presentation/features/chat/bloc/chat_event.dart lib/presentation/features/chat/bloc/chat_state.dart lib/presentation/features/chat/widgets/chat_input.dart lib/presentation/features/chat/widgets/chat_message_bubble.dart lib/presentation/features/chat/widgets/chat_messages_list.dart lib/presentation/features/chat/widgets/chat_tab.dart lib/presentation/features/my_events/bloc/my_events_bloc.dart lib/presentation/features/my_events/pages/event_details_page.dart lib/presentation/features/my_events/pages/my_events_page.dart lib/presentation/features/my_events/widgets/edit_goal_dialog.dart lib/presentation/features/my_events/widgets/my_event_card.dart lib/presentation/features/my_events/widgets/study_plan_card.dart pubspec.lock pubspec.yaml supabase/schema.sql)"
     ]
   },
   "enableAllProjectMcpServers": true
