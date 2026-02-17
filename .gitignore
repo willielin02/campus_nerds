@@ -1,3 +1,6 @@
+# Windows reserved device names
+nul
+
 # Miscellaneous
 *.class
 *.log
