@@ -317,6 +317,73 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
     }
   }
 
+  // ============================================
+  // English Assignment Methods
+  // ============================================
+
+  @override
+  Future<List<GroupEnglishAssignment>> getGroupEnglishAssignments(String groupId) async {
+    try {
+      final token = SupabaseService.jwtToken;
+      if (token == null) return [];
+
+      final response = await SupabaseService.client.rpc(
+        'get_group_english_assignments',
+        params: {'p_group_id': groupId},
+      );
+
+      if (response == null || response is! List) return [];
+
+      return response.map((item) {
+        final map = item as Map<String, dynamic>;
+        return GroupEnglishAssignment(
+          groupId: map['group_id'] ?? groupId,
+          userId: map['user_id'],
+          displayName: map['display_name'] ?? '匿名',
+          isMe: map['is_me'] ?? false,
+          gender: map['gender'],
+          universityName: map['university_name'],
+          age: map['age'],
+          contentEn: map['content_en'],
+          contentZh: map['content_zh'],
+          usedCount: map['used_count'] ?? 0,
+        );
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<List<GroupEnglishAssignment>> getMyEnglishAssignment(String bookingId) async {
+    try {
+      final response = await SupabaseService.client.rpc(
+        'get_my_english_assignment',
+        params: {'p_booking_id': bookingId},
+      );
+
+      if (response == null || response is! List) return [];
+
+      return response.map((item) {
+        final map = item as Map<String, dynamic>;
+        return GroupEnglishAssignment(
+          groupId: null,
+          userId: map['user_id'],
+          displayName: map['display_name'] ?? '匿名',
+          isMe: true,
+          gender: map['gender'],
+          universityName: map['university_name'],
+          age: map['age'],
+          contentEn: map['content_en'],
+          contentZh: map['content_zh'],
+          usedCount: map['used_count'] ?? 0,
+        );
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
   MyEvent _mapRowToMyEvent(MyEventsVRow row) {
     return MyEvent(
       bookingId: row.bookingId ?? '',

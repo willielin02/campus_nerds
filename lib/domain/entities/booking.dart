@@ -196,6 +196,18 @@ class MyEvent extends Equatable {
     return AppClock.now().isBefore(goalCloseAt!);
   }
 
+  /// Check if English content is viewable
+  /// Phase 1 (pre-grouping, goalCloseAt null): visible
+  /// Phase 2 (post-grouping, before goalCloseAt): visible
+  /// Phase 3 (after goalCloseAt, event day = isUpcoming): hidden
+  /// Phase 4 (after event day, !isUpcoming): visible
+  bool get canViewEnglishContent {
+    if (goalCloseAt == null) return true;
+    final now = AppClock.now();
+    if (now.isBefore(goalCloseAt!)) return true;
+    return !isUpcoming;
+  }
+
   /// Check if goal completion can still be toggled
   /// Requires: after groupStartAt (venue start) AND event still in Upcoming
   /// (event_date >= today). Closes when the event moves to History.
@@ -417,5 +429,49 @@ class GroupFocusedPlan extends Equatable {
         plan3Id,
         plan3Content,
         plan3Done,
+      ];
+}
+
+/// Group member's English content assignment
+class GroupEnglishAssignment extends Equatable {
+  final String? groupId;
+  final String? userId;
+  final String displayName;
+  final bool isMe;
+  final String? gender;
+  final String? universityName;
+  final int? age;
+  final String? contentEn;
+  final String? contentZh;
+  final int usedCount;
+
+  const GroupEnglishAssignment({
+    this.groupId,
+    this.userId,
+    required this.displayName,
+    required this.isMe,
+    this.gender,
+    this.universityName,
+    this.age,
+    this.contentEn,
+    this.contentZh,
+    this.usedCount = 0,
+  });
+
+  /// Age display string
+  String get ageDisplay => age != null ? '$age 歲' : '';
+
+  @override
+  List<Object?> get props => [
+        groupId,
+        userId,
+        displayName,
+        isMe,
+        gender,
+        universityName,
+        age,
+        contentEn,
+        contentZh,
+        usedCount,
       ];
 }

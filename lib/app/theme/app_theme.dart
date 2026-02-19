@@ -88,7 +88,7 @@ class AppTheme {
         foregroundColor: colors.primaryText,
         elevation: 0,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colors.secondaryBackground,
         elevation: 2,
         shape: RoundedRectangleBorder(

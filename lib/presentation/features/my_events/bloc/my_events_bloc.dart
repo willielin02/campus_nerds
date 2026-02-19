@@ -180,6 +180,7 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
     emit(state.copyWith(
       clearSelectedEvent: true,
       studyPlans: const [],
+      englishAssignments: const [],
     ));
 
     try {
@@ -201,6 +202,19 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
         emit(state.copyWith(
           studyPlans: plans,
           isLoadingStudyPlans: false,
+        ));
+      } else if (myEvent != null && myEvent.isEnglishGames) {
+        emit(state.copyWith(isLoadingEnglishAssignments: true));
+
+        final assignments = myEvent.groupId != null
+            ? await _myEventsRepository
+                .getGroupEnglishAssignments(myEvent.groupId!)
+            : await _myEventsRepository
+                .getMyEnglishAssignment(myEvent.bookingId);
+
+        emit(state.copyWith(
+          englishAssignments: assignments,
+          isLoadingEnglishAssignments: false,
         ));
       }
     } catch (e) {

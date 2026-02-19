@@ -17,6 +17,7 @@ import '../widgets/cancel_booking_dialog.dart';
 import '../widgets/edit_goal_dialog.dart';
 import '../widgets/rules_dialog_games.dart';
 import '../widgets/rules_dialog_study.dart';
+import '../widgets/english_content_card.dart';
 import '../widgets/study_plan_card.dart';
 
 /// Event details page for both focused study and english games
@@ -719,7 +720,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                   indicatorColor: colors.secondaryText,
                                   dividerColor: Colors.transparent,
                                   tabs: [
-                                    const Tab(text: '待辦事項'),
+                                    Tab(text: widget.isFocusedStudy ? '待辦事項' : '學習內容'),
                                     Tab(
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -756,8 +757,10 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                 child: TabBarView(
                                   controller: _tabController,
                                   children: [
-                                    // Goals tab
-                                    _buildGoalsTab(colors, event, state),
+                                    // Goals / English content tab
+                                    widget.isFocusedStudy
+                                        ? _buildGoalsTab(colors, event, state)
+                                        : _buildEnglishContentTab(colors, event, state),
                                     // Chat tab
                                     _buildChatTab(event),
                                   ],
@@ -908,6 +911,141 @@ class _EventDetailsPageState extends State<EventDetailsPage>
               canCheckGoal: event.canCheckGoal,
               onGoalTap: (slot, planId, content, isDone) =>
                   _handleGoalTap(event, slot, planId, content, isDone),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEnglishContentTab(
+    AppColorsTheme colors,
+    MyEvent event,
+    MyEventsState state,
+  ) {
+    final textTheme = context.textTheme;
+
+    if (state.isLoadingEnglishAssignments) {
+      return Center(
+        child: CircularProgressIndicator(color: colors.primary),
+      );
+    }
+
+    final assignments = state.englishAssignments;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+
+    if (assignments.isEmpty) {
+      return ShaderMask(
+        shaderCallback: (Rect bounds) {
+          return LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              Colors.black,
+              Colors.black,
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.03, 0.97, 1.0],
+          ).createShader(bounds);
+        },
+        blendMode: BlendMode.dstIn,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: colors.secondaryBackground,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: colors.tertiary,
+                  width: 2,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '尚未分配學習內容',
+                            style: textTheme.labelLarge?.copyWith(
+                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 16),
+                      child: Row(
+                        children: [
+                          Text(
+                            '等待系統分配學習內容',
+                            style: textTheme.bodyLarge?.copyWith(
+                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              color: colors.secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final isPreGrouping = event.groupId == null;
+
+    return ShaderMask(
+      shaderCallback: (Rect bounds) {
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black,
+            Colors.black,
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.03, 0.97, 1.0],
+        ).createShader(bounds);
+      },
+      blendMode: BlendMode.dstIn,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(8, 24, 8, 24),
+        itemCount: assignments.length + (isPreGrouping ? 1 : 0),
+        itemBuilder: (context, index) {
+          // Hint text below the cards in pre-grouping phase
+          if (index == assignments.length) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: Text(
+                '分組後你將看到其他組員的學習內容。',
+                style: textTheme.bodyMedium?.copyWith(
+                  fontFamily: fontFamily,
+                  color: colors.tertiaryText,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
+
+          final assignment = assignments[index];
+          return Padding(
+            padding: EdgeInsets.only(top: index > 0 ? 16 : 0),
+            child: EnglishContentCard(
+              assignment: assignment,
+              canViewContent: event.canViewEnglishContent,
             ),
           );
         },

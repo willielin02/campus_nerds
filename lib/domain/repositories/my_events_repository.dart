@@ -71,4 +71,14 @@ abstract class MyEventsRepository {
     required String content,
     required bool isDone,
   });
+
+  // ============================================
+  // English Assignment Methods
+  // ============================================
+
+  /// Get group English assignments (post-grouping)
+  Future<List<GroupEnglishAssignment>> getGroupEnglishAssignments(String groupId);
+
+  /// Get own English assignment by booking ID (pre-grouping)
+  Future<List<GroupEnglishAssignment>> getMyEnglishAssignment(String bookingId);
 }

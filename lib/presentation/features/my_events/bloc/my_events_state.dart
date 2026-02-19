@@ -27,6 +27,10 @@ class MyEventsState extends Equatable {
   final bool isLoadingStudyPlans;
   final bool isUpdatingStudyPlan;
 
+  // English assignments
+  final List<GroupEnglishAssignment> englishAssignments;
+  final bool isLoadingEnglishAssignments;
+
   const MyEventsState({
     this.status = MyEventsStatus.initial,
     this.upcomingEvents = const [],
@@ -40,6 +44,8 @@ class MyEventsState extends Equatable {
     this.studyPlans = const [],
     this.isLoadingStudyPlans = false,
     this.isUpdatingStudyPlan = false,
+    this.englishAssignments = const [],
+    this.isLoadingEnglishAssignments = false,
   });
 
   /// Check if data is loaded
@@ -65,6 +71,8 @@ class MyEventsState extends Equatable {
     List<GroupFocusedPlan>? studyPlans,
     bool? isLoadingStudyPlans,
     bool? isUpdatingStudyPlan,
+    List<GroupEnglishAssignment>? englishAssignments,
+    bool? isLoadingEnglishAssignments,
   }) {
     return MyEventsState(
       status: status ?? this.status,
@@ -80,6 +88,8 @@ class MyEventsState extends Equatable {
       studyPlans: studyPlans ?? this.studyPlans,
       isLoadingStudyPlans: isLoadingStudyPlans ?? this.isLoadingStudyPlans,
       isUpdatingStudyPlan: isUpdatingStudyPlan ?? this.isUpdatingStudyPlan,
+      englishAssignments: englishAssignments ?? this.englishAssignments,
+      isLoadingEnglishAssignments: isLoadingEnglishAssignments ?? this.isLoadingEnglishAssignments,
     );
   }
 
@@ -97,5 +107,7 @@ class MyEventsState extends Equatable {
         studyPlans,
         isLoadingStudyPlans,
         isUpdatingStudyPlan,
+        englishAssignments,
+        isLoadingEnglishAssignments,
       ];
 }
