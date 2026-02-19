@@ -103,6 +103,10 @@ export interface UserProfile {
   created_at: string
 }
 
+export interface UserWithBooking extends UserProfile {
+  lastBookingAt: string | null
+}
+
 export interface TicketBalance {
   user_id: string
   study_balance: number

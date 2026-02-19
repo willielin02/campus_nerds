@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { UserProfile, TicketBalance, TicketLedgerEntry, TicketType } from '../types/database'
+import type { UserProfile, UserWithBooking, TicketBalance, TicketLedgerEntry, TicketType } from '../types/database'
 import { REASON_LABELS } from '../types/database'
 import { formatDateTime } from '../lib/date'
 
 export default function TicketsPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<UserProfile[]>([])
-  const [searching, setSearching] = useState(false)
+  const [allUsers, setAllUsers] = useState<UserWithBooking[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null)
   const [balance, setBalance] = useState<TicketBalance | null>(null)
   const [ledger, setLedger] = useState<TicketLedgerEntry[]>([])
@@ -15,23 +15,65 @@ export default function TicketsPage() {
   const [adjustAmount, setAdjustAmount] = useState<number>(0)
   const [submitting, setSubmitting] = useState(false)
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    if (!searchQuery.trim()) return
+  useEffect(() => {
+    loadAllUsers()
+  }, [])
 
-    setSearching(true)
-    // Search by nickname or email in user_profile_v
-    const { data } = await supabase
+  async function loadAllUsers() {
+    setLoading(true)
+
+    // 1. 取得所有用戶
+    const { data: users } = await supabase
       .from('user_profile_v')
       .select('id, nickname, gender, age, school_email, university_name, university_code, created_at')
-      .or(`nickname.ilike.%${searchQuery}%,school_email.ilike.%${searchQuery}%`)
-      .limit(20)
 
-    setSearchResults((data as unknown as UserProfile[]) || [])
-    setSearching(false)
+    // 2. 取得所有 active bookings
+    const { data: bookings } = await supabase
+      .from('bookings')
+      .select('user_id, created_at')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+
+    // 3. 計算每位用戶的最新 active booking 時間
+    const latestBookingMap = new Map<string, string>()
+    for (const b of (bookings || []) as { user_id: string; created_at: string }[]) {
+      if (!latestBookingMap.has(b.user_id)) {
+        latestBookingMap.set(b.user_id, b.created_at)
+      }
+    }
+
+    // 4. 合併 + 排序
+    const merged: UserWithBooking[] = ((users || []) as UserProfile[]).map((u) => ({
+      ...u,
+      lastBookingAt: latestBookingMap.get(u.id) || null,
+    }))
+
+    merged.sort((a, b) => {
+      // 有報名的排前面
+      if (a.lastBookingAt && !b.lastBookingAt) return -1
+      if (!a.lastBookingAt && b.lastBookingAt) return 1
+      // 同為有報名：依最新報名時間降序
+      if (a.lastBookingAt && b.lastBookingAt) {
+        return new Date(b.lastBookingAt).getTime() - new Date(a.lastBookingAt).getTime()
+      }
+      // 同為未報名：依帳號建立時間降序
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+
+    setAllUsers(merged)
+    setLoading(false)
   }
 
-  async function selectUser(user: UserProfile) {
+  // 前端即時篩選
+  const displayUsers = searchQuery.trim()
+    ? allUsers.filter(
+        (u) =>
+          u.nickname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          u.school_email?.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : allUsers
+
+  async function selectUser(user: UserWithBooking) {
     setSelectedUser(user)
     // Load balance
     const { data: balanceData } = await supabase
@@ -70,7 +112,8 @@ export default function TicketsPage() {
     } else {
       alert('票券調整成功！')
       setAdjustAmount(0)
-      selectUser(selectedUser) // Reload balance & ledger
+      selectUser(selectedUser as UserWithBooking) // Reload balance & ledger
+      loadAllUsers() // Reload user list
     }
     setSubmitting(false)
   }
@@ -80,32 +123,27 @@ export default function TicketsPage() {
       <h2 className="text-2xl font-semibold mb-6">票券調整</h2>
 
       {/* Search */}
-      <form onSubmit={handleSearch} className="flex gap-3 mb-6">
+      <div className="mb-6">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="輸入暱稱或 Email 搜尋用戶..."
-          className="flex-1 border-2 border-tertiary rounded-[var(--radius-app)] px-4 py-2 text-sm bg-secondary"
+          placeholder="輸入暱稱或 Email 篩選用戶..."
+          className="w-full border-2 border-tertiary rounded-[var(--radius-app)] px-4 py-2 text-sm bg-secondary"
         />
-        <button
-          type="submit"
-          disabled={searching}
-          className="px-4 py-3 bg-alternate text-primary-text rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
-        >
-          {searching ? '搜尋中...' : '搜尋'}
-        </button>
-      </form>
+      </div>
 
       <div className="grid grid-cols-2 gap-6">
-        {/* Search results */}
+        {/* User list */}
         <div>
-          {searchResults.length > 0 && (
+          {loading ? (
+            <div className="text-center py-8 text-secondary-text text-sm">載入中...</div>
+          ) : displayUsers.length > 0 ? (
             <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] overflow-hidden">
               <div className="px-4 py-2 bg-alternate/50 text-xs font-medium text-secondary-text">
-                搜尋結果 ({searchResults.length})
+                用戶列表 ({displayUsers.length})
               </div>
-              {searchResults.map((user) => (
+              {displayUsers.map((user) => (
                 <div
                   key={user.id}
                   onClick={() => selectUser(user)}
@@ -118,8 +156,17 @@ export default function TicketsPage() {
                     {user.age ? `${user.age}歲` : '-'} ·{' '}
                     {user.gender === 'male' ? '男性' : user.gender === 'female' ? '女性' : '-'} · {user.university_name || '-'}
                   </p>
+                  <p className="text-xs text-tertiary-text mt-0.5">
+                    {user.lastBookingAt
+                      ? `最近報名：${formatDateTime(user.lastBookingAt)}`
+                      : `帳號建立：${formatDateTime(user.created_at)}`}
+                  </p>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-secondary-text text-sm">
+              {searchQuery.trim() ? '找不到符合的用戶' : '尚無用戶'}
             </div>
           )}
         </div>
