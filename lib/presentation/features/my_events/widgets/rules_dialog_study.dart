@@ -144,13 +144,13 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
                               _buildRule(
                                 context,
                                 '4. 中場檢查進度',
-                                '讀書一個段落後，一起吃飯/ 休息，互相檢查是否完成當初寫下的 3 個待辦事項，可以簡短分享成果。',
+                                '讀書至一個段落後，一起吃飯/ 休息，互相檢查是否完成當初寫下的 3 個待辦事項，可以簡短分享成果。',
                               ),
                               Divider(thickness: 2, color: colors.alternate),
                               _buildRule(
                                 context,
                                 '5. 活動結束後匿名回饋',
-                                '活動後請為同桌夥伴留下回饋，包含：專注程度、達標程度、是否有抖腳/ 講話等影響他人的行為',
+                                '活動後請為同桌夥伴留下回饋，包含：專注程度、達標程度、是否有抖腳/ 講話等影響他人的行為。',
                               ),
                               Divider(thickness: 2, color: colors.alternate),
                               _buildRule(

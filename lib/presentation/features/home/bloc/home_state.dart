@@ -50,7 +50,7 @@ class HomeState extends Equatable {
       focusedStudyEvents.isNotEmpty || englishGamesEvents.isNotEmpty;
 
   /// Get display name for selected city
-  String get selectedCityName => selectedCity?.name ?? '全部地區';
+  String get selectedCityName => selectedCity?.name ?? '臺北';
 
   /// Get focused study event count for a city
   int getFocusedStudyCountForCity(String cityId) =>
@@ -64,7 +64,6 @@ class HomeState extends Equatable {
     HomeStatus? status,
     List<City>? cities,
     City? selectedCity,
-    bool clearSelectedCity = false,
     List<Event>? focusedStudyEvents,
     List<Event>? englishGamesEvents,
     TicketBalance? ticketBalance,
@@ -76,8 +75,7 @@ class HomeState extends Equatable {
     return HomeState(
       status: status ?? this.status,
       cities: cities ?? this.cities,
-      selectedCity:
-          clearSelectedCity ? null : (selectedCity ?? this.selectedCity),
+      selectedCity: selectedCity ?? this.selectedCity,
       focusedStudyEvents: focusedStudyEvents ?? this.focusedStudyEvents,
       englishGamesEvents: englishGamesEvents ?? this.englishGamesEvents,
       ticketBalance: ticketBalance ?? this.ticketBalance,

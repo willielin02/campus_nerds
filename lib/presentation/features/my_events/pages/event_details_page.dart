@@ -256,6 +256,8 @@ class _EventDetailsPageState extends State<EventDetailsPage>
         return '圖書館/ 咖啡廳';
       case 'boardgame_or_escape_room':
         return '桌遊店/ 密室逃脫';
+      case 'boardgame':
+        return '桌遊店';
       default:
         return event.locationDetail;
     }

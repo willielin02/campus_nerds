@@ -30,11 +30,6 @@ class HomeChangeCity extends HomeEvent {
   List<Object?> get props => [city];
 }
 
-/// Event to clear selected city (show all cities)
-class HomeClearCity extends HomeEvent {
-  const HomeClearCity();
-}
-
 /// Event to refresh only the ticket balance (lightweight)
 class HomeRefreshBalance extends HomeEvent {
   const HomeRefreshBalance();

@@ -17,7 +17,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeRefresh>(_onRefresh);
     on<HomeRefreshBalance>(_onRefreshBalance);
     on<HomeChangeCity>(_onChangeCity);
-    on<HomeClearCity>(_onClearCity);
   }
 
   /// Load initial home data
@@ -33,13 +32,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       // Load cities
       final cities = await _homeRepository.getCities();
 
-      // Load saved city preference
-      final savedCity = await _homeRepository.getUserCityPreference();
+      // Load saved city preference (default to 臺北)
+      final savedCity = await _homeRepository.getUserCityPreference() ??
+          cities.where((c) => c.name == '臺北').firstOrNull;
 
       // Load ticket balance
       final ticketBalance = await _homeRepository.getTicketBalance();
 
-      // Load events for selected city (or all cities if no preference)
+      // Load events for selected city
       final cityId = savedCity?.id;
 
       final focusedStudyEvents = await _homeRepository.getFocusedStudyEvents(
@@ -158,35 +158,4 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  /// Clear selected city (show all cities)
-  Future<void> _onClearCity(
-    HomeClearCity event,
-    Emitter<HomeState> emit,
-  ) async {
-    emit(state.copyWith(
-      clearSelectedCity: true,
-      isRefreshing: true,
-    ));
-
-    try {
-      final focusedStudyEvents = await _homeRepository.getFocusedStudyEvents(
-        limit: 10,
-      );
-
-      final englishGamesEvents = await _homeRepository.getEnglishGamesEvents(
-        limit: 10,
-      );
-
-      emit(state.copyWith(
-        focusedStudyEvents: focusedStudyEvents,
-        englishGamesEvents: englishGamesEvents,
-        isRefreshing: false,
-      ));
-    } catch (e) {
-      emit(state.copyWith(
-        isRefreshing: false,
-        errorMessage: '載入資料失敗',
-      ));
-    }
-  }
 }

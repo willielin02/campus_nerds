@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import type { Event, EventStatus, EventCategory, EventTimeSlot, City } from '../types/database'
-import { CATEGORY_LABELS, TIME_SLOT_LABELS, EVENT_STATUS_LABELS } from '../types/database'
+import type { Event, EventStatus, EventCategory, EventTimeSlot, EventLocationDetail, City } from '../types/database'
+import { CATEGORY_LABELS, TIME_SLOT_LABELS, EVENT_STATUS_LABELS, LOCATION_DETAIL_LABELS, STUDY_LOCATION_DETAILS, GAMES_LOCATION_DETAILS } from '../types/database'
 import StatusBadge, { eventStatusColor } from '../components/StatusBadge'
 import { formatEventDate, formatDate } from '../lib/date'
 
@@ -20,6 +20,7 @@ export default function EventsPage() {
   const [newTimeSlot, setNewTimeSlot] = useState<EventTimeSlot>('morning')
   const [newCityId, setNewCityId] = useState('')
   const [newGroupSize, setNewGroupSize] = useState(4)
+  const [newLocationDetail, setNewLocationDetail] = useState<EventLocationDetail>('library_or_cafe')
 
   useEffect(() => {
     loadCities()
@@ -71,6 +72,7 @@ export default function EventsPage() {
       event_date: newDate,
       time_slot: newTimeSlot,
       city_id: newCityId,
+      location_detail: newLocationDetail,
       default_group_size: newGroupSize,
       status: 'draft',
     })
@@ -114,7 +116,11 @@ export default function EventsPage() {
               <span className="text-xs text-secondary-text">類別</span>
               <select
                 value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value as EventCategory)}
+                onChange={(e) => {
+                  const cat = e.target.value as EventCategory
+                  setNewCategory(cat)
+                  setNewLocationDetail(cat === 'focused_study' ? 'library_or_cafe' : 'boardgame_or_escape_room')
+                }}
                 className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
               >
                 <option value="focused_study">專注讀書</option>
@@ -154,6 +160,18 @@ export default function EventsPage() {
                 <option value="">選擇城市</option>
                 {cities.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs text-secondary-text">地點類型</span>
+              <select
+                value={newLocationDetail}
+                onChange={(e) => setNewLocationDetail(e.target.value as EventLocationDetail)}
+                className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
+              >
+                {(newCategory === 'focused_study' ? STUDY_LOCATION_DETAILS : GAMES_LOCATION_DETAILS).map((ld) => (
+                  <option key={ld} value={ld}>{LOCATION_DETAIL_LABELS[ld]}</option>
                 ))}
               </select>
             </label>

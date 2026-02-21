@@ -270,7 +270,7 @@ A global mock time system allows testing the entire event lifecycle without wait
 
 ### How It Works
 
-- **Supabase:** `public.now()` overrides `pg_catalog.now()` using a stored time offset. All RPC functions, triggers, views, and RLS policies resolve `now()` through this override (via `search_path = 'public', 'pg_catalog'`).
+- **Supabase:** `public.now()` overrides `pg_catalog.now()` using a stored time offset. Functions and triggers resolve `now()` through `SET search_path = 'public', 'pg_catalog'`. **Views have no search_path** — they inherit the caller's, so must use `public.now()` explicitly.
 - **Flutter:** `AppClock.now()` replaces all `DateTime.now()` calls. On app startup, it syncs with the server's `get_server_now()` RPC and stores the offset locally. **In release mode, sync is skipped entirely** — no network call, no latency, `AppClock.now()` = `DateTime.now()`.
 - **Offset-based:** Time still flows naturally (advances in real-time), just shifted by the offset. No drift between client and server.
 
@@ -292,16 +292,18 @@ SELECT test_clear_now();
 
 After setting/clearing mock time, **restart the Flutter app** to re-sync `AppClock`.
 
-### search_path Caveat (IMPORTANT)
+### search_path Caveat (CRITICAL)
 
-Bare `SELECT now()` may resolve to `pg_catalog.now()` (real time) depending on the session's `search_path`. This happens in:
-- Supabase SQL Editor
-- MCP `execute_sql` tool
-- Any session where `pg_catalog` precedes `public` in `search_path`
+PostgreSQL resolves bare `now()` via `search_path`. If `pg_catalog` is **not explicitly listed**, it is implicitly searched **first** — meaning `now()` = `pg_catalog.now()` = real time, bypassing mock time.
 
-**Always use `SELECT public.now()` to check mock time.** Do NOT use bare `SELECT now()` — it will mislead you into thinking mock time is broken when it's actually working.
+**Rules for mock time correctness:**
 
-Database functions, triggers, views, and RLS policies all have `search_path = 'public', 'pg_catalog'`, so they correctly resolve `now()` → `public.now()` and mock time works as expected within the application.
+1. **Views**: MUST use `public.now()` explicitly (views have no `search_path` setting; they inherit the caller's, where `pg_catalog` is always first)
+2. **Functions/Triggers**: MUST have `SET search_path TO 'public', 'pg_catalog'` (listing `pg_catalog` after `public` makes `now()` resolve to `public.now()`)
+3. **Functions with only `SET search_path TO 'public'`**: BROKEN — `pg_catalog` is implicitly first, so `now()` = real time
+4. **RLS policies**: Use `public.now()` explicitly (same reason as views)
+5. **Column defaults (`DEFAULT now()`)**: Use the session's `search_path` at INSERT time. When INSERT is inside a function with correct `search_path`, the default inherits it. Direct PostgREST inserts use real time.
+6. **SQL Editor / MCP `execute_sql`**: Always use `SELECT public.now()` to check mock time. Bare `now()` returns real time.
 
 ### Security
 

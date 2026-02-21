@@ -85,6 +85,7 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
   StreamSubscription<List<AppNotification>>? _unreadNotifSub;
   StreamSubscription<AuthState>? _authSub;
   bool _notificationsInitialized = false;
+  bool _isShowingNotification = false;
 
   /// Update theme mode
   void setThemeMode(ThemeMode mode) {
@@ -129,8 +130,29 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && _notificationsInitialized) {
-      // Check for unread notifications when app resumes
-      NotificationService.instance.checkUnreadNotifications();
+      // Only check notifications on appropriate pages (main tabs + event details)
+      // Avoid interrupting active flows like booking, checkout, or Facebook binding
+      if (_canShowNotificationOnCurrentRoute()) {
+        NotificationService.instance.checkUnreadNotifications();
+      }
+    }
+  }
+
+  /// Check if the current route is appropriate for showing notification dialogs.
+  /// Only show on "resting" pages, not during active flows.
+  bool _canShowNotificationOnCurrentRoute() {
+    try {
+      final path = AppRouter.router.routeInformationProvider.value.uri.path;
+      const allowedRoutes = [
+        AppRoutes.home,
+        AppRoutes.myEvents,
+        AppRoutes.account,
+        AppRoutes.eventDetailsStudy,
+        AppRoutes.eventDetailsGames,
+      ];
+      return allowedRoutes.any((route) => path.startsWith(route));
+    } catch (_) {
+      return false;
     }
   }
 
@@ -165,32 +187,45 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
     await NotificationService.instance.dispose();
   }
 
-  void _showNotificationDialog(AppNotification notification) {
+  void _showNotificationDialog(AppNotification notification) async {
+    // Prevent duplicate dialogs
+    if (_isShowingNotification) return;
+
+    // Only show on appropriate pages (not during active flows)
+    if (!_canShowNotificationOnCurrentRoute()) return;
+
     final navigatorContext = appNavigatorKey.currentContext;
     if (navigatorContext == null) return;
 
-    showNotificationDialog(
-      context: navigatorContext,
-      notification: notification,
-      onDismiss: (notif) {
-        // Mark as read
-        NotificationService.instance.markAsRead(notif.id);
+    _isShowingNotification = true;
 
-        // Navigate to event details page
-        if (notif.bookingId != null) {
-          // Determine event category from notification data
-          final category = notif.data?['category'] as String?;
-          final isFocusedStudy = category != 'english_games';
-          final route = isFocusedStudy
-              ? AppRoutes.eventDetailsStudy
-              : AppRoutes.eventDetailsGames;
-          final tab = notif.type == NotificationType.chatOpen ? 1 : 0;
-          appNavigatorKey.currentContext?.go(
-            '$route?bookingId=${notif.bookingId}&tab=$tab',
-          );
-        }
-      },
-    );
+    try {
+      await showNotificationDialog(
+        context: navigatorContext,
+        notification: notification,
+        onDismiss: (notif) {
+          // Mark as read
+          NotificationService.instance.markAsRead(notif.id);
+
+          // Navigate to event details page
+          if (notif.bookingId != null) {
+            final category = notif.data?['category'] as String?;
+            final isFocusedStudy = category != 'english_games';
+            final route = isFocusedStudy
+                ? AppRoutes.eventDetailsStudy
+                : AppRoutes.eventDetailsGames;
+            final tab = notif.type == NotificationType.chatOpen ? 1 : 0;
+            appNavigatorKey.currentContext?.go(
+              '$route?bookingId=${notif.bookingId}&tab=$tab',
+            );
+          }
+        },
+      );
+    } catch (_) {
+      // Dialog show failed (e.g., invalid context)
+    } finally {
+      _isShowingNotification = false;
+    }
   }
 
   @override

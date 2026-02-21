@@ -787,6 +787,7 @@ class _StudyBookingConfirmationPageState
       'ntut_library_reading_area': '國立臺北科技大學圖書館 閱覽區',
       'library_or_cafe': '圖書館/ 咖啡廳',
       'boardgame_or_escape_room': '桌遊店/ 密室逃脫',
+      'boardgame': '桌遊店',
     };
     return locationMap[locationDetail] ?? '';
   }
