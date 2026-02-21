@@ -231,15 +231,16 @@ export default function EventsPage() {
               <th className="text-left px-4 py-3 font-medium text-secondary-text">時段</th>
               <th className="text-left px-4 py-3 font-medium text-secondary-text">類別</th>
               <th className="text-left px-4 py-3 font-medium text-secondary-text">城市</th>
+              <th className="text-left px-4 py-3 font-medium text-secondary-text">地點</th>
               <th className="text-left px-4 py-3 font-medium text-secondary-text">報名人數</th>
               <th className="text-left px-4 py-3 font-medium text-secondary-text">狀態</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-tertiary-text">載入中...</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-tertiary-text">載入中...</td></tr>
             ) : events.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-tertiary-text">暫無活動</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-tertiary-text">暫無活動</td></tr>
             ) : (
               events.map((event) => (
                 <tr key={event.id} className="border-b border-tertiary last:border-0 hover:bg-alternate/30 transition-colors">
@@ -251,6 +252,7 @@ export default function EventsPage() {
                   <td className="px-4 py-3 text-secondary-text">{TIME_SLOT_LABELS[event.time_slot]}</td>
                   <td className="px-4 py-3 text-secondary-text">{CATEGORY_LABELS[event.category]}</td>
                   <td className="px-4 py-3 text-secondary-text">{(event.city as unknown as { name: string })?.name ?? '-'}</td>
+                  <td className="px-4 py-3 text-secondary-text">{LOCATION_DETAIL_LABELS[event.location_detail] ?? '-'}</td>
                   <td className="px-4 py-3 text-secondary-text">{event.booking_count}</td>
                   <td className="px-4 py-3">
                     <StatusBadge label={EVENT_STATUS_LABELS[event.status]} color={eventStatusColor(event.status)} />

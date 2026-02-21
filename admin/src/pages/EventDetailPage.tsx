@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase, invokeConfirmGroup } from '../lib/supabase'
 import type { Event, Group, GroupMemberRow, Venue, Gender, UserProfile } from '../types/database'
-import { CATEGORY_LABELS, TIME_SLOT_LABELS, EVENT_STATUS_LABELS, GROUP_STATUS_LABELS } from '../types/database'
+import { CATEGORY_LABELS, TIME_SLOT_LABELS, EVENT_STATUS_LABELS, GROUP_STATUS_LABELS, LOCATION_DETAIL_LABELS } from '../types/database'
 import StatusBadge, { eventStatusColor, groupStatusColor } from '../components/StatusBadge'
 import { formatEventDate, formatDateTime } from '../lib/date'
 import { serverNow } from '../lib/serverClock'
@@ -394,7 +394,7 @@ export default function EventDetailPage() {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold">
-              {formatEventDate(event.event_date)} {TIME_SLOT_LABELS[event.time_slot]}
+              {formatEventDate(event.event_date)} {TIME_SLOT_LABELS[event.time_slot]} · {LOCATION_DETAIL_LABELS[event.location_detail] ?? event.location_detail}
             </h2>
             <p className="text-sm text-secondary-text mt-1">
               {CATEGORY_LABELS[event.category]} · {cityName} · 預設分組 {event.default_group_size} 人
