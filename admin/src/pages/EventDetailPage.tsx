@@ -394,7 +394,7 @@ export default function EventDetailPage() {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold">
-              {formatEventDate(event.event_date)} {TIME_SLOT_LABELS[event.time_slot]}{'\u00A0\u00A0\u00A0'}{LOCATION_DETAIL_LABELS[event.location_detail] ?? event.location_detail}
+              {formatEventDate(event.event_date)} {TIME_SLOT_LABELS[event.time_slot]}{'\u00A0\u00A0'}{LOCATION_DETAIL_LABELS[event.location_detail] ?? event.location_detail}
             </h2>
             <p className="text-sm text-secondary-text mt-1">
               {CATEGORY_LABELS[event.category]} · {cityName} · 預設分組 {event.default_group_size} 人
