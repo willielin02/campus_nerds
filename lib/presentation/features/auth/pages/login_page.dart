@@ -27,8 +27,31 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
+  late final AnimationController _expandController;
+  late final Animation<double> _expandAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandController = AnimationController(
+      duration: const Duration(milliseconds: 350),
+      vsync: this,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+  }
+
+  @override
+  void dispose() {
+    _expandController.dispose();
+    super.dispose();
+  }
 
   void _handleGoogleSignIn() {
     context.read<AuthBloc>().add(const AuthSignInWithGoogle());
@@ -45,6 +68,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _toggleExpanded() {
     setState(() => _isExpanded = !_isExpanded);
+    if (_isExpanded) {
+      _expandController.forward();
+    } else {
+      _expandController.reverse();
+    }
   }
 
   @override
@@ -181,24 +209,33 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   // "更多登入方式" toggle
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 16),
+                                    padding: const EdgeInsets.only(top: 4),
                                     child: _buildMoreOptionsToggle(colors, textTheme),
                                   ),
                                 ],
                               ),
                             ),
-                            // Expanded options: Apple button
-                            if (_isExpanded)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 16),
-                                child: _buildAppleButton(colors, textTheme),
+                            // Animated expandable options
+                            SizeTransition(
+                              sizeFactor: _expandAnimation,
+                              axisAlignment: -1.0,
+                              child: FadeTransition(
+                                opacity: _expandAnimation,
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 16),
+                                      child: _buildAppleButton(colors, textTheme),
+                                    ),
+                                    if (widget.allowGuest)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 16),
+                                        child: _buildGuestButton(colors, textTheme),
+                                      ),
+                                  ],
+                                ),
                               ),
-                            // Expanded options: Guest button (only when allowGuest is true)
-                            if (_isExpanded && widget.allowGuest)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 16),
-                                child: _buildGuestButton(colors, textTheme),
-                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -275,10 +312,8 @@ class _LoginPageState extends State<LoginPage> {
           hoverColor: Colors.transparent,
           highlightColor: Colors.transparent,
           onTap: _toggleExpanded,
-          child: Container(
-            decoration: BoxDecoration(
-              color: colors.secondaryBackground,
-            ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 Text(

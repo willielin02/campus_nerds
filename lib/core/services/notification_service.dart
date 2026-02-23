@@ -37,6 +37,9 @@ class NotificationService {
   /// Currently active chat group ID (for foreground push suppression)
   String? _activeGroupId;
 
+  /// Read the currently active group ID (for dialog suppression in main.dart)
+  String? get activeGroupId => _activeGroupId;
+
   /// Set the active chat group ID to suppress push notifications for that group.
   /// Also clears all displayed notifications when entering a chat.
   void setActiveGroupId(String? groupId) {
@@ -63,6 +66,10 @@ class NotificationService {
   /// Stream of unread notifications fetched on init
   final _unreadController = StreamController<List<AppNotification>>.broadcast();
   Stream<List<AppNotification>> get onUnreadNotifications => _unreadController.stream;
+
+  /// Stream of FCM notification taps (app was in background, user tapped push)
+  final _fcmTapController = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get onFcmTapped => _fcmTapController.stream;
 
   /// Initialize the notification service
   ///
@@ -110,6 +117,15 @@ class NotificationService {
       await _repository?.markAsRead(notificationId);
     } catch (e) {
       debugPrint('Error marking notification as read: $e');
+    }
+  }
+
+  /// Mark all notifications of a given type for a group as read
+  Future<void> markGroupNotificationsAsRead(String groupId, {String type = 'chat_open'}) async {
+    try {
+      await _repository?.markGroupNotificationsAsRead(groupId, type: type);
+    } catch (e) {
+      debugPrint('Error marking group notifications as read: $e');
     }
   }
 
@@ -205,6 +221,15 @@ class NotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('Foreground FCM message: ${message.messageId}');
 
+      final messageType = message.data['type'] as String?;
+
+      // Notification types (chat_open, event_group_result, etc.) are already
+      // handled by Realtime in-app dialog — suppress duplicate FCM in foreground
+      if (messageType != null && messageType != 'chat_message') {
+        debugPrint('Suppressed FCM for type=$messageType (handled by Realtime)');
+        return;
+      }
+
       // Suppress push for the chat group currently being viewed
       final messageGroupId = message.data['group_id'] as String?;
       if (messageGroupId != null && messageGroupId == _activeGroupId) {
@@ -218,7 +243,9 @@ class NotificationService {
     // Handle message tap (app opened from notification)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       debugPrint('User tapped notification: ${message.data}');
-      // Navigation is handled by the notification dialog flow
+      if (message.data.isNotEmpty) {
+        _fcmTapController.add(Map<String, dynamic>.from(message.data));
+      }
     });
   }
 

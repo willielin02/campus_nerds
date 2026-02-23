@@ -1,4 +1,9 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../config/app_config.dart';
 
 /// Supabase configuration and service
 ///
@@ -9,12 +14,6 @@ class SupabaseService {
 
   static SupabaseService? _instance;
   static SupabaseService get instance => _instance ??= SupabaseService._();
-
-  // Supabase project configuration
-  // Note: These are public keys, safe to include in client code
-  static const String _supabaseUrl = 'https://lzafwlmznlkvmbdxcxop.supabase.co';
-  static const String _supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6YWZ3bG16bmxrdm1iZHhjeG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTcyODIsImV4cCI6MjA4MTYzMzI4Mn0.5i_r7IRg1ZDjFIvlki_Oy9IYQ6dCXeA5PrCZ-g-XAFQ';
 
   /// Get Supabase client instance
   static SupabaseClient get client => Supabase.instance.client;
@@ -42,9 +41,11 @@ class SupabaseService {
   /// Must be called before using any Supabase features.
   /// Typically called in main() before runApp().
   static Future<void> initialize() async {
+    debugPrint('Supabase ENV: ${AppConfig.envName} → ${AppConfig.supabaseUrl}');
+
     await Supabase.initialize(
-      url: _supabaseUrl,
-      anonKey: _supabaseAnonKey,
+      url: AppConfig.supabaseUrl,
+      anonKey: AppConfig.supabaseAnonKey,
       headers: {
         'X-Client-Info': 'campus_nerds',
       },
@@ -53,6 +54,34 @@ class SupabaseService {
         authFlowType: AuthFlowType.implicit,
       ),
     );
+
+    // 環境切換保護：如果本地存的 JWT 來自不同專案，自動登出
+    await _clearSessionIfWrongProject();
+  }
+
+  /// 檢查本地 session 的 JWT ref 是否匹配當前環境的專案
+  static Future<void> _clearSessionIfWrongProject() async {
+    final token = currentSession?.accessToken;
+    if (token == null) return;
+
+    try {
+      // 解析 JWT payload（不需驗證簽名，只看 ref claim）
+      final parts = token.split('.');
+      if (parts.length != 3) return;
+      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final claims = jsonDecode(payload) as Map<String, dynamic>;
+      final tokenRef = claims['ref'] as String?;
+
+      // 從當前 URL 取得 project ref
+      final currentRef = Uri.parse(AppConfig.supabaseUrl).host.split('.').first;
+
+      if (tokenRef != null && tokenRef != currentRef) {
+        debugPrint('Session token ref ($tokenRef) != current project ($currentRef), signing out');
+        await client.auth.signOut();
+      }
+    } catch (e) {
+      debugPrint('Failed to check session project: $e');
+    }
   }
 
   /// Sign out current user

@@ -41,14 +41,14 @@ serve(async (req)=>{
     }, 405);
   }
   try {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.replace("Bearer ", "");
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: {
-        headers: {
-          Authorization: req.headers.get("Authorization") ?? ""
-        }
+        headers: { Authorization: authHeader }
       }
     });
-    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const { data: authData, error: authError } = await supabase.auth.getUser(token);
     if (authError || !authData?.user) {
       console.error("AUTH ERROR:", authError);
       return jsonResponse({

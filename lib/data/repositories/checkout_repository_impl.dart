@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../core/config/app_config.dart';
 import '../../core/services/supabase_service.dart';
 import '../../domain/entities/checkout.dart';
 import '../../domain/repositories/checkout_repository.dart';
@@ -9,7 +10,6 @@ import '../models/tables/products.dart';
 
 /// Implementation of CheckoutRepository using Supabase
 class CheckoutRepositoryImpl implements CheckoutRepository {
-  static const String _supabaseUrl = 'https://lzafwlmznlkvmbdxcxop.supabase.co';
 
   @override
   Future<List<Product>> getProducts(String ticketType) async {
@@ -52,7 +52,7 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
       }
 
       final response = await http.post(
-        Uri.parse('$_supabaseUrl/functions/v1/ecpay_create_order'),
+        Uri.parse('${AppConfig.supabaseUrl}/functions/v1/ecpay_create_order'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

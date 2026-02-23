@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
   const authHeader = req.headers.get('Authorization') ?? ''
+  const token = authHeader.replace('Bearer ', '')
 
   const supabaseAuthed = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
     global: { headers: { Authorization: authHeader } },
@@ -40,7 +41,7 @@ Deno.serve(async (req) => {
 
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
 
-  const { data: userData, error: userErr } = await supabaseAuthed.auth.getUser()
+  const { data: userData, error: userErr } = await supabaseAuthed.auth.getUser(token)
   if (userErr || !userData?.user) return new Response('Unauthorized', { status: 401 })
 
   const body = await req.json().catch(() => null)
@@ -83,8 +84,11 @@ Deno.serve(async (req) => {
 
   if (insErr) return new Response(`Create order failed: ${insErr.message}`, { status: 500 })
 
+  // Extract project ref from SUPABASE_URL (e.g. "https://abcdef.supabase.co" → "abcdef")
+  const projectRef = new URL(supabaseUrl).hostname.split('.')[0]
+
   // Point to the Cloudflare Pages bootstrap page, which will POST to ecpay_pay
-  const checkoutUrl = `${PAY_SITE_URL}/checkout.html?token=${encodeURIComponent(checkoutToken)}`
+  const checkoutUrl = `${PAY_SITE_URL}/checkout.html?token=${encodeURIComponent(checkoutToken)}&ref=${projectRef}`
 
   return new Response(
     JSON.stringify({

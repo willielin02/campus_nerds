@@ -57,6 +57,10 @@ class MyEventsState extends Equatable {
   /// Check if there are upcoming events
   bool get hasUpcomingEvents => upcomingEvents.isNotEmpty;
 
+  /// Total unread message count across all upcoming events
+  int get totalUnreadMessageCount =>
+      upcomingEvents.fold(0, (sum, e) => sum + e.unreadMessageCount);
+
   MyEventsState copyWith({
     MyEventsStatus? status,
     List<MyEvent>? upcomingEvents,

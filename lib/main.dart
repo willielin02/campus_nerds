@@ -83,6 +83,7 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
   ThemeMode _themeMode = AppTheme.themeMode;
   StreamSubscription<AppNotification>? _realtimeNotifSub;
   StreamSubscription<List<AppNotification>>? _unreadNotifSub;
+  StreamSubscription<Map<String, dynamic>>? _fcmTapSub;
   StreamSubscription<AuthState>? _authSub;
   bool _notificationsInitialized = false;
   bool _isShowingNotification = false;
@@ -122,6 +123,7 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
     WidgetsBinding.instance.removeObserver(this);
     _realtimeNotifSub?.cancel();
     _unreadNotifSub?.cancel();
+    _fcmTapSub?.cancel();
     _authSub?.cancel();
     NotificationService.instance.dispose();
     super.dispose();
@@ -176,6 +178,11 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
         }
       },
     );
+
+    // Listen for FCM notification taps (app was in background)
+    _fcmTapSub = NotificationService.instance.onFcmTapped.listen(
+      (data) => _handleFcmTap(data),
+    );
   }
 
   Future<void> _disposeNotifications() async {
@@ -184,6 +191,8 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
     _realtimeNotifSub = null;
     _unreadNotifSub?.cancel();
     _unreadNotifSub = null;
+    _fcmTapSub?.cancel();
+    _fcmTapSub = null;
     await NotificationService.instance.dispose();
   }
 
@@ -193,6 +202,14 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
 
     // Only show on appropriate pages (not during active flows)
     if (!_canShowNotificationOnCurrentRoute()) return;
+
+    // 使用者已在該群組的聊天室 tab → 跳過 dialog，靜默標記已讀
+    if (notification.type == NotificationType.chatOpen &&
+        notification.groupId != null &&
+        notification.groupId == NotificationService.instance.activeGroupId) {
+      NotificationService.instance.markAsRead(notification.id);
+      return;
+    }
 
     final navigatorContext = appNavigatorKey.currentContext;
     if (navigatorContext == null) return;
@@ -226,6 +243,26 @@ class _CampusNerdsAppState extends State<CampusNerdsApp> with WidgetsBindingObse
     } finally {
       _isShowingNotification = false;
     }
+  }
+
+  /// Handle FCM notification tap (app was in background, user tapped push)
+  void _handleFcmTap(Map<String, dynamic> data) {
+    final bookingId = data['booking_id'] as String?;
+    final category = data['category'] as String?;
+    final type = data['type'] as String?;
+
+    if (bookingId == null) return;
+
+    final isFocusedStudy = category != 'english_games';
+    final route = isFocusedStudy
+        ? AppRoutes.eventDetailsStudy
+        : AppRoutes.eventDetailsGames;
+    // chat_message 和 chat_open 都導航到聊天室 tab
+    final tab = (type == 'chat_message' || type == 'chat_open') ? 1 : 0;
+
+    appNavigatorKey.currentContext?.go(
+      '$route?bookingId=$bookingId&tab=$tab',
+    );
   }
 
   @override

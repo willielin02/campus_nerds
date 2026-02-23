@@ -31,6 +31,14 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
+  Future<void> markGroupNotificationsAsRead(String groupId, {String type = 'chat_open'}) async {
+    await SupabaseService.rpc(
+      'mark_group_notifications_read',
+      params: {'p_group_id': groupId, 'p_type': type},
+    );
+  }
+
+  @override
   Future<void> registerDeviceToken({
     required String token,
     required String platform,

@@ -42,13 +42,16 @@
     <div class="spinner" id="spinner"></div>
     <p id="message">正在前往付款頁面...</p>
   </div>
-  <form id="f" method="post" action="https://lzafwlmznlkvmbdxcxop.supabase.co/functions/v1/ecpay_pay" style="display:none">
+  <form id="f" method="post" style="display:none">
     <input type="hidden" name="token" id="t">
   </form>
   <script>
-    var token = new URLSearchParams(window.location.search).get('token');
-    if (token) {
+    var params = new URLSearchParams(window.location.search);
+    var token = params.get('token');
+    var ref = params.get('ref');
+    if (token && ref) {
       document.getElementById('t').value = token;
+      document.getElementById('f').action = 'https://' + ref + '.supabase.co/functions/v1/ecpay_pay';
       document.getElementById('f').submit();
     } else {
       document.getElementById('spinner').style.display = 'none';

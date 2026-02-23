@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/booking.dart';
 import '../../../../domain/entities/event.dart';
@@ -44,6 +47,12 @@ class _EventDetailsPageState extends State<EventDetailsPage>
   int _chatUnreadCount = 0;
   bool _chatInitialized = false;
   int _lastKnownMessageCount = 0;
+  /// 本頁初始化 ChatBloc 時使用的 groupId，用於 dispose 時判斷是否仍為 owner
+  String? _managedGroupId;
+  /// 快取 ChatBloc 參考，避免 dispose 時 context 已 deactivated
+  ChatBloc? _chatBloc;
+  /// 等待 chatOpenAt 到達的一次性 Timer（用於自動切換聊天室 UI）
+  Timer? _chatOpenTimer;
 
   @override
   void initState() {
@@ -59,12 +68,43 @@ class _EventDetailsPageState extends State<EventDetailsPage>
         vsync: this,
       );
       _tabController!.addListener(_onTabChanged);
-      // 提前初始化 ChatBloc，確保 Realtime 訂閱不論當前 tab 都啟動
-      // （TabBarView 的 cacheExtent 不足以預建 ChatTab）
-      if (event.groupId != null && event.isChatOpen) {
-        context.read<ChatBloc>().add(ChatInitialize(event.groupId!));
+    }
+
+    // 聊天室初始化（chat 可能在頁面建立後才開啟，所以不能放在 _tabController guard 裡）
+    if (_managedGroupId == null && event.groupId != null && event.isChatOpen) {
+      _chatOpenTimer?.cancel();
+      _chatOpenTimer = null;
+      _managedGroupId = event.groupId;
+      _chatBloc = context.read<ChatBloc>();
+      _chatBloc!.add(ChatInitialize(event.groupId!));
+      // 進入聊天室 → 主動標記該群組的 chat_open 通知為已讀
+      // 防止 checkUnreadNotifications() 重複彈出已知的聊天室開啟通知
+      NotificationService.instance.markGroupNotificationsAsRead(event.groupId!);
+      // 若當前已在聊天室 tab，立即設定 activeGroupId 抑制推播
+      if (_tabController?.index == 1) {
+        NotificationService.instance.setActiveGroupId(event.groupId);
       }
     }
+
+    // 聊天室尚未開啟但有 chatOpenAt → 排程一次性 Timer，到時間自動重新載入
+    if (_chatOpenTimer == null &&
+        _managedGroupId == null &&
+        event.groupId != null &&
+        event.chatOpenAt != null &&
+        !event.isChatOpen) {
+      final delay = event.chatOpenAt!.difference(AppClock.now()) +
+          const Duration(seconds: 1);
+      if (delay > Duration.zero) {
+        _chatOpenTimer = Timer(delay, () {
+          if (mounted && _managedGroupId == null) {
+            context
+                .read<MyEventsBloc>()
+                .add(MyEventsLoadDetails(widget.bookingId));
+          }
+        });
+      }
+    }
+
     // ChatBloc 初始化前都允許從 event 更新未讀數（確保用最新的伺服器資料）
     if (!_chatInitialized) {
       _chatUnreadCount =
@@ -79,19 +119,32 @@ class _EventDetailsPageState extends State<EventDetailsPage>
           _chatUnreadCount = 0;
         });
       }
-      // 切換到聊天室 tab 時標記已讀
-      context.read<ChatBloc>().add(const ChatMarkAsRead());
+      // 切換到聊天室 tab 時標記已讀 + 設定 activeGroupId 抑制推播
+      _chatBloc?.add(const ChatMarkAsRead());
+      if (_managedGroupId != null) {
+        NotificationService.instance.setActiveGroupId(_managedGroupId);
+      }
+    } else {
+      // 離開聊天室 tab → 清除 activeGroupId，恢復推播
+      NotificationService.instance.setActiveGroupId(null);
     }
   }
 
   @override
   void dispose() {
-    // 如果使用者在聊天室 tab，先標記已讀
-    if (_tabController?.index == 1) {
-      context.read<ChatBloc>().add(const ChatMarkAsRead());
+    _chatOpenTimer?.cancel();
+    // 離開頁面時清除 activeGroupId，恢復推播
+    NotificationService.instance.setActiveGroupId(null);
+    // 只在 ChatBloc 仍由本頁管理時才清理，避免頁面切換時
+    // 舊頁的 dispose 覆蓋新頁已初始化的 ChatBloc
+    if (_chatBloc != null &&
+        _managedGroupId != null &&
+        _chatBloc!.state.groupId == _managedGroupId) {
+      if (_tabController?.index == 1) {
+        _chatBloc!.add(const ChatMarkAsRead());
+      }
+      _chatBloc!.add(const ChatDispose());
     }
-    // 清理 ChatBloc（取消訂閱）
-    context.read<ChatBloc>().add(const ChatDispose());
     _tabController?.removeListener(_onTabChanged);
     _tabController?.dispose();
     super.dispose();

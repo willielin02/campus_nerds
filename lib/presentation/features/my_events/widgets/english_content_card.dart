@@ -99,28 +99,29 @@ class EnglishContentCard extends StatelessWidget {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // English content (large font)
+                        // English content
                         Text(
                           canViewContent
                               ? assignment.contentEn!
                               : '???',
-                          style: textTheme.titleMedium?.copyWith(
+                          style: textTheme.bodyLarge?.copyWith(
                             fontFamily: fontFamily,
                             color: assignment.isMe
-                                ? null
+                                ? colors.primaryText
                                 : colors.secondaryText,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        // Chinese translation (small font)
+                        // Chinese translation
                         Text(
                           canViewContent
                               ? (assignment.contentZh ?? '')
                               : '???',
-                          style: textTheme.bodyMedium?.copyWith(
+                          style: textTheme.bodyLarge?.copyWith(
                             fontFamily: fontFamily,
-                            color: accentColor,
+                            color: assignment.isMe
+                                ? colors.secondaryText
+                                : colors.tertiaryText,
                           ),
                         ),
                       ],

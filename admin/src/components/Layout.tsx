@@ -40,13 +40,24 @@ const navItems = [
   { to: '/orders', label: '訂單查看', icon: CreditCardIcon },
 ]
 
+const isProd = import.meta.env.VITE_SUPABASE_URL?.includes('nvnbqkboovavnvohbcpy')
+
 export default function Layout() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
       <aside className="w-56 bg-secondary border-r-2 border-tertiary flex flex-col shrink-0">
         <div className="px-5 py-5 border-b-2 border-tertiary">
-          <h1 className="text-base font-semibold text-primary-text">Campus Nerds</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-base font-semibold text-primary-text">Campus Nerds</h1>
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+              isProd
+                ? 'bg-red-900/30 text-red-400 border border-red-800/50'
+                : 'bg-emerald-900/30 text-emerald-400 border border-emerald-800/50'
+            }`}>
+              {isProd ? 'PROD' : 'DEV'}
+            </span>
+          </div>
           <p className="text-xs text-tertiary-text mt-0.5">Admin Dashboard</p>
         </div>
         <nav className="flex-1 py-3">

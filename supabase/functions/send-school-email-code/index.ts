@@ -58,19 +58,16 @@ serve(async (req)=>{
     }, 405);
   }
   try {
-    // 先看 Authorization header 實際長怎樣
-    console.log("AUTH HEADER:", req.headers.get("Authorization") || "<none>");
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.replace("Bearer ", "");
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: {
-        headers: {
-          Authorization: req.headers.get("Authorization") ?? ""
-        }
+        headers: { Authorization: authHeader }
       }
     });
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    console.log("AUTH ERROR:", authError);
-    console.log("AUTH DATA:", authData);
+    const { data: authData, error: authError } = await supabase.auth.getUser(token);
     if (authError || !authData?.user) {
+      console.error("AUTH ERROR:", authError);
       return jsonResponse({
         error: "Unauthorized"
       }, 401);
@@ -81,7 +78,6 @@ serve(async (req)=>{
       console.error("JSON PARSE ERROR:", err);
       return {};
     });
-    console.log("RAW BODY:", body);
     let { school_email } = body;
     if (!school_email) {
       // 這裡把 body 整個印出來，確認到底收到什麼

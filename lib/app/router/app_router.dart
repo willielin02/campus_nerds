@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_theme.dart';
 import '../../domain/entities/event.dart';
+import '../../presentation/features/my_events/bloc/bloc.dart';
 import '../../presentation/features/account/pages/account_page.dart';
 import '../../presentation/features/auth/pages/login_page.dart';
 import '../../presentation/features/checkout/pages/checkout_page.dart';
@@ -341,45 +345,148 @@ class AppRouter {
 }
 
 /// Main shell with bottom navigation
-class _MainShell extends StatelessWidget {
+class _MainShell extends StatefulWidget {
   const _MainShell({required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
+  State<_MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<_MainShell>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+  late Animation<Offset> _offsetAnimation;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    )..value = 1.0;
+    _offsetAnimation = _buildOffsetAnimation(true);
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
+
+    // 預先載入 MyEvents 資料（含未讀訊息數）以供 navbar badge 使用
+    final bloc = context.read<MyEventsBloc>();
+    if (bloc.state.status == MyEventsStatus.initial) {
+      bloc.add(const MyEventsLoadData());
+    }
+  }
+
+  Animation<Offset> _buildOffsetAnimation(bool isForward) {
+    return Tween<Offset>(
+      begin: Offset(isForward ? 0.25 : -0.25, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _MainShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldIndex = oldWidget.navigationShell.currentIndex;
+    final newIndex = widget.navigationShell.currentIndex;
+    if (oldIndex != newIndex) {
+      _offsetAnimation = _buildOffsetAnimation(newIndex > oldIndex);
+      _animController.forward(from: 0.0);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFFEEEEF1),
-        selectedItemColor: const Color(0xFF57636C),
-        unselectedItemColor: const Color(0xFFDBDBDD),
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
+    return BlocSelector<MyEventsBloc, MyEventsState, int>(
+      selector: (state) => state.totalUnreadMessageCount,
+      builder: (context, unreadCount) {
+        return Scaffold(
+          body: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _offsetAnimation,
+              child: widget.navigationShell,
+            ),
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: const Color(0xFFEEEEF1),
+            selectedItemColor: const Color(0xFF57636C),
+            unselectedItemColor: const Color(0xFFDBDBDD),
+            currentIndex: widget.navigationShell.currentIndex,
+            onTap: (index) => widget.navigationShell.goBranch(
+              index,
+              initialLocation: index == widget.navigationShell.currentIndex,
+            ),
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            items: [
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined, size: 32),
+                activeIcon: Icon(Icons.home, size: 32),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: _buildMyEventsIcon(Icons.event_outlined, unreadCount),
+                activeIcon: _buildMyEventsIcon(Icons.event, unreadCount),
+                label: '',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.person_outlined, size: 32),
+                activeIcon: Icon(Icons.person, size: 32),
+                label: '',
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// 建立 MyEvents 圖示，含未讀訊息 badge
+  Widget _buildMyEventsIcon(IconData iconData, int unreadCount) {
+    if (unreadCount <= 0) return Icon(iconData, size: 32);
+
+    final colors = context.appColors;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(iconData, size: 32),
+        Positioned(
+          top: -6,
+          right: -8,
+          child: Container(
+            constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: colors.tertiaryText,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              unreadCount > 99 ? '99+' : '$unreadCount',
+              style: TextStyle(
+                fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                color: colors.secondaryBackground,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined, size: 32),
-            activeIcon: Icon(Icons.home, size: 32),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event_outlined, size: 32),
-            activeIcon: Icon(Icons.event, size: 32),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outlined, size: 32),
-            activeIcon: Icon(Icons.person, size: 32),
-            label: '',
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

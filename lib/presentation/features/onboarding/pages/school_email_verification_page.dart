@@ -22,16 +22,33 @@ class SchoolEmailVerificationPage extends StatefulWidget {
 }
 
 class _SchoolEmailVerificationPageState
-    extends State<SchoolEmailVerificationPage> {
+    extends State<SchoolEmailVerificationPage>
+    with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _codeController = TextEditingController();
   final _emailFocusNode = FocusNode();
   final _codeFocusNode = FocusNode();
 
   bool _isExpanded = false;
+  late final AnimationController _expandController;
+  late final Animation<double> _expandAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandController = AnimationController(
+      duration: const Duration(milliseconds: 350),
+      vsync: this,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.easeOutCubic,
+    );
+  }
 
   @override
   void dispose() {
+    _expandController.dispose();
     _emailController.dispose();
     _codeController.dispose();
     _emailFocusNode.dispose();
@@ -96,6 +113,7 @@ class _SchoolEmailVerificationPageState
         // Update expanded state when code is sent
         if (state.isCodeSent && !_isExpanded) {
           setState(() => _isExpanded = true);
+          _expandController.forward();
         }
       },
       child: GestureDetector(
@@ -230,8 +248,15 @@ class _SchoolEmailVerificationPageState
                           // Email field section
                           _buildEmailSection(colors, textTheme),
 
-                          // Code field section (shown when expanded)
-                          if (_isExpanded) _buildCodeSection(colors, textTheme),
+                          // Code field section (animated expand)
+                          SizeTransition(
+                            sizeFactor: _expandAnimation,
+                            axisAlignment: -1.0,
+                            child: FadeTransition(
+                              opacity: _expandAnimation,
+                              child: _buildCodeSection(colors, textTheme),
+                            ),
+                          ),
                               ],
                             ),
                           ),

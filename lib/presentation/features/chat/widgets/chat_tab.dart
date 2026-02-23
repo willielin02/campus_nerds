@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
-import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/booking.dart';
 import '../bloc/bloc.dart';
@@ -31,16 +30,13 @@ class _ChatTabState extends State<ChatTab>
   @override
   void initState() {
     super.initState();
-    if (widget.event.groupId != null && widget.event.isChatOpen) {
-      NotificationService.instance.setActiveGroupId(widget.event.groupId);
-      // ChatInitialize 已由 EventDetailsPage._initTabController 負責
-    }
+    // ChatInitialize 已由 EventDetailsPage._initTabController 負責
+    // setActiveGroupId 已由 EventDetailsPage._onTabChanged 負責
   }
 
   @override
   void dispose() {
-    NotificationService.instance.setActiveGroupId(null);
-    // ChatDispose 由 EventDetailsPage.dispose 負責，這裡不呼叫
+    // ChatDispose 與 setActiveGroupId 均由 EventDetailsPage 負責
     super.dispose();
   }
 

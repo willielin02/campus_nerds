@@ -8,6 +8,9 @@ abstract class NotificationRepository {
   /// Mark a notification as read
   Future<void> markAsRead(String notificationId);
 
+  /// Mark all notifications of a given type for a group as read
+  Future<void> markGroupNotificationsAsRead(String groupId, {String type = 'chat_open'});
+
   /// Register a device token for push notifications
   Future<void> registerDeviceToken({
     required String token,
