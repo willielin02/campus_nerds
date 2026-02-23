@@ -116,16 +116,34 @@ Deno.serve(async (req) => {
 
     const senderName = `書呆子 ${sender?.nickname || ""}`;
 
-    // 2. Get all group members' user_ids (via bookings)
+    // 2. Get event info from group (for FCM data routing)
+    const { data: group } = await supabase
+      .from("groups")
+      .select("event_id, events(category)")
+      .eq("id", group_id)
+      .single();
+
+    const eventId = group?.event_id ?? "";
+    const category = (group?.events as any)?.category ?? "";
+
+    // 3. Get all group members with their booking_ids and user_ids
     const { data: members } = await supabase
       .from("group_members")
-      .select("bookings(user_id)")
+      .select("bookings(id, user_id)")
       .eq("group_id", group_id)
       .is("left_at", null);
 
-    const recipientUserIds = (members ?? [])
-      .map((m: any) => m.bookings?.user_id)
-      .filter((uid: string | null) => uid && uid !== sender_user_id);
+    // Build a map of user_id → booking_id for per-recipient data
+    const userBookingMap = new Map<string, string>();
+    const recipientUserIds: string[] = [];
+    for (const m of members ?? []) {
+      const uid = (m as any).bookings?.user_id;
+      const bid = (m as any).bookings?.id;
+      if (uid && uid !== sender_user_id) {
+        recipientUserIds.push(uid);
+        if (bid) userBookingMap.set(uid, bid);
+      }
+    }
 
     if (recipientUserIds.length === 0) {
       return new Response(JSON.stringify({ success: true, sent: 0 }), {
@@ -133,10 +151,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 3. Get FCM tokens for recipients
+    // 4. Get FCM tokens for recipients
     const { data: deviceTokens } = await supabase
       .from("device_tokens")
-      .select("id, token")
+      .select("id, user_id, token")
       .in("user_id", recipientUserIds);
 
     if (!deviceTokens || deviceTokens.length === 0) {
@@ -145,7 +163,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4. Get Firebase credentials and send FCM
+    // 5. Get Firebase credentials and send FCM
     const firebaseSaJson = Deno.env.get("FIREBASE_SERVICE_ACCOUNT");
     if (!firebaseSaJson) {
       console.warn("No FIREBASE_SERVICE_ACCOUNT secret. Skipping.");
@@ -163,17 +181,22 @@ Deno.serve(async (req) => {
         ? content.substring(0, 100) + "..."
         : content || "";
 
-    const data: Record<string, string> = {
-      type: "chat_message",
-      group_id,
-    };
-    if (message_id) data.message_id = message_id;
-
     let sentCount = 0;
     const invalidTokenIds: string[] = [];
 
     await Promise.all(
-      deviceTokens.map(async ({ id, token }: { id: string; token: string }) => {
+      deviceTokens.map(async ({ id, user_id, token }: { id: string; user_id: string; token: string }) => {
+        // Per-recipient FCM data with event context for navigation
+        const data: Record<string, string> = {
+          type: "chat_message",
+          group_id,
+          event_id: eventId,
+          category,
+        };
+        if (message_id) data.message_id = message_id;
+        const bookingId = userBookingMap.get(user_id);
+        if (bookingId) data.booking_id = bookingId;
+
         const success = await sendFcmMessage(
           accessToken,
           token,
@@ -189,7 +212,7 @@ Deno.serve(async (req) => {
       })
     );
 
-    // 5. Remove invalid tokens
+    // 6. Remove invalid tokens
     if (invalidTokenIds.length > 0) {
       await supabase.from("device_tokens").delete().in("id", invalidTokenIds);
       console.log(`Removed ${invalidTokenIds.length} invalid device tokens`);
