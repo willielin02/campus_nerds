@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { getAdminEnv, switchAdminEnv } from '../lib/supabase'
 
 // Low-saturation SVG icons matching Flutter app style
 const CalendarIcon = () => (
@@ -40,9 +41,18 @@ const navItems = [
   { to: '/orders', label: '訂單查看', icon: CreditCardIcon },
 ]
 
-const isProd = import.meta.env.VITE_SUPABASE_URL?.includes('nvnbqkboovavnvohbcpy')
+const currentEnv = getAdminEnv()
+const isProd = currentEnv === 'prod'
 
 export default function Layout() {
+  const handleEnvSwitch = () => {
+    const targetEnv = isProd ? 'dev' : 'prod'
+    const label = targetEnv === 'prod' ? 'PROD（正式環境）' : 'DEV（開發環境）'
+    if (window.confirm(`確定要切換到 ${label} 嗎？`)) {
+      switchAdminEnv(targetEnv)
+    }
+  }
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
@@ -50,13 +60,17 @@ export default function Layout() {
         <div className="px-5 py-5 border-b-2 border-tertiary">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-semibold text-primary-text">Campus Nerds</h1>
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-              isProd
-                ? 'bg-red-900/30 text-red-400 border border-red-800/50'
-                : 'bg-emerald-900/30 text-emerald-400 border border-emerald-800/50'
-            }`}>
+            <button
+              onClick={handleEnvSwitch}
+              title={`點擊切換到 ${isProd ? 'DEV' : 'PROD'} 環境`}
+              className={`text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer transition-opacity hover:opacity-80 ${
+                isProd
+                  ? 'bg-red-900/30 text-red-400 border border-red-800/50'
+                  : 'bg-emerald-900/30 text-emerald-400 border border-emerald-800/50'
+              }`}
+            >
               {isProd ? 'PROD' : 'DEV'}
-            </span>
+            </button>
           </div>
           <p className="text-xs text-tertiary-text mt-0.5">Admin Dashboard</p>
         </div>

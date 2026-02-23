@@ -1,10 +1,37 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseServiceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY as string
+const ENV_KEY = 'admin_env'
+
+export type AdminEnv = 'dev' | 'prod'
+
+export function getAdminEnv(): AdminEnv {
+  try {
+    return (localStorage.getItem(ENV_KEY) as AdminEnv) || 'dev'
+  } catch {
+    return 'dev'
+  }
+}
+
+export function switchAdminEnv(env: AdminEnv) {
+  localStorage.setItem(ENV_KEY, env)
+  window.location.reload()
+}
+
+const env = getAdminEnv()
+
+const supabaseUrl = env === 'prod'
+  ? import.meta.env.VITE_PROD_SUPABASE_URL as string
+  : import.meta.env.VITE_DEV_SUPABASE_URL as string
+
+const supabaseServiceRoleKey = env === 'prod'
+  ? import.meta.env.VITE_PROD_SUPABASE_SERVICE_ROLE_KEY as string
+  : import.meta.env.VITE_DEV_SUPABASE_SERVICE_ROLE_KEY as string
 
 if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_SERVICE_ROLE_KEY')
+  throw new Error(
+    `Missing Supabase credentials for ${env} environment. ` +
+    `Check VITE_${env.toUpperCase()}_SUPABASE_URL and VITE_${env.toUpperCase()}_SUPABASE_SERVICE_ROLE_KEY`
+  )
 }
 
 export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
