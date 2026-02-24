@@ -54,116 +54,114 @@ class _AccountPageState extends State<AccountPage> {
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Top section
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Profile card
-                        _buildProfileCard(colors, textTheme, state.profile),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Profile card
+                      _buildProfileCard(colors, textTheme, state.profile),
 
-                        // 帳號設定 section header
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Text(
-                            '帳號設定',
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: colors.primaryText,
-                            ),
+                      // 帳號設定 section header
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                          '帳號設定',
+                          style: textTheme.bodyLarge?.copyWith(
+                            color: colors.primaryText,
                           ),
-                        ),
-
-                        // Account settings container
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: _buildSettingsContainer(
-                            colors,
-                            textTheme,
-                            [
-                              _SettingsItem(
-                                icon: Icons.email_rounded,
-                                title: '學校信箱驗證',
-                                onTap: () {
-                                  context.push(AppRoutes.schoolEmailVerification);
-                                },
-                              ),
-                              _SettingsItem(
-                                icon: Icons.confirmation_number_outlined,
-                                title: '票券紀錄',
-                                onTap: () {
-                                  context.push(AppRoutes.ticketHistory);
-                                },
-                              ),
-                              _SettingsItem(
-                                icon: Icons.facebook_rounded,
-                                title: '臉書綁定',
-                                onTap: () {
-                                  context.push(AppRoutes.facebookBinding);
-                                },
-                                isLast: true,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // 幫助 section header
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Text(
-                            '幫助',
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: colors.primaryText,
-                            ),
-                          ),
-                        ),
-
-                        // Help container
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: _buildSettingsContainer(
-                            colors,
-                            textTheme,
-                            [
-                              _SettingsItem(
-                                icon: Icons.question_mark_rounded,
-                                title: '常見問題與使用說明',
-                                onTap: () {
-                                  context.push(AppRoutes.faq);
-                                },
-                              ),
-                              _SettingsItem(
-                                icon: Icons.contact_mail_rounded,
-                                title: '聯絡客服',
-                                onTap: () {
-                                  context.push(AppRoutes.contactSupport);
-                                },
-                                isLast: true,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Logout container
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: _buildLogoutContainer(colors, textTheme, state),
-                        ),
-                      ],
-                    ),
-
-                    // Bottom section - Version
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        'v1.0.3 (103)',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colors.quaternary,
                         ),
                       ),
-                    ),
-                  ],
+
+                      // Account settings container
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: _buildSettingsContainer(
+                          colors,
+                          textTheme,
+                          [
+                            _SettingsItem(
+                              icon: Icons.email_rounded,
+                              title: '學校信箱驗證',
+                              onTap: () {
+                                context.push(AppRoutes.schoolEmailVerification);
+                              },
+                            ),
+                            _SettingsItem(
+                              icon: Icons.confirmation_number_outlined,
+                              title: '票券紀錄',
+                              onTap: () {
+                                context.push(AppRoutes.ticketHistory);
+                              },
+                            ),
+                            _SettingsItem(
+                              icon: Icons.facebook_rounded,
+                              title: '臉書綁定',
+                              onTap: () {
+                                context.push(AppRoutes.facebookBinding);
+                              },
+                              isLast: true,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // 幫助 section header
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                          '幫助',
+                          style: textTheme.bodyLarge?.copyWith(
+                            color: colors.primaryText,
+                          ),
+                        ),
+                      ),
+
+                      // Help container
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: _buildSettingsContainer(
+                          colors,
+                          textTheme,
+                          [
+                            _SettingsItem(
+                              icon: Icons.question_mark_rounded,
+                              title: '常見問題與使用說明',
+                              onTap: () {
+                                context.push(AppRoutes.faq);
+                              },
+                            ),
+                            _SettingsItem(
+                              icon: Icons.contact_mail_rounded,
+                              title: '聯絡客服',
+                              onTap: () {
+                                context.push(AppRoutes.contactSupport);
+                              },
+                              isLast: true,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Logout container
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: _buildLogoutContainer(colors, textTheme, state),
+                      ),
+
+                      // Version
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Center(
+                          child: Text(
+                            'v1.0.3 (103)',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colors.quaternary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

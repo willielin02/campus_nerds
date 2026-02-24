@@ -181,7 +181,7 @@ class _StudyBookingConfirmationPageState
             children: [
               Text(
                 'Focused Study',
-                style: textTheme.titleLarge?.copyWith(
+                style: textTheme.titleMedium?.copyWith(
                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                 ),
               ),
@@ -189,7 +189,7 @@ class _StudyBookingConfirmationPageState
                 padding: const EdgeInsets.only(left: 4),
                 child: Text(
                   ' ( ${state.selectedCityName} )',
-                  style: textTheme.labelMedium?.copyWith(
+                  style: textTheme.bodyLarge?.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   ),
                 ),
@@ -215,7 +215,7 @@ class _StudyBookingConfirmationPageState
         children: [
           Text(
             '和其他書呆子一起',
-            style: textTheme.titleMedium?.copyWith(
+            style: textTheme.labelLarge?.copyWith(
               fontFamily: GoogleFonts.notoSansTc().fontFamily,
             ),
           ),
@@ -264,7 +264,8 @@ class _StudyBookingConfirmationPageState
                         padding: const EdgeInsets.only(right: 6),
                         child: Text(
                           '${state.ticketBalance.studyBalance}',
-                          style: textTheme.labelLarge?.copyWith(
+                          style: textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             color: colors.secondaryText,
                           ),
@@ -291,7 +292,7 @@ class _StudyBookingConfirmationPageState
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               '交出手機，全程專注學習',
-              style: textTheme.titleMedium?.copyWith(
+              style: textTheme.labelLarge?.copyWith(
                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
               ),
             ),
@@ -328,7 +329,7 @@ class _StudyBookingConfirmationPageState
               children: [
                 Text(
                   '時間：',
-                  style: textTheme.labelMedium?.copyWith(
+                  style: textTheme.bodyLarge?.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   ),
                 ),
@@ -336,7 +337,8 @@ class _StudyBookingConfirmationPageState
                   padding: const EdgeInsets.only(left: 4),
                   child: Text(
                     dateString,
-                    style: textTheme.labelLarge?.copyWith(
+                    style: textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
                   ),
@@ -345,7 +347,8 @@ class _StudyBookingConfirmationPageState
                   padding: const EdgeInsets.only(left: 8),
                   child: Text(
                     timeSlotText,
-                    style: textTheme.labelLarge?.copyWith(
+                    style: textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
                   ),
@@ -360,7 +363,7 @@ class _StudyBookingConfirmationPageState
                 children: [
                   Text(
                     '地點：',
-                    style: textTheme.labelMedium?.copyWith(
+                    style: textTheme.bodyLarge?.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
                   ),
@@ -371,7 +374,8 @@ class _StudyBookingConfirmationPageState
                         padding: const EdgeInsets.only(left: 4),
                         child: Text(
                           _getLocationDisplay(widget.event.locationDetail),
-                          style: textTheme.labelLarge?.copyWith(
+                          style: textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
@@ -411,7 +415,7 @@ class _StudyBookingConfirmationPageState
                 children: [
                   Text(
                     '活動流程',
-                    style: textTheme.titleMedium?.copyWith(
+                    style: textTheme.labelLarge?.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
                   ),
@@ -459,10 +463,12 @@ class _StudyBookingConfirmationPageState
     final parts = text.split('\n');
     final title = parts[0];
     final body = parts.length > 1 ? parts.sublist(1).join('\n') : '';
-    final titleStyle = textTheme.labelLarge?.copyWith(
+    final titleStyle = textTheme.bodyLarge?.copyWith(
+      fontWeight: FontWeight.w600,
       fontFamily: GoogleFonts.notoSansTc().fontFamily,
     );
     final bodyStyle = textTheme.bodyLarge?.copyWith(
+      fontSize: 16.0,
       fontFamily: GoogleFonts.notoSansTc().fontFamily,
     );
 
@@ -491,7 +497,7 @@ class _StudyBookingConfirmationPageState
             children: [
               Text(
                 '報名前小提醒',
-                style: textTheme.bodyMedium?.copyWith(
+                style: textTheme.bodySmall?.copyWith(
                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                 ),
               ),
@@ -526,7 +532,7 @@ class _StudyBookingConfirmationPageState
         children: [
           Text(
             '‧',
-            style: textTheme.bodyMedium?.copyWith(
+            style: textTheme.bodySmall?.copyWith(
               fontFamily: GoogleFonts.notoSansTc().fontFamily,
             ),
           ),
@@ -535,7 +541,7 @@ class _StudyBookingConfirmationPageState
               decoration: const BoxDecoration(),
               child: Text(
                 text,
-                style: textTheme.bodyMedium?.copyWith(
+                style: textTheme.bodySmall?.copyWith(
                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                 ),
               ),
@@ -746,7 +752,8 @@ class _StudyBookingConfirmationPageState
                 )
               : Text(
                   '確認報名',
-                  style: textTheme.labelLarge?.copyWith(
+                  style: textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
                     color: colors.primaryText,
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   ),

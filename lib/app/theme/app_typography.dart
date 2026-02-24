@@ -105,6 +105,14 @@ class AppTypography {
         fontSize: 18.0,
       );
 
+  /// 16px body text — 介於 bodyLarge (18) 和 bodyMedium (14) 之間
+  /// 用法：context.appTypography.bodyBig
+  TextStyle get bodyBig => GoogleFonts.notoSansTc(
+        color: colors.primaryText,
+        fontWeight: FontWeight.normal,
+        fontSize: 16.0,
+      );
+
   TextStyle get bodyMedium => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.normal,
