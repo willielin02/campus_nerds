@@ -65,7 +65,7 @@ export default function Layout() {
               title={`點擊切換到 ${isProd ? 'DEV' : 'PROD'} 環境`}
               className={`text-[11px] font-bold px-2 py-0.5 rounded cursor-pointer transition-opacity hover:opacity-80 ${
                 isProd
-                  ? 'bg-tertiary-text text-white'
+                  ? 'bg-secondary-text text-white'
                   : 'bg-emerald-600 text-white'
               }`}
             >
