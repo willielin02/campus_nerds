@@ -63,10 +63,10 @@ export default function Layout() {
             <button
               onClick={handleEnvSwitch}
               title={`點擊切換到 ${isProd ? 'DEV' : 'PROD'} 環境`}
-              className={`text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer transition-opacity hover:opacity-80 ${
+              className={`text-[11px] font-bold px-2 py-0.5 rounded cursor-pointer transition-opacity hover:opacity-80 ${
                 isProd
-                  ? 'bg-red-900/30 text-red-400 border border-red-800/50'
-                  : 'bg-emerald-900/30 text-emerald-400 border border-emerald-800/50'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-emerald-600 text-white'
               }`}
             >
               {isProd ? 'PROD' : 'DEV'}
