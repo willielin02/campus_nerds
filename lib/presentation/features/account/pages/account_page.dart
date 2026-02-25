@@ -83,7 +83,14 @@ class _AccountPageState extends State<AccountPage> {
                               icon: Icons.email_rounded,
                               title: '學校信箱驗證',
                               onTap: () {
-                                context.push(AppRoutes.schoolEmailVerification);
+                                final profile = state.profile;
+                                if (profile != null &&
+                                    profile.isSchoolEmailVerified) {
+                                  context.push(AppRoutes.schoolEmailInfo);
+                                } else {
+                                  context
+                                      .push(AppRoutes.schoolEmailVerification);
+                                }
                               },
                             ),
                             _SettingsItem(

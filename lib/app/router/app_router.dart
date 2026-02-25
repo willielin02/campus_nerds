@@ -18,6 +18,7 @@ import '../../presentation/features/onboarding/pages/basic_info_page.dart';
 import '../../presentation/features/onboarding/pages/school_email_verification_page.dart';
 import '../../presentation/features/ticket_history/pages/ticket_history_page.dart';
 import '../../presentation/features/facebook_binding/pages/facebook_binding_page.dart';
+import '../../presentation/features/account/pages/school_email_info_page.dart';
 import '../../presentation/features/account/pages/contact_support_page.dart';
 import '../../presentation/features/account/pages/faq_page.dart';
 import 'app_routes.dart';
@@ -316,6 +317,14 @@ class AppRouter {
           name: AppRouteNames.ticketHistory,
           parentNavigatorKey: appNavigatorKey,
           builder: (context, state) => const TicketHistoryPage(),
+        ),
+
+        // School Email Info route (use root navigator - no navbar)
+        GoRoute(
+          path: AppRoutes.schoolEmailInfo,
+          name: AppRouteNames.schoolEmailInfo,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) => const SchoolEmailInfoPage(),
         ),
 
         // Facebook Binding route (use root navigator - no navbar)

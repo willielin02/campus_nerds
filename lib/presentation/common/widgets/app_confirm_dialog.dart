@@ -104,18 +104,16 @@ class AppConfirmDialog extends StatelessWidget {
             ),
             // Message
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: 16),
               child: messageWidget ??
                   Text(
                     message,
-                    style: textTheme.bodyLarge?.copyWith(
-                      fontFamily: fontFamily,
-                    ),
+                    style: context.appTypography.bodyBig,
                   ),
             ),
             // Buttons row
             Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              padding: const EdgeInsets.only(top: 24, bottom: 16),
               child: Row(
                 children: [
                   // Cancel button

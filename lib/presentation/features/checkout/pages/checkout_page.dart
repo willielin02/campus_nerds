@@ -9,6 +9,7 @@ import '../../../../app/theme/app_theme.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../domain/entities/checkout.dart';
 import '../../../common/widgets/app_alert_dialog.dart';
+import '../../../common/widgets/app_confirm_dialog.dart';
 import '../bloc/bloc.dart';
 
 /// Checkout page for purchasing tickets
@@ -67,13 +68,14 @@ class _CheckoutPageState extends State<CheckoutPage>
 
     _isPurchasing = true;
     try {
-      await showAppAlertDialog(
+      final confirmed = await showAppConfirmDialog(
         context: context,
         title: '即將前往綠界付款頁面',
         message: '我們不會儲存您的信用卡資料，所有支付都透過「綠界科技 ECPay」完成。',
+        confirmText: '前往付款',
       );
 
-      if (mounted) {
+      if (confirmed == true && mounted) {
         context.read<CheckoutBloc>().add(CheckoutCreateOrder(product.id));
       }
     } finally {
@@ -201,72 +203,50 @@ class _CheckoutPageState extends State<CheckoutPage>
     CheckoutState state,
   ) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Hero image
-        Padding(
-          padding: const EdgeInsets.fromLTRB(48, 8, 48, 0),
-          child: Image.asset(
-            'assets/images/Photoroom3.png',
-            width: double.infinity,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const SizedBox(height: 100),
-          ),
-        ),
-        // Tab section
+        // Hero image — remaining space distributed above & below
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 24),
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: colors.primaryBackground,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        // TabBar
-                        Align(
-                          alignment: Alignment.center,
-                          child: TabBar(
-                            controller: _tabController,
-                            labelColor: colors.primaryText,
-                            unselectedLabelColor: colors.tertiary,
-                            labelStyle: textTheme.labelLarge?.copyWith(
-                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                            ),
-                            unselectedLabelStyle: textTheme.bodyLarge?.copyWith(
-                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                            ),
-                            indicatorColor: colors.secondaryText,
-                            dividerColor: Colors.transparent,
-                            tabs: const [
-                              Tab(text: 'Focused Study'),
-                              Tab(text: 'English Games'),
-                            ],
-                          ),
-                        ),
-                        // TabBarView
-                        Expanded(
-                          child: TabBarView(
-                            controller: _tabController,
-                            children: [
-                              _buildStudyTab(colors, textTheme, state),
-                              _buildGamesTab(colors, textTheme, state),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 56),
+              child: Image.asset(
+                'assets/images/Photoroom3.png',
+                width: double.infinity,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const SizedBox(height: 100),
               ),
             ),
+          ),
+        ),
+        // TabBar
+        TabBar(
+          controller: _tabController,
+          labelColor: colors.primaryText,
+          unselectedLabelColor: colors.tertiary,
+          labelStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+          ),
+          unselectedLabelStyle: textTheme.bodyLarge?.copyWith(
+            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+          ),
+          indicatorColor: colors.secondaryText,
+          dividerColor: Colors.transparent,
+          tabs: const [
+            Tab(text: 'Focused Study'),
+            Tab(text: 'English Games'),
+          ],
+        ),
+        // TabBarView — 固定高度（依內容精確計算），剩餘空間由上方圖片 Expanded 吸收
+        // 64(header row) + 52(description) + 199(product cards) + 137(purchase btn) ≈ 452 + 10 buffer
+        SizedBox(
+          height: 462,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildStudyTab(colors, textTheme, state),
+              _buildGamesTab(colors, textTheme, state),
+            ],
           ),
         ),
       ],
@@ -332,18 +312,16 @@ class _CheckoutPageState extends State<CheckoutPage>
               ),
             ),
             // Product cards
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 32),
-                child: _buildProductCards(
-                  colors,
-                  textTheme,
-                  state.studyProducts,
-                  state.selectedStudyIndex,
-                  (index) => context
-                      .read<CheckoutBloc>()
-                      .add(CheckoutSelectStudyProduct(index)),
-                ),
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: _buildProductCards(
+                colors,
+                textTheme,
+                state.studyProducts,
+                state.selectedStudyIndex,
+                (index) => context
+                    .read<CheckoutBloc>()
+                    .add(CheckoutSelectStudyProduct(index)),
               ),
             ),
             // Purchase button
@@ -419,18 +397,16 @@ class _CheckoutPageState extends State<CheckoutPage>
               ),
             ),
             // Product cards
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 32),
-                child: _buildProductCards(
-                  colors,
-                  textTheme,
-                  state.gamesProducts,
-                  state.selectedGamesIndex,
-                  (index) => context
-                      .read<CheckoutBloc>()
-                      .add(CheckoutSelectGamesProduct(index)),
-                ),
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: _buildProductCards(
+                colors,
+                textTheme,
+                state.gamesProducts,
+                state.selectedGamesIndex,
+                (index) => context
+                    .read<CheckoutBloc>()
+                    .add(CheckoutSelectGamesProduct(index)),
               ),
             ),
             // Purchase button
@@ -519,117 +495,93 @@ class _CheckoutPageState extends State<CheckoutPage>
       );
     }
 
-    return Row(
-      children: products.asMap().entries.map((entry) {
-        final index = entry.key;
-        final product = entry.value;
-        final isSelected = index == selectedIndex;
-        final isFirst = index == 0;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: products.asMap().entries.map((entry) {
+          final index = entry.key;
+          final product = entry.value;
+          final isSelected = index == selectedIndex;
+          final isFirst = index == 0;
 
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: index == 0 ? 0 : 2,
-              right: index == products.length - 1 ? 0 : 2,
-            ),
-            child: InkWell(
-              onTap: () => onSelect(index),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colors.secondaryBackground
-                      : colors.primaryBackground,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
+          return Expanded(
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              padding: EdgeInsets.all(isSelected ? 0 : 6),
+              child: InkWell(
+                onTap: () => onSelect(index),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  decoration: BoxDecoration(
                     color: isSelected
-                        ? colors.tertiaryText
-                        : colors.quaternary,
-                    width: isSelected ? 2 : 1.2,
+                        ? colors.secondaryBackground
+                        : colors.primaryBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? colors.tertiaryText
+                          : colors.quaternary,
+                      width: isSelected ? 2 : 1.2,
+                    ),
                   ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Label
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: const BoxDecoration(),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              isFirst
-                                  ? '探索'
-                                  : '節省${product.percentOff}%',
-                              style: textTheme.bodyMedium?.copyWith(
-                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                                color: isSelected
-                                    ? colors.primaryText
-                                    : colors.secondaryText,
-                              ),
-                            ),
-                          ],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Label
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          isFirst
+                              ? '探索'
+                              : '節省${product.percentOff}%',
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            color: isSelected
+                                ? colors.primaryText
+                                : colors.secondaryText,
+                          ),
                         ),
                       ),
-                    ),
-                    // Divider
-                    Divider(
-                      thickness: isSelected ? 2.2 : 2,
-                      color: isSelected ? colors.quaternary : colors.tertiary,
-                    ),
-                    // Pack size
-                    Flexible(
-                      flex: 3,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: const BoxDecoration(),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${product.packSize}張票',
-                              style: textTheme.labelMedium?.copyWith(
-                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                                color: isSelected
-                                    ? colors.primaryText
-                                    : colors.secondaryText,
-                              ),
-                            ),
-                          ],
+                      // Divider
+                      Divider(
+                        thickness: isSelected ? 2.2 : 2,
+                        color: isSelected ? colors.quaternary : colors.tertiary,
+                      ),
+                      // Pack size
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          '${product.packSize}張票',
+                          style: textTheme.labelMedium?.copyWith(
+                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            color: isSelected
+                                ? colors.primaryText
+                                : colors.secondaryText,
+                          ),
                         ),
                       ),
-                    ),
-                    // Unit price
-                    Flexible(
-                      flex: 2,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: const BoxDecoration(),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'NT\$${product.unitPriceTwd ?? product.priceTwd ~/ product.packSize}/張',
-                              style: textTheme.bodyLarge?.copyWith(
-                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                                color: isSelected
-                                    ? colors.primaryText
-                                    : colors.secondaryText,
-                              ),
-                            ),
-                          ],
+                      // Unit price
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'NT\$${product.unitPriceTwd ?? product.priceTwd ~/ product.packSize}/張',
+                          style: context.appTypography.bodyBig.copyWith(
+                            color: isSelected
+                                ? colors.primaryText
+                                : colors.secondaryText,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -676,7 +628,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                     )
                   : Text(
                       '以 NT\$ ${selectedProduct.priceTwd} 購買 ${selectedProduct.packSize} 張票',
-                      style: textTheme.labelLarge?.copyWith(
+                      style: textTheme.bodyLarge?.copyWith(
                         fontFamily: GoogleFonts.notoSansTc().fontFamily,
                       ),
                     ),
@@ -685,7 +637,7 @@ class _CheckoutPageState extends State<CheckoutPage>
         ),
         // Ticket expiration notice
         Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+          padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
           child: Text(
             '票券效期：依最近一次購買日起 1 年內。',
             style: textTheme.bodyMedium?.copyWith(

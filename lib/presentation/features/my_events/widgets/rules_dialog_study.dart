@@ -80,7 +80,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
               children: [
                 Text(
                   '活動規則與流程',
-                  style: textTheme.titleMedium?.copyWith(
+                  style: textTheme.labelLarge?.copyWith(
                     fontFamily: fontFamily,
                   ),
                 ),
@@ -219,9 +219,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               description,
-              style: textTheme.bodyLarge?.copyWith(
-                fontFamily: fontFamily,
-              ),
+              style: context.appTypography.bodyBig,
             ),
           ),
         ],

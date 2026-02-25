@@ -26,6 +26,9 @@ abstract class AppRoutes {
   // Ticket History
   static const String ticketHistory = '/ticket-history';
 
+  // School Email Info
+  static const String schoolEmailInfo = '/school-email-info';
+
   // Facebook Binding
   static const String facebookBinding = '/facebook-binding';
 
@@ -51,6 +54,7 @@ abstract class AppRouteNames {
   static const String gamesBookingConfirmation = 'gamesBookingConfirmation';
   static const String checkout = 'checkout';
   static const String ticketHistory = 'ticketHistory';
+  static const String schoolEmailInfo = 'schoolEmailInfo';
   static const String facebookBinding = 'facebookBinding';
   static const String contactSupport = 'contactSupport';
   static const String faq = 'faq';

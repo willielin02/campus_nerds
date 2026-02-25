@@ -183,6 +183,8 @@ class _GamesBookingConfirmationPageState
                 'English Games',
                 style: textTheme.titleMedium?.copyWith(
                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
                 ),
               ),
               Padding(
@@ -208,7 +210,7 @@ class _GamesBookingConfirmationPageState
     HomeState state,
   ) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 16, 0, 0),
+      padding: const EdgeInsets.fromLTRB(12, 16, 0, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -284,12 +286,12 @@ class _GamesBookingConfirmationPageState
 
   Widget _buildDescriptionRow(TextTheme textTheme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 8, 16),
+      padding: const EdgeInsets.fromLTRB(0, 0, 12, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: const EdgeInsets.only(top: 8),
             child: Text(
               '封印中文，全程英文遊戲',
               style: textTheme.labelLarge?.copyWith(
@@ -393,7 +395,7 @@ class _GamesBookingConfirmationPageState
 
   Widget _buildRulesCard(AppColorsTheme colors, TextTheme textTheme) {
     return Padding(
-      padding: const EdgeInsets.only(top: 24),
+      padding: const EdgeInsets.only(top: 16),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -427,7 +429,7 @@ class _GamesBookingConfirmationPageState
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.only(top: 4, left: 4),
                   child: SingleChildScrollView(
                     controller: _columnController,
                     child: Column(
@@ -606,17 +608,13 @@ class _GamesBookingConfirmationPageState
                       children: [
                         Text(
                           '您將花費一張 Games 票券報名',
-                          style: textTheme.bodyLarge?.copyWith(
-                            fontFamily: fontFamily,
-                          ),
+                          style: context.appTypography.bodyBig,
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text.rich(
                             TextSpan(
-                              style: textTheme.bodyLarge?.copyWith(
-                                fontFamily: fontFamily,
-                              ),
+                              style: context.appTypography.bodyBig,
                               children: [
                                 TextSpan(text: '$dateStr English Games '),
                                 TextSpan(

@@ -123,6 +123,16 @@ serve(async (req)=>{
     if (activeRow && activeRow.user_id !== user.id) {
       return badRequest("此學校信箱已被其他帳號使用，請聯絡客服");
     }
+    // 停用該使用者目前啟用的其他信箱（確保一人一次只有一個啟用信箱）
+    const { error: deactivateError } = await supabase.from("user_school_emails").update({
+      is_active: false
+    }).eq("user_id", user.id).eq("is_active", true).neq("school_email", school_email);
+    if (deactivateError) {
+      console.error("deactivate old emails error", deactivateError);
+      return jsonResponse({
+        error: "Internal error"
+      }, 500);
+    }
     const verifiedAt = now.toISOString();
     const { data: upsertData, error: upsertError } = await supabase.from("user_school_emails").upsert({
       user_id: user.id,

@@ -93,12 +93,10 @@ class CancelBookingDialog extends StatelessWidget {
             ),
             // Description
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: 16),
               child: Text(
                 '您將取消本場活動的報名，並取回一張 $ticketTypeName 票券。',
-                style: textTheme.bodyLarge?.copyWith(
-                  fontFamily: fontFamily,
-                ),
+                style: context.appTypography.bodyBig,
               ),
             ),
             // Buttons row
@@ -108,7 +106,7 @@ class CancelBookingDialog extends StatelessWidget {
                 // "取消" button
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 16, 8, 16),
+                    padding: const EdgeInsets.fromLTRB(0, 24, 8, 16),
                     child: SizedBox(
                       height: 48,
                       child: ElevatedButton(
@@ -137,7 +135,7 @@ class CancelBookingDialog extends StatelessWidget {
                 // "確定" button
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 16, 8, 16),
+                    padding: const EdgeInsets.fromLTRB(0, 24, 8, 16),
                     child: SizedBox(
                       height: 48,
                       child: ElevatedButton(

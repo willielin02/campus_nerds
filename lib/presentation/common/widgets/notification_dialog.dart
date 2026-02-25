@@ -74,17 +74,15 @@ class _NotificationDialogContent extends StatelessWidget {
             ),
             // Body
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: 16),
               child: Text(
                 notification.body,
-                style: textTheme.bodyLarge?.copyWith(
-                  fontFamily: fontFamily,
-                ),
+                style: context.appTypography.bodyBig,
               ),
             ),
             // Button
             Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              padding: const EdgeInsets.only(top: 24, bottom: 16),
               child: SizedBox(
                 width: double.infinity,
                 height: 48,
