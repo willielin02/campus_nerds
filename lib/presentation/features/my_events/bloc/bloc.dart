@@ -1,3 +1,9 @@
+export 'feedback_bloc.dart';
+export 'feedback_event.dart';
+export 'feedback_state.dart';
 export 'my_events_bloc.dart';
 export 'my_events_event.dart';
 export 'my_events_state.dart';
+export 'recording_bloc.dart';
+export 'recording_event.dart';
+export 'recording_state.dart';

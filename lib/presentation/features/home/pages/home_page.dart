@@ -146,6 +146,7 @@ class _HomePageState extends State<HomePage>
                   Expanded(
                     child: Column(
                       children: [
+                        const SizedBox(height: 6),
                         // TabBar - matching FlutterFlow exactly
                         Align(
                           alignment: Alignment.center,
@@ -161,9 +162,10 @@ class _HomePageState extends State<HomePage>
                             ),
                             indicatorColor: colors.secondaryText,
                             dividerColor: Colors.transparent,
-                            tabs: const [
-                              Tab(text: 'Focused Study'),
-                              Tab(text: 'English Games'),
+                            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                            tabs: [
+                              Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Focused Study'))),
+                              Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text('English Games'))),
                             ],
                           ),
                         ),

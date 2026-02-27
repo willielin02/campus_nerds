@@ -71,6 +71,7 @@ class _MyEventsPageState extends State<MyEventsPage>
                     Expanded(
                       child: Column(
                         children: [
+                          const SizedBox(height: 6),
                           // TabBar - matching FlutterFlow exactly
                           Align(
                             alignment: Alignment.center,

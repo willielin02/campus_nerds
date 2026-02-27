@@ -88,10 +88,20 @@ dependencies:
   webview_flutter: ^4.7.0
 
   # ============================================
+  # Screenshot Protection (English Games 學習內容)
+  # ============================================
+  no_screenshot: ^0.10.0
+
+  # ============================================
   # File & Media
   # ============================================
   file_picker: ^8.0.0
   mime_type: ^1.0.0
+
+  # ============================================
+  # Audio Recording (English Games 錄音)
+  # ============================================
+  record: ^6.2.0
 
   # ============================================
   # Firebase (performance monitoring + push notifications)

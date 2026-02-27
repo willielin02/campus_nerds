@@ -68,6 +68,8 @@
 	<string>d53420eff7cc8572122958476233dbbc</string>
 	<key>FacebookDisplayName</key>
 	<string>Campus Nerds</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Campus Nerds 需要麥克風權限來錄製英語對話，用於產生個人化學習報告。</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>fbapi</string>

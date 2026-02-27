@@ -35,16 +35,25 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
     super.dispose();
   }
 
+  /// 滑動速度：每像素所需毫秒數
+  static const double _msPerPixel = 5.0;
+
   Future<void> _handleClose() async {
     if (_isClosing) return;
     setState(() => _isClosing = true);
 
-    await _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 666),
-      curve: Curves.ease,
-    );
-    await Future.delayed(const Duration(milliseconds: 666));
+    final remaining = _scrollController.position.maxScrollExtent -
+        _scrollController.offset;
+    final scrollMs = (remaining * _msPerPixel).round().clamp(0, 3000);
+
+    if (scrollMs > 0) {
+      await _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: scrollMs),
+        curve: Curves.easeInOut,
+      );
+      await Future.delayed(Duration(milliseconds: scrollMs));
+    }
 
     if (!mounted) return;
     Navigator.of(context).pop();
@@ -211,8 +220,9 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
         children: [
           Text(
             title,
-            style: textTheme.labelLarge?.copyWith(
+            style: textTheme.bodyLarge?.copyWith(
               fontFamily: fontFamily,
+              fontWeight: FontWeight.w600,
             ),
           ),
           Padding(

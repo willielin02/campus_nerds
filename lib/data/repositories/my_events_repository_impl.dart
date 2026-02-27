@@ -1,10 +1,18 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+
 import '../../core/services/supabase_service.dart';
 import '../../core/utils/app_clock.dart';
 import '../../domain/entities/booking.dart';
 import '../../domain/entities/event.dart';
+import '../../domain/entities/learning_report.dart';
 import '../../domain/repositories/my_events_repository.dart';
+import '../models/tables/event_feedbacks.dart';
 import '../models/tables/group_members_profile_v.dart';
+import '../models/tables/learning_reports_table.dart';
 import '../models/tables/my_events_v.dart';
+import '../models/tables/recording_segments_table.dart';
 import '../models/tables/user_ticket_balances_v.dart';
 
 /// Implementation of MyEventsRepository using Supabase
@@ -381,6 +389,199 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
       }).toList();
     } catch (e) {
       return [];
+    }
+  }
+
+  // ============================================
+  // Feedback Methods
+  // ============================================
+
+  @override
+  Future<BookingResult> submitEventFeedback({
+    required String groupId,
+    required String memberId,
+    required int venueRating,
+    required int flowRating,
+    required int vibeRating,
+    String? comment,
+  }) async {
+    try {
+      await EventFeedbacksTable().insert({
+        'group_id': groupId,
+        'member_id': memberId,
+        'venue_rating': venueRating,
+        'flow_rating': flowRating,
+        'vibe_rating': vibeRating,
+        if (comment != null && comment.isNotEmpty) 'comment': comment,
+      });
+      return BookingResult.success();
+    } catch (e) {
+      final errorString = e.toString();
+      // 23505 = unique violation (已提交過)
+      if (errorString.contains('23505')) {
+        return BookingResult.failure('您已提交過活動評價');
+      }
+      return BookingResult.failure('提交活動評價失敗，請稍後再試');
+    }
+  }
+
+  @override
+  Future<BookingResult> submitPeerFeedback({
+    required String groupId,
+    required String fromMemberId,
+    required String toMemberId,
+    required bool noShow,
+    int? focusRating,
+    bool hasDiscomfortBehavior = false,
+    String? discomfortBehaviorNote,
+    bool hasProfileMismatch = false,
+    String? profileMismatchNote,
+    String? comment,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'group_id': groupId,
+        'from_member_id': fromMemberId,
+        'to_member_id': toMemberId,
+        'no_show': noShow,
+      };
+
+      if (noShow) {
+        // no_show=true 時，其他欄位由 DB CHECK 強制為 null/false
+        data['focus_rating'] = null;
+        data['has_discomfort_behavior'] = false;
+        data['has_profile_mismatch'] = false;
+      } else {
+        data['focus_rating'] = focusRating;
+        data['has_discomfort_behavior'] = hasDiscomfortBehavior;
+        if (hasDiscomfortBehavior) {
+          data['discomfort_behavior_note'] = discomfortBehaviorNote;
+        }
+        data['has_profile_mismatch'] = hasProfileMismatch;
+        if (hasProfileMismatch) {
+          data['profile_mismatch_note'] = profileMismatchNote;
+        }
+        if (comment != null && comment.isNotEmpty) {
+          data['comment'] = comment;
+        }
+      }
+
+      await SupabaseService.client.from('peer_feedbacks').insert(data);
+      return BookingResult.success();
+    } catch (e) {
+      final errorString = e.toString();
+      if (errorString.contains('23505')) {
+        return BookingResult.failure('您已評價過此組員');
+      }
+      return BookingResult.failure('提交組員評價失敗，請稍後再試');
+    }
+  }
+
+  // ============================================
+  // Recording & Learning Report Methods
+  // ============================================
+
+  @override
+  Future<BookingResult> uploadRecordingSegment({
+    required String bookingId,
+    required String filePath,
+    required int durationSeconds,
+    required int sequence,
+    required int fileSizeBytes,
+  }) async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return BookingResult.failure('請先登入');
+
+      final storagePath = '$userId/$bookingId/$sequence.m4a';
+      final file = File(filePath);
+
+      // 上傳到 Supabase Storage
+      await SupabaseService.client.storage
+          .from('voice-recordings')
+          .upload(storagePath, file);
+
+      // 寫入 recording_segments 表
+      await RecordingSegmentsTable().insert({
+        'booking_id': bookingId,
+        'user_id': userId,
+        'storage_path': storagePath,
+        'duration_seconds': durationSeconds,
+        'sequence': sequence,
+        'file_size_bytes': fileSizeBytes,
+      });
+
+      return BookingResult.success();
+    } catch (e) {
+      debugPrint('上傳錄音段落失敗: $e');
+      return BookingResult.failure('上傳錄音失敗，請稍後再試');
+    }
+  }
+
+  @override
+  Future<BookingResult> triggerAnalysis({required String bookingId}) async {
+    try {
+      final token = SupabaseService.jwtToken;
+      if (token == null) return BookingResult.failure('請先登入');
+
+      final response = await SupabaseService.client.functions.invoke(
+        'analyze-recording',
+        body: {'booking_id': bookingId},
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.status != 200) {
+        final errorBody = response.data;
+        final errorMsg = errorBody is Map ? errorBody['error'] : '分析請求失敗';
+        return BookingResult.failure(errorMsg?.toString() ?? '分析請求失敗');
+      }
+
+      return BookingResult.success();
+    } catch (e) {
+      debugPrint('觸發分析失敗: $e');
+      return BookingResult.failure('觸發分析失敗，請稍後再試');
+    }
+  }
+
+  @override
+  Future<LearningReport?> getLearningReport(String bookingId) async {
+    try {
+      final rows = await LearningReportsTable().queryRows(
+        queryFn: (q) => q.eq('booking_id', bookingId).limit(1),
+      );
+
+      if (rows.isEmpty) return null;
+
+      final row = rows.first;
+      final analysis = row.analysis;
+
+      return LearningReport(
+        id: row.id,
+        bookingId: row.bookingId,
+        userId: row.userId,
+        status: LearningReportStatus.fromString(row.status),
+        transcript: row.transcript,
+        errorMessage: row.errorMessage,
+        strengths: analysis != null
+            ? (analysis['strengths'] as List<dynamic>?)
+                    ?.map((e) => e.toString())
+                    .toList() ??
+                []
+            : [],
+        topFixes: analysis != null
+            ? (analysis['top_3_fixes'] as List<dynamic>?)
+                    ?.map((e) => TopFix.fromJson(e as Map<String, dynamic>))
+                    .toList() ??
+                []
+            : [],
+        summary: analysis?['summary'] as String?,
+        totalDurationSeconds: row.totalDurationSeconds,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      );
+    } catch (e) {
+      debugPrint('查詢學習報告失敗: $e');
+      return null;
     }
   }
 

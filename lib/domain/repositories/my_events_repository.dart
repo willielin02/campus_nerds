@@ -1,5 +1,6 @@
 import '../entities/booking.dart';
 import '../entities/event.dart';
+import '../entities/learning_report.dart';
 
 /// Result wrapper for booking operations
 class BookingResult {
@@ -81,4 +82,51 @@ abstract class MyEventsRepository {
 
   /// Get own English assignment by booking ID (pre-grouping)
   Future<List<GroupEnglishAssignment>> getMyEnglishAssignment(String bookingId);
+
+  // ============================================
+  // Feedback Methods
+  // ============================================
+
+  /// Submit event feedback (venue, flow, vibe ratings + optional comment)
+  Future<BookingResult> submitEventFeedback({
+    required String groupId,
+    required String memberId,
+    required int venueRating,
+    required int flowRating,
+    required int vibeRating,
+    String? comment,
+  });
+
+  /// Submit peer feedback for a group member
+  Future<BookingResult> submitPeerFeedback({
+    required String groupId,
+    required String fromMemberId,
+    required String toMemberId,
+    required bool noShow,
+    int? focusRating,
+    bool hasDiscomfortBehavior = false,
+    String? discomfortBehaviorNote,
+    bool hasProfileMismatch = false,
+    String? profileMismatchNote,
+    String? comment,
+  });
+
+  // ============================================
+  // Recording & Learning Report Methods
+  // ============================================
+
+  /// Upload a recording segment to Supabase Storage + insert metadata row
+  Future<BookingResult> uploadRecordingSegment({
+    required String bookingId,
+    required String filePath,
+    required int durationSeconds,
+    required int sequence,
+    required int fileSizeBytes,
+  });
+
+  /// Trigger AI analysis via Edge Function
+  Future<BookingResult> triggerAnalysis({required String bookingId});
+
+  /// Get the learning report for a booking
+  Future<LearningReport?> getLearningReport(String bookingId);
 }

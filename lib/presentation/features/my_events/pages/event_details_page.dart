@@ -8,20 +8,26 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../common/widgets/app_alert_dialog.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/screenshot_protection_service.dart';
 import '../../../../core/utils/app_clock.dart';
 import '../../../../domain/entities/booking.dart';
 import '../../../../domain/entities/event.dart';
+import '../../../../domain/entities/learning_report.dart';
 import '../../chat/bloc/bloc.dart' show ChatBloc, ChatDispose, ChatInitialize, ChatMarkAsRead, ChatState, ChatStatus;
 import '../../chat/widgets/chat_tab.dart';
 import '../../home/bloc/bloc.dart' show HomeBloc, HomeRefresh;
 import '../bloc/bloc.dart';
 import '../widgets/cancel_booking_dialog.dart';
 import '../widgets/edit_goal_dialog.dart';
+import '../widgets/recording_fab.dart';
 import '../widgets/rules_dialog_games.dart';
 import '../widgets/rules_dialog_study.dart';
 import '../widgets/english_content_card.dart';
 import '../widgets/study_plan_card.dart';
+import 'feedback_page.dart';
 
 /// Event details page for both focused study and english games
 /// Matches FlutterFlow design exactly
@@ -53,11 +59,21 @@ class _EventDetailsPageState extends State<EventDetailsPage>
   ChatBloc? _chatBloc;
   /// 等待 chatOpenAt 到達的一次性 Timer（用於自動切換聊天室 UI）
   Timer? _chatOpenTimer;
+  /// 截圖保護（僅 iOS，English Games 學習內容 tab）
+  final _screenshotProtection = ScreenshotProtectionService.instance;
+  StreamSubscription<void>? _screenshotSubscription;
+  bool _screenshotProtectionActive = false;
+  /// 錄音 BLoC（僅 English Games）
+  RecordingBloc? _recordingBloc;
 
   @override
   void initState() {
     super.initState();
     context.read<MyEventsBloc>().add(MyEventsLoadDetails(widget.bookingId));
+    if (!widget.isFocusedStudy) {
+      _recordingBloc = getIt<RecordingBloc>();
+      _startScreenshotMonitoring();
+    }
   }
 
   void _initTabController(MyEvent event) {
@@ -110,6 +126,17 @@ class _EventDetailsPageState extends State<EventDetailsPage>
       _chatUnreadCount =
           widget.initialTab.clamp(0, 1) == 1 ? 0 : event.unreadMessageCount;
     }
+
+    // RecordingBloc 初始化（English Games，載入報告或進入 idle）
+    if (_recordingBloc != null &&
+        _recordingBloc!.state.phase == RecordingPhase.initial) {
+      _recordingBloc!.add(RecordingInitialize(event.bookingId));
+    }
+
+    // English Games 初始在學習內容 tab 時啟用截圖保護
+    if (!widget.isFocusedStudy && _tabController?.index == 0) {
+      _enableScreenshotProtection();
+    }
   }
 
   void _onTabChanged() {
@@ -124,14 +151,30 @@ class _EventDetailsPageState extends State<EventDetailsPage>
       if (_managedGroupId != null) {
         NotificationService.instance.setActiveGroupId(_managedGroupId);
       }
+      // 聊天室 tab → 關閉截圖保護
+      if (!widget.isFocusedStudy) {
+        _disableScreenshotProtection();
+      }
     } else {
       // 離開聊天室 tab → 清除 activeGroupId，恢復推播
       NotificationService.instance.setActiveGroupId(null);
+      // 學習內容 tab → 啟用截圖保護
+      if (!widget.isFocusedStudy) {
+        _enableScreenshotProtection();
+      }
     }
   }
 
   @override
   void dispose() {
+    // 截圖保護清理
+    _disableScreenshotProtection();
+    _screenshotProtection.stopListening();
+    _screenshotSubscription?.cancel();
+
+    // 錄音 BLoC 清理
+    _recordingBloc?.close();
+
     _chatOpenTimer?.cancel();
     // 離開頁面時清除 activeGroupId，恢復推播
     NotificationService.instance.setActiveGroupId(null);
@@ -149,6 +192,37 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     _tabController?.dispose();
     super.dispose();
   }
+
+  // ---- 截圖保護（English Games 學習內容 tab） ----
+
+  void _startScreenshotMonitoring() {
+    _screenshotProtection.startListening();
+    _screenshotSubscription =
+        _screenshotProtection.onScreenshotDetected.listen((_) {
+      if (!mounted) return;
+      if (_screenshotProtectionActive) {
+        showAppAlertDialog(
+          context: context,
+          title: '截圖提醒',
+          message: '為了保護學習內容的獨特性，請勿截圖分享。',
+        );
+      }
+    });
+  }
+
+  void _enableScreenshotProtection() {
+    if (_screenshotProtectionActive) return;
+    _screenshotProtectionActive = true;
+    _screenshotProtection.enable();
+  }
+
+  void _disableScreenshotProtection() {
+    if (!_screenshotProtectionActive) return;
+    _screenshotProtectionActive = false;
+    _screenshotProtection.disable();
+  }
+
+  // ---- 規則對話框 ----
 
   void _showRulesDialog() {
     if (widget.isFocusedStudy) {
@@ -242,6 +316,144 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     return event.feedbackSentAt != null;
   }
 
+  /// 「填寫問卷 / 學習報告 / 分析中...」按鈕
+  Widget _buildFeedbackButton(AppColorsTheme colors, MyEvent event) {
+    final textTheme = context.textTheme;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+
+    // English Games：按鈕狀態取決於 RecordingBloc（報告是否完成 / 分析中）
+    if (_recordingBloc != null) {
+      return BlocBuilder<RecordingBloc, RecordingState>(
+        builder: (context, recordingState) {
+          String label;
+          VoidCallback? onPressed;
+          bool showLoading = false;
+
+          if (event.hasFilledFeedbackAll) {
+            if (recordingState.learningReport?.isCompleted == true) {
+              label = '學習報告';
+              onPressed = () => _navigateToLearningReport(
+                  recordingState.learningReport!);
+            } else if (recordingState.phase == RecordingPhase.uploading ||
+                recordingState.phase == RecordingPhase.analyzing) {
+              label = '分析中...';
+              showLoading = true;
+              onPressed = null;
+            } else {
+              label = '問卷已填';
+              onPressed = null;
+            }
+          } else if (event.isFeedbackOpen) {
+            label = '填寫問卷';
+            onPressed = () => _navigateToFeedback(event);
+          } else {
+            label = '填寫問卷';
+            onPressed = null;
+          }
+
+          return _feedbackButtonWidget(
+            colors: colors,
+            label: label,
+            onPressed: onPressed,
+            showLoading: showLoading,
+            fontFamily: fontFamily,
+            textTheme: textTheme,
+          );
+        },
+      );
+    }
+
+    // Focused Study：無錄音 BLoC
+    String label;
+    VoidCallback? onPressed;
+
+    if (event.hasFilledFeedbackAll) {
+      label = '問卷已填';
+      onPressed = null;
+    } else if (event.isFeedbackOpen) {
+      label = '填寫問卷';
+      onPressed = () => _navigateToFeedback(event);
+    } else {
+      label = '填寫問卷';
+      onPressed = null;
+    }
+
+    return _feedbackButtonWidget(
+      colors: colors,
+      label: label,
+      onPressed: onPressed,
+      fontFamily: fontFamily,
+      textTheme: textTheme,
+    );
+  }
+
+  Widget _feedbackButtonWidget({
+    required AppColorsTheme colors,
+    required String label,
+    required VoidCallback? onPressed,
+    bool showLoading = false,
+    required String? fontFamily,
+    required TextTheme textTheme,
+  }) {
+    return SizedBox(
+      width: 144,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colors.tertiaryText,
+          foregroundColor: colors.secondaryBackground,
+          disabledBackgroundColor: colors.tertiary,
+          disabledForegroundColor: colors.secondaryBackground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          elevation: 0,
+        ),
+        child: showLoading
+            ? SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: colors.secondaryBackground,
+                ),
+              )
+            : Text(
+                label,
+                style: textTheme.labelLarge?.copyWith(
+                  fontFamily: fontFamily,
+                  color: colors.secondaryBackground,
+                ),
+              ),
+      ),
+    );
+  }
+
+  void _navigateToFeedback(MyEvent event) {
+    // 如果正在錄音或暫停中，先停止錄音（建立段落）
+    if (_recordingBloc != null && _recordingBloc!.state.isRecordingActive) {
+      _recordingBloc!.add(const RecordingStop());
+    }
+
+    // Navigate to FeedbackPage（帶上 RecordingBloc 以便問卷提交後觸發上傳）
+    final page = FeedbackPage(event: event);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _recordingBloc != null
+            ? BlocProvider<RecordingBloc>.value(
+                value: _recordingBloc!,
+                child: page,
+              )
+            : page,
+      ),
+    );
+  }
+
+  void _navigateToLearningReport(LearningReport report) {
+    context.push(AppRoutes.learningReport, extra: report);
+  }
+
   /// Status text based on event lifecycle (matches FlutterFlow exactly)
   /// scheduled/notified → '已報名', completed → '已結束', else → ''
   String _getStatusText(MyEvent event) {
@@ -320,7 +532,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<ChatBloc, ChatState>(
+    Widget body = BlocListener<ChatBloc, ChatState>(
       listener: (context, chatState) {
         // 等待初始載入完成，設定基準值
         if (chatState.status == ChatStatus.loaded && !_chatInitialized) {
@@ -441,16 +653,23 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                               // Main content
                               Expanded(
                                 child: event == null
-                                    ? Center(
-                                        child: CircularProgressIndicator(
-                                          color: colors.primary,
-                                        ),
-                                      )
+                                    ? const _EventDetailsSkeleton()
                                     : _buildContent(colors, event, state),
                               ),
                             ],
                           ),
                         ),
+                        // RecordingFab（English Games 錄音按鈕）
+                        if (_recordingBloc != null &&
+                            event != null &&
+                            event.groupId != null &&
+                            event.isChatOpen &&
+                            event.isUpcoming)
+                          const Positioned(
+                            right: 16,
+                            bottom: 16,
+                            child: RecordingFab(),
+                          ),
                       ],
                     ),
                   );
@@ -462,6 +681,16 @@ class _EventDetailsPageState extends State<EventDetailsPage>
       },
     ),
     );
+
+    // English Games：包裝 RecordingBloc 供子 widget（RecordingFab、按鈕）使用
+    if (_recordingBloc != null) {
+      body = BlocProvider<RecordingBloc>.value(
+        value: _recordingBloc!,
+        child: body,
+      );
+    }
+
+    return body;
   }
 
   Widget _buildContent(
@@ -495,47 +724,46 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Title row: "Focused Study" / "English Games" + city + status badge
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                widget.isFocusedStudy ? 'Focused Study' : 'English Games',
-                                style: textTheme.titleLarge?.copyWith(
-                                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                      // FittedBox scaleDown: 空間不足時等比縮小，足夠時維持原始大小
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          children: [
+                            Text(
+                              widget.isFocusedStudy ? 'Focused Study' : 'English Games',
+                              style: textTheme.titleLarge?.copyWith(
+                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              ),
+                            ),
+                            Text(
+                              '  ( $cityName ) ',
+                              style: textTheme.labelMedium?.copyWith(
+                                fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              ),
+                            ),
+                            // Status badge
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: colors.tertiaryText,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                              ),
-                              Text(
-                                '  ( $cityName ) ',
-                                style: textTheme.labelMedium?.copyWith(
-                                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                                ),
-                              ),
-                            ],
-                          ),
-                          // Status badge
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: colors.tertiaryText,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Text(
-                                  statusText,
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                                    color: colors.secondaryBackground,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Text(
+                                    statusText,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                      color: colors.secondaryBackground,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
 
                       // Time row
@@ -640,6 +868,18 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                         ),
                       ),
 
+                      // 尚未公布地址時的提示文字（與「時間：」「地點：」左對齊）
+                      if (event.venueAddress == null || event.venueAddress!.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            ' ( 確切時間地點將於活動日兩天前通知 ) ',
+                            style: textTheme.bodyMedium?.copyWith(
+                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            ),
+                          ),
+                        ),
+
                       // Buttons row: "規則" and "取消報名"
                       Padding(
                         padding: const EdgeInsets.only(top: 18, bottom: 12),
@@ -673,44 +913,9 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                 ),
                               ),
                             ),
-                            // Cancel booking / Feedback button
-                            // scheduled phase → 取消報名; notified/completed → 填寫問券
-                            // Pressable: bg = tertiaryText; Not pressable: bg = tertiary
-                            // Text: secondaryBackground, no shadow
+                            // Cancel booking / Feedback / Learning report button
                             if (_showFeedbackButton(event))
-                              SizedBox(
-                                width: 144,
-                                height: 48,
-                                child: ElevatedButton(
-                                  onPressed: event.isFeedbackOpen
-                                      ? () {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: const Text('回饋功能即將推出'),
-                                              backgroundColor: colors.tertiary,
-                                            ),
-                                          );
-                                        }
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: colors.tertiaryText,
-                                    foregroundColor: colors.secondaryBackground,
-                                    disabledBackgroundColor: colors.tertiary,
-                                    disabledForegroundColor: colors.secondaryBackground,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    elevation: 0,
-                                  ),
-                                  child: Text(
-                                    '填寫問券',
-                                    style: textTheme.labelLarge?.copyWith(
-                                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                                      color: colors.secondaryBackground,
-                                    ),
-                                  ),
-                                ),
-                              )
+                              _buildFeedbackButton(colors, event)
                             else
                               SizedBox(
                                 width: 144,
@@ -1110,5 +1315,141 @@ class _EventDetailsPageState extends State<EventDetailsPage>
 
   Widget _buildChatTab(MyEvent event) {
     return ChatTab(event: event);
+  }
+}
+
+/// Skeleton loading placeholder matching EventDetailsPage layout
+class _EventDetailsSkeleton extends StatelessWidget {
+  const _EventDetailsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Event info card skeleton
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title row: title + city + badge
+                  Row(
+                    children: [
+                      _placeholder(colors, width: 160, height: 28),
+                      const SizedBox(width: 8),
+                      _placeholder(colors, width: 80, height: 24),
+                      const SizedBox(width: 8),
+                      _placeholder(colors, width: 48, height: 24, radius: 8),
+                    ],
+                  ),
+                  // Time row
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      children: [
+                        _placeholder(colors, width: 48, height: 20),
+                        const SizedBox(width: 8),
+                        _placeholder(colors, width: 200, height: 20),
+                      ],
+                    ),
+                  ),
+                  // Location row
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      children: [
+                        _placeholder(colors, width: 48, height: 20),
+                        const SizedBox(width: 8),
+                        _placeholder(colors, width: 180, height: 20),
+                      ],
+                    ),
+                  ),
+                  // Buttons row
+                  Padding(
+                    padding: const EdgeInsets.only(top: 18, bottom: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _placeholder(colors, width: 144, height: 48, radius: 8),
+                        _placeholder(colors, width: 144, height: 48, radius: 8),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Tab area skeleton
+            Expanded(
+              child: Column(
+                children: [
+                  // Tab bar
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _placeholder(colors, width: 96, height: 24),
+                        const SizedBox(width: 48),
+                        _placeholder(colors, width: 80, height: 24),
+                      ],
+                    ),
+                  ),
+                  // Tab content: study plan card skeleton
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: colors.secondaryBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colors.tertiary, width: 2),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _placeholder(colors, width: 140, height: 26),
+                            const SizedBox(height: 12),
+                            _placeholder(colors, width: 260, height: 22),
+                            const SizedBox(height: 10),
+                            _placeholder(colors, width: 180, height: 22),
+                            const SizedBox(height: 10),
+                            _placeholder(colors, width: 220, height: 22),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _placeholder(
+    AppColorsTheme colors, {
+    required double width,
+    required double height,
+    double radius = 6,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: colors.alternate,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
   }
 }

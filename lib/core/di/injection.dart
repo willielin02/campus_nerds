@@ -25,7 +25,9 @@ import '../../presentation/features/auth/bloc/auth_bloc.dart';
 import '../../presentation/features/chat/bloc/chat_bloc.dart';
 import '../../presentation/features/checkout/bloc/checkout_bloc.dart';
 import '../../presentation/features/home/bloc/home_bloc.dart';
+import '../../presentation/features/my_events/bloc/feedback_bloc.dart';
 import '../../presentation/features/my_events/bloc/my_events_bloc.dart';
+import '../../presentation/features/my_events/bloc/recording_bloc.dart';
 import '../../presentation/features/onboarding/bloc/onboarding_bloc.dart';
 import '../../presentation/features/facebook_binding/bloc/facebook_binding_bloc.dart';
 import '../../presentation/features/ticket_history/bloc/ticket_history_bloc.dart';
@@ -144,5 +146,15 @@ void _registerBlocs() {
     () => FacebookBindingBloc(
       facebookRepository: getIt<FacebookRepository>(),
     ),
+  );
+
+  // RecordingBloc is factory — each EventDetailsPage gets its own instance
+  getIt.registerFactory<RecordingBloc>(
+    () => RecordingBloc(repository: getIt<MyEventsRepository>()),
+  );
+
+  // FeedbackBloc is factory — each FeedbackPage gets its own instance
+  getIt.registerFactory<FeedbackBloc>(
+    () => FeedbackBloc(repository: getIt<MyEventsRepository>()),
   );
 }

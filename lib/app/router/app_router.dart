@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
+import '../../domain/entities/booking.dart';
 import '../../domain/entities/event.dart';
+import '../../domain/entities/learning_report.dart';
 import '../../presentation/features/my_events/bloc/bloc.dart';
 import '../../presentation/features/account/pages/account_page.dart';
 import '../../presentation/features/auth/pages/login_page.dart';
@@ -21,6 +23,8 @@ import '../../presentation/features/facebook_binding/pages/facebook_binding_page
 import '../../presentation/features/account/pages/school_email_info_page.dart';
 import '../../presentation/features/account/pages/contact_support_page.dart';
 import '../../presentation/features/account/pages/faq_page.dart';
+import '../../presentation/features/my_events/pages/feedback_page.dart';
+import '../../presentation/features/my_events/pages/learning_report_page.dart';
 import 'app_routes.dart';
 import 'auth_state_notifier.dart';
 
@@ -349,6 +353,34 @@ class AppRouter {
           name: AppRouteNames.faq,
           parentNavigatorKey: appNavigatorKey,
           builder: (context, state) => const FaqPage(),
+        ),
+
+        // Feedback route (use root navigator - no navbar)
+        GoRoute(
+          path: AppRoutes.feedback,
+          name: AppRouteNames.feedback,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) {
+            final event = state.extra as MyEvent?;
+            if (event == null) {
+              return const _PlaceholderPage(title: 'Event not found');
+            }
+            return FeedbackPage(event: event);
+          },
+        ),
+
+        // Learning Report route (use root navigator - no navbar)
+        GoRoute(
+          path: AppRoutes.learningReport,
+          name: AppRouteNames.learningReport,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) {
+            final report = state.extra as LearningReport?;
+            if (report == null) {
+              return const _PlaceholderPage(title: 'Report not found');
+            }
+            return LearningReportPage(report: report);
+          },
         ),
       ];
 }

@@ -37,6 +37,10 @@ abstract class AppRoutes {
 
   // FAQ
   static const String faq = '/faq';
+
+  // Feedback & Learning Report
+  static const String feedback = '/feedback';
+  static const String learningReport = '/learning-report';
 }
 
 /// Route names for named navigation
@@ -58,4 +62,6 @@ abstract class AppRouteNames {
   static const String facebookBinding = 'facebookBinding';
   static const String contactSupport = 'contactSupport';
   static const String faq = 'faq';
+  static const String feedback = 'feedback';
+  static const String learningReport = 'learningReport';
 }
