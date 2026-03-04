@@ -42,7 +42,7 @@ class CancelBookingDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     final eventTypeName =
@@ -81,7 +81,7 @@ class CancelBookingDialog extends StatelessWidget {
                       children: [
                         Text(
                           '確定取消本場$eventTypeName嗎？',
-                          style: textTheme.labelLarge?.copyWith(
+                          style: typo.heading.copyWith(
                             fontFamily: fontFamily,
                           ),
                         ),
@@ -96,7 +96,7 @@ class CancelBookingDialog extends StatelessWidget {
               padding: const EdgeInsets.only(top: 16),
               child: Text(
                 '您將取消本場活動的報名，並取回一張 $ticketTypeName 票券。',
-                style: context.appTypography.bodyBig,
+                style: context.appTypography.detail,
               ),
             ),
             // Buttons row
@@ -124,7 +124,7 @@ class CancelBookingDialog extends StatelessWidget {
                         ),
                         child: Text(
                           '取消',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontFamily: fontFamily,
                           ),
                         ),
@@ -150,7 +150,7 @@ class CancelBookingDialog extends StatelessWidget {
                         ),
                         child: Text(
                           '確定',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontFamily: fontFamily,
                           ),
                         ),

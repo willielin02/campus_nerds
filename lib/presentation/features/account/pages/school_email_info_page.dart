@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../app/theme/app_theme.dart';
 import '../bloc/bloc.dart';
 
@@ -26,8 +24,7 @@ class _SchoolEmailInfoView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
-    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+    final typo = context.appTypography;
 
     return Scaffold(
       backgroundColor: colors.primaryBackground,
@@ -101,9 +98,7 @@ class _SchoolEmailInfoView extends StatelessWidget {
                             children: [
                               Text(
                                 '學校信箱驗證',
-                                style: textTheme.titleMedium?.copyWith(
-                                  fontFamily: fontFamily,
-                                ),
+                                style: typo.pageTitle,
                               ),
                             ],
                           ),
@@ -116,8 +111,7 @@ class _SchoolEmailInfoView extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   '為了確保活動品質，我們需要驗證所有參與者的大學生身分。',
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    fontFamily: fontFamily,
+                                  style: typo.caption.copyWith(
                                     color: colors.secondaryText,
                                   ),
                                 ),
@@ -153,8 +147,7 @@ class _SchoolEmailInfoView extends StatelessWidget {
                                         const EdgeInsets.only(left: 12),
                                     child: Text(
                                       '已驗證學校信箱',
-                                      style: textTheme.bodyLarge?.copyWith(
-                                        fontFamily: fontFamily,
+                                      style: typo.body.copyWith(
                                         color: colors.primaryText,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -168,12 +161,13 @@ class _SchoolEmailInfoView extends StatelessWidget {
                         // School email info
                         BlocBuilder<AccountBloc, AccountState>(
                           builder: (context, state) {
-                            final email = state.profile?.schoolEmail;
-                            if (email == null) {
+                            final profile = state.profile;
+                            if (profile == null ||
+                                profile.schoolEmail == null) {
                               return const SizedBox.shrink();
                             }
-                            final school =
-                                state.profile?.universityName ?? '';
+                            final school = profile.universityName ?? '';
+                            final isManual = profile.isManuallyVerified;
                             return Padding(
                               padding: const EdgeInsets.only(top: 8),
                               child: Column(
@@ -181,16 +175,16 @@ class _SchoolEmailInfoView extends StatelessWidget {
                                 children: [
                                   Text(
                                     '你的學校：$school',
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      fontFamily: fontFamily,
+                                    style: typo.caption.copyWith(
                                       color: colors.secondaryText,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '你的信箱：$email',
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      fontFamily: fontFamily,
+                                    isManual
+                                        ? '驗證方式：已由客服驗證'
+                                        : '你的信箱：${profile.schoolEmail}',
+                                    style: typo.caption.copyWith(
                                       color: colors.secondaryText,
                                     ),
                                   ),

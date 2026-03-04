@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/theme/app_theme.dart';
@@ -13,8 +12,7 @@ class FaqPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
-    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+    final typo = context.appTypography;
 
     return Scaffold(
       backgroundColor: colors.primaryBackground,
@@ -30,8 +28,7 @@ class FaqPage extends StatelessWidget {
         ),
         title: Text(
           '常見問題與使用說明',
-          style: textTheme.titleMedium?.copyWith(
-            fontFamily: fontFamily,
+          style: typo.pageTitle.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -69,8 +66,7 @@ class FaqPage extends StatelessWidget {
                 ),
               ],
               colors: colors,
-              textTheme: textTheme,
-              fontFamily: fontFamily,
+              typo: typo,
             ),
             const SizedBox(height: 12),
 
@@ -97,8 +93,7 @@ class FaqPage extends StatelessWidget {
                 ),
               ],
               colors: colors,
-              textTheme: textTheme,
-              fontFamily: fontFamily,
+              typo: typo,
             ),
             const SizedBox(height: 12),
 
@@ -129,8 +124,7 @@ class FaqPage extends StatelessWidget {
                 ),
               ],
               colors: colors,
-              textTheme: textTheme,
-              fontFamily: fontFamily,
+              typo: typo,
             ),
             const SizedBox(height: 12),
 
@@ -153,8 +147,7 @@ class FaqPage extends StatelessWidget {
                 ),
               ],
               colors: colors,
-              textTheme: textTheme,
-              fontFamily: fontFamily,
+              typo: typo,
             ),
             const SizedBox(height: 12),
 
@@ -181,8 +174,7 @@ class FaqPage extends StatelessWidget {
                 ),
               ],
               colors: colors,
-              textTheme: textTheme,
-              fontFamily: fontFamily,
+              typo: typo,
             ),
             const SizedBox(height: 12),
 
@@ -203,8 +195,7 @@ class FaqPage extends StatelessWidget {
                 ),
               ],
               colors: colors,
-              textTheme: textTheme,
-              fontFamily: fontFamily,
+              typo: typo,
             ),
             const SizedBox(height: 24),
             ],
@@ -222,16 +213,14 @@ class _FaqCategory extends StatelessWidget {
     required this.icon,
     required this.items,
     required this.colors,
-    required this.textTheme,
-    required this.fontFamily,
+    required this.typo,
   });
 
   final String title;
   final IconData icon;
   final List<_FaqItem> items;
   final AppColorsTheme colors;
-  final TextTheme textTheme;
-  final String? fontFamily;
+  final AppTypography typo;
 
   @override
   Widget build(BuildContext context) {
@@ -256,8 +245,7 @@ class _FaqCategory extends StatelessWidget {
           ),
           title: Text(
             title,
-            style: textTheme.labelLarge?.copyWith(
-              fontFamily: fontFamily,
+            style: typo.heading.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -268,8 +256,7 @@ class _FaqCategory extends StatelessWidget {
             return _FaqItemTile(
               item: item,
               colors: colors,
-              textTheme: textTheme,
-              fontFamily: fontFamily,
+              typo: typo,
             );
           }).toList(),
         ),
@@ -296,14 +283,12 @@ class _FaqItemTile extends StatelessWidget {
   const _FaqItemTile({
     required this.item,
     required this.colors,
-    required this.textTheme,
-    required this.fontFamily,
+    required this.typo,
   });
 
   final _FaqItem item;
   final AppColorsTheme colors;
-  final TextTheme textTheme;
-  final String? fontFamily;
+  final AppTypography typo;
 
   @override
   Widget build(BuildContext context) {
@@ -324,8 +309,7 @@ class _FaqItemTile extends StatelessWidget {
             childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             title: Text(
               item.question,
-              style: textTheme.bodyLarge?.copyWith(
-                fontFamily: fontFamily,
+              style: typo.body.copyWith(
                 color: colors.primaryText,
               ),
             ),
@@ -336,8 +320,7 @@ class _FaqItemTile extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   item.answer,
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontFamily: fontFamily,
+                  style: typo.caption.copyWith(
                     color: colors.secondaryText,
                     height: 1.5,
                   ),
@@ -359,8 +342,7 @@ class _FaqItemTile extends StatelessWidget {
                       children: [
                         Text(
                           '查看完整內容',
-                          style: textTheme.bodyMedium?.copyWith(
-                            fontFamily: fontFamily,
+                          style: typo.caption.copyWith(
                             color: colors.secondaryText,
                             fontWeight: FontWeight.w600,
                           ),

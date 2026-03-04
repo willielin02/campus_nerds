@@ -34,11 +34,19 @@ const MapPinIcon = () => (
   </svg>
 )
 
+const UserIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+)
+
 const navItems = [
   { to: '/events', label: '活動管理', icon: CalendarIcon },
   { to: '/venues', label: '場地管理', icon: MapPinIcon },
   { to: '/tickets', label: '票券調整', icon: TicketIcon },
   { to: '/orders', label: '訂單查看', icon: CreditCardIcon },
+  { to: '/users', label: '用戶管理', icon: UserIcon },
 ]
 
 const currentEnv = getAdminEnv()

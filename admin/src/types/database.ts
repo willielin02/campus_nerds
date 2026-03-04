@@ -111,15 +111,27 @@ export interface EcpayPayment {
   created_at: string
 }
 
+export type SchoolEmailStatus = 'pending' | 'verified' | 'rejected'
+export type VerificationMethod = 'email_otp' | 'manual'
+
 export interface UserProfile {
   id: string
   nickname: string | null
   gender: Gender | null
   age: number | null
   school_email: string | null
+  school_email_status: SchoolEmailStatus | null
+  school_email_verification_method: VerificationMethod | null
+  university_id: string | null
   university_name: string | null
   university_code: string | null
   created_at: string
+}
+
+export interface University {
+  id: string
+  name: string
+  code: string
 }
 
 export interface UserWithBooking extends UserProfile {

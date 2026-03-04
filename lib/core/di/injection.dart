@@ -114,7 +114,8 @@ void _registerBlocs() {
     () => HomeBloc(homeRepository: getIt<HomeRepository>()),
   );
 
-  getIt.registerFactory<MyEventsBloc>(
+  // MyEventsBloc is singleton to enable stale-while-revalidate caching
+  getIt.registerLazySingleton<MyEventsBloc>(
     () => MyEventsBloc(myEventsRepository: getIt<MyEventsRepository>()),
   );
 

@@ -5,6 +5,7 @@ import 'app_colors.dart';
 import 'app_typography.dart';
 
 export 'app_colors.dart';
+export 'app_typography.dart';
 
 const String _kThemeModeKey = '__theme_mode__';
 
@@ -66,22 +67,19 @@ class AppTheme {
         surface: colors.secondaryBackground,
         onSurface: colors.primaryText,
       ),
+      // Material TextTheme mapping（供 Flutter 內建 widget 參考）
+      // 實際使用請一律透過 context.appTypography
       textTheme: TextTheme(
-        displayLarge: typography.displayLarge,
-        displayMedium: typography.displayMedium,
-        displaySmall: typography.displaySmall,
-        headlineLarge: typography.headlineLarge,
-        headlineMedium: typography.headlineMedium,
-        headlineSmall: typography.headlineSmall,
-        titleLarge: typography.titleLarge,
-        titleMedium: typography.titleMedium,
-        titleSmall: typography.titleSmall,
-        labelLarge: typography.labelLarge,
-        labelMedium: typography.labelMedium,
-        labelSmall: typography.labelSmall,
-        bodyLarge: typography.bodyLarge,
-        bodyMedium: typography.bodyMedium,
-        bodySmall: typography.bodySmall,
+        displayLarge: typography.display,       // 68px w600
+        headlineLarge: typography.title,        // 40px w600
+        headlineMedium: typography.sectionTitle, // 28px w600
+        headlineSmall: typography.pageTitle,    // 24px w600
+        titleLarge: typography.heading,         // 20px w600
+        titleMedium: typography.subheading,     // 20px normal
+        bodyLarge: typography.body,             // 18px normal
+        bodyMedium: typography.detail,          // 16px normal
+        bodySmall: typography.caption,          // 14px normal
+        labelSmall: typography.footnote,        // 12px normal
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: colors.primaryBackground,

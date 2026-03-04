@@ -5,6 +5,7 @@ import EventDetailPage from './pages/EventDetailPage'
 import TicketsPage from './pages/TicketsPage'
 import OrdersPage from './pages/OrdersPage'
 import VenuesPage from './pages/VenuesPage'
+import UsersPage from './pages/UsersPage'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/venues" element={<VenuesPage />} />
+          <Route path="/users" element={<UsersPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

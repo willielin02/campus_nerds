@@ -318,7 +318,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
 
   /// 「填寫問卷 / 學習報告 / 分析中...」按鈕
   Widget _buildFeedbackButton(AppColorsTheme colors, MyEvent event) {
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     // English Games：按鈕狀態取決於 RecordingBloc（報告是否完成 / 分析中）
@@ -357,7 +357,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
             onPressed: onPressed,
             showLoading: showLoading,
             fontFamily: fontFamily,
-            textTheme: textTheme,
+            typo: typo,
           );
         },
       );
@@ -383,7 +383,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
       label: label,
       onPressed: onPressed,
       fontFamily: fontFamily,
-      textTheme: textTheme,
+      typo: typo,
     );
   }
 
@@ -393,7 +393,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     required VoidCallback? onPressed,
     bool showLoading = false,
     required String? fontFamily,
-    required TextTheme textTheme,
+    required AppTypography typo,
   }) {
     return SizedBox(
       width: 144,
@@ -421,7 +421,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
               )
             : Text(
                 label,
-                style: textTheme.labelLarge?.copyWith(
+                style: typo.heading.copyWith(
                   fontFamily: fontFamily,
                   color: colors.secondaryBackground,
                 ),
@@ -698,7 +698,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     MyEvent event,
     MyEventsState state,
   ) {
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final cityName = _getCityName(event.cityId);
     final statusText = _getStatusText(event);
     final showTabs = _tabController != null;
@@ -732,13 +732,13 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                           children: [
                             Text(
                               widget.isFocusedStudy ? 'Focused Study' : 'English Games',
-                              style: textTheme.titleLarge?.copyWith(
+                              style: typo.sectionTitle.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
                             ),
                             Text(
                               '  ( $cityName ) ',
-                              style: textTheme.labelMedium?.copyWith(
+                              style: typo.subheading.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
                             ),
@@ -754,7 +754,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                   padding: const EdgeInsets.all(4),
                                   child: Text(
                                     statusText,
-                                    style: textTheme.bodyMedium?.copyWith(
+                                    style: typo.caption.copyWith(
                                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                       color: colors.secondaryBackground,
                                     ),
@@ -777,19 +777,19 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                 children: [
                                   Text(
                                     '時間： ',
-                                    style: textTheme.labelMedium?.copyWith(
+                                    style: typo.subheading.copyWith(
                                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                     ),
                                   ),
                                   Text(
                                     _formatDateDisplay(event),
-                                    style: textTheme.labelLarge?.copyWith(
+                                    style: typo.heading.copyWith(
                                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                     ),
                                   ),
                                   Text(
                                     '  ${_formatTimeDisplay(event)}',
-                                    style: textTheme.labelLarge?.copyWith(
+                                    style: typo.heading.copyWith(
                                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                     ),
                                   ),
@@ -812,7 +812,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                           children: [
                             Text(
                               '地點： ',
-                              style: textTheme.labelMedium?.copyWith(
+                              style: typo.subheading.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
                             ),
@@ -830,7 +830,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                         Flexible(
                                           child: Text(
                                             _getLocationDisplay(event),
-                                            style: textTheme.labelMedium?.copyWith(
+                                            style: typo.subheading.copyWith(
                                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                               decoration: event.venueGoogleMapUrl != null
                                                   ? TextDecoration.underline
@@ -855,7 +855,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                         padding: const EdgeInsets.only(top: 4),
                                         child: Text(
                                           ' ( ${event.venueAddress} ) ',
-                                          style: textTheme.bodyMedium?.copyWith(
+                                          style: typo.caption.copyWith(
                                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                           ),
                                         ),
@@ -874,7 +874,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
                             ' ( 確切時間地點將於活動日兩天前通知 ) ',
-                            style: textTheme.bodyMedium?.copyWith(
+                            style: typo.caption.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
@@ -905,7 +905,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                   ),
                                   child: Text(
                                     '規則',
-                                    style: textTheme.labelLarge?.copyWith(
+                                    style: typo.heading.copyWith(
                                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                       color: colors.secondaryText,
                                     ),
@@ -936,7 +936,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                   ),
                                   child: Text(
                                     '取消報名',
-                                    style: textTheme.labelLarge?.copyWith(
+                                    style: typo.heading.copyWith(
                                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                       color: colors.secondaryBackground,
                                     ),
@@ -971,10 +971,10 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                   controller: _tabController,
                                   labelColor: colors.primaryText,
                                   unselectedLabelColor: colors.tertiary,
-                                  labelStyle: textTheme.titleMedium?.copyWith(
+                                  labelStyle: typo.pageTitle.copyWith(
                                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                   ),
-                                  unselectedLabelStyle: textTheme.labelLarge?.copyWith(
+                                  unselectedLabelStyle: typo.heading.copyWith(
                                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                   ),
                                   indicatorColor: colors.secondaryText,
@@ -999,7 +999,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                                               ),
                                               child: Text(
                                                 '$_chatUnreadCount',
-                                                style: textTheme.bodySmall?.copyWith(
+                                                style: typo.footnote.copyWith(
                                                   color: colors.secondaryBackground,
                                                   fontSize: 11,
                                                 ),
@@ -1045,7 +1045,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     MyEvent event,
     MyEventsState state,
   ) {
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     if (state.isLoadingStudyPlans) {
       return Center(
@@ -1096,7 +1096,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                         children: [
                           Text(
                             '尚無目標',
-                            style: textTheme.labelLarge?.copyWith(
+                            style: typo.heading.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
@@ -1109,7 +1109,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                         children: [
                           Text(
                             '等待小組成員設定目標',
-                            style: textTheme.bodyLarge?.copyWith(
+                            style: typo.body.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               color: colors.secondaryText,
                             ),
@@ -1153,7 +1153,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
               padding: const EdgeInsets.only(top: 24),
               child: Text(
                 '請先寫下活動期間你希望完成的 3 個待辦事項，分組後你將看到其他夥伴的待辦事項。',
-                style: textTheme.bodyMedium?.copyWith(
+                style: typo.caption.copyWith(
                   fontFamily: fontFamily,
                   color: colors.tertiaryText,
                 ),
@@ -1183,7 +1183,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
     MyEvent event,
     MyEventsState state,
   ) {
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     if (state.isLoadingEnglishAssignments) {
       return Center(
@@ -1234,7 +1234,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                         children: [
                           Text(
                             '尚未分配學習內容',
-                            style: textTheme.labelLarge?.copyWith(
+                            style: typo.heading.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
@@ -1247,7 +1247,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
                         children: [
                           Text(
                             '等待系統分配學習內容',
-                            style: textTheme.bodyLarge?.copyWith(
+                            style: typo.body.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               color: colors.secondaryText,
                             ),
@@ -1291,7 +1291,7 @@ class _EventDetailsPageState extends State<EventDetailsPage>
               padding: const EdgeInsets.only(top: 24),
               child: Text(
                 '分組後你將看到其他組員的學習內容。',
-                style: textTheme.bodyMedium?.copyWith(
+                style: typo.caption.copyWith(
                   fontFamily: fontFamily,
                   color: colors.tertiaryText,
                 ),

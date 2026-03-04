@@ -70,22 +70,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
       return;
     }
 
+    const fallback = UserProfileStatus(
+      hasUniversity: false,
+      hasBasicInfo: false,
+    );
+
     try {
       // Get profile status to determine routing
       final profileStatus = await _authRepository.getUserProfileStatus();
-      _syncProfileToRouter(profileStatus);
+      // getUserProfileStatus() returns null on network failure (catches internally).
+      // Use fallback to avoid leaving profileChecked=false forever (stuck on splash).
+      final status = profileStatus ?? fallback;
+      _syncProfileToRouter(status);
       emit(state.copyWithAuthenticated(
         user: user,
-        profileStatus: profileStatus,
+        profileStatus: status,
       ));
     } catch (e) {
       // On failure, assume user needs full onboarding (restrictive default).
       // This prevents the user from being stuck on splash forever, and
       // ensures they cannot bypass onboarding if the network call fails.
-      const fallback = UserProfileStatus(
-        hasUniversity: false,
-        hasBasicInfo: false,
-      );
       _syncProfileToRouter(fallback);
       emit(state.copyWithAuthenticated(user: user, profileStatus: fallback));
     }

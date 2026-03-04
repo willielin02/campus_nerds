@@ -43,7 +43,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   Widget _buildSystemMessage(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
@@ -51,7 +51,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       child: Text(
         message.systemMessageText,
         textAlign: TextAlign.center,
-        style: textTheme.bodyMedium?.copyWith(
+        style: typo.caption.copyWith(
           fontFamily: fontFamily,
           color: colors.secondaryText,
         ),
@@ -61,7 +61,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   Widget _buildOwnMessage(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
@@ -84,7 +84,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Text(
                     message.content ?? '',
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: fontFamily,
                       color: colors.primaryBackground,
                     ),
@@ -101,7 +101,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 padding: const EdgeInsets.only(right: 8),
                 child: Text(
                   _formatTime(message.createdAt),
-                  style: textTheme.bodyMedium?.copyWith(
+                  style: typo.caption.copyWith(
                     fontFamily: fontFamily,
                     color: colors.secondaryText,
                   ),
@@ -115,7 +115,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   Widget _buildOtherMessage(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
@@ -132,7 +132,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 onTap: () => _showProfilePopup(),
                 child: Text(
                   '書呆子 ${message.displaySender}',
-                  style: textTheme.bodyMedium?.copyWith(
+                  style: typo.caption.copyWith(
                     fontFamily: fontFamily,
                     color: colors.secondaryText,
                   ),
@@ -163,7 +163,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                             horizontal: 8, vertical: 6),
                         child: Text(
                           message.content ?? '',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontFamily: fontFamily,
                             color: colors.secondaryText,
                           ),
@@ -177,7 +177,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       padding: const EdgeInsets.only(right: 8),
                       child: Text(
                         _formatTime(message.createdAt),
-                        style: textTheme.bodyMedium?.copyWith(
+                        style: typo.caption.copyWith(
                           fontFamily: fontFamily,
                           color: colors.secondaryText,
                         ),
@@ -223,7 +223,7 @@ class ChatDateDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
@@ -236,7 +236,7 @@ class ChatDateDivider extends StatelessWidget {
           ),
           Text(
             _formatDate(date),
-            style: textTheme.bodyMedium?.copyWith(
+            style: typo.caption.copyWith(
               fontFamily: fontFamily,
               color: colors.quaternary,
             ),

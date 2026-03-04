@@ -32,7 +32,7 @@ class EnglishContentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
     final accentColor =
         assignment.isMe ? colors.secondaryText : colors.tertiaryText;
@@ -74,7 +74,7 @@ class EnglishContentCard extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: '書呆子 ${assignment.displayName}',
-                        style: textTheme.labelLarge?.copyWith(
+                        style: typo.heading.copyWith(
                           fontFamily: fontFamily,
                           color:
                               assignment.isMe ? null : colors.secondaryText,
@@ -82,7 +82,7 @@ class EnglishContentCard extends StatelessWidget {
                       ),
                       TextSpan(
                         text: ' 的學習內容',
-                        style: textTheme.labelLarge?.copyWith(
+                        style: typo.heading.copyWith(
                           fontFamily: fontFamily,
                           color: accentColor,
                         ),
@@ -104,7 +104,7 @@ class EnglishContentCard extends StatelessWidget {
                           canViewContent
                               ? assignment.contentEn!
                               : '???',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontFamily: fontFamily,
                             color: assignment.isMe
                                 ? colors.primaryText
@@ -117,7 +117,7 @@ class EnglishContentCard extends StatelessWidget {
                           canViewContent
                               ? (assignment.contentZh ?? '')
                               : '???',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontFamily: fontFamily,
                             color: assignment.isMe
                                 ? colors.secondaryText
@@ -128,7 +128,7 @@ class EnglishContentCard extends StatelessWidget {
                     )
                   : Text(
                       '尚未分配學習內容',
-                      style: textTheme.bodyLarge?.copyWith(
+                      style: typo.body.copyWith(
                         fontFamily: fontFamily,
                         color: colors.quaternary,
                       ),

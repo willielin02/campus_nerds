@@ -43,7 +43,7 @@ class _NotificationDialogContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Container(
@@ -67,7 +67,7 @@ class _NotificationDialogContent extends StatelessWidget {
               padding: const EdgeInsets.only(top: 16),
               child: Text(
                 notification.title,
-                style: textTheme.labelLarge?.copyWith(
+                style: typo.heading.copyWith(
                   fontFamily: fontFamily,
                 ),
               ),
@@ -77,7 +77,7 @@ class _NotificationDialogContent extends StatelessWidget {
               padding: const EdgeInsets.only(top: 16),
               child: Text(
                 notification.body,
-                style: context.appTypography.bodyBig,
+                style: context.appTypography.detail,
               ),
             ),
             // Button
@@ -98,7 +98,7 @@ class _NotificationDialogContent extends StatelessWidget {
                   ),
                   child: Text(
                     '我知道了',
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: fontFamily,
                     ),
                   ),

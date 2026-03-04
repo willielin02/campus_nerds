@@ -48,7 +48,7 @@ class _MyEventsPageState extends State<MyEventsPage>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return GestureDetector(
         onTap: () {
@@ -79,10 +79,10 @@ class _MyEventsPageState extends State<MyEventsPage>
                               controller: _tabController,
                               labelColor: colors.secondaryText,
                               unselectedLabelColor: colors.tertiary,
-                              labelStyle: textTheme.labelLarge?.copyWith(
+                              labelStyle: typo.heading.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
-                              unselectedLabelStyle: textTheme.bodyLarge?.copyWith(
+                              unselectedLabelStyle: typo.body.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
                               indicatorColor: colors.secondaryText,
@@ -104,7 +104,6 @@ class _MyEventsPageState extends State<MyEventsPage>
                                     // Upcoming tab
                                     _buildEventsList(
                                       colors,
-                                      textTheme,
                                       state.upcomingEvents,
                                       state.status == MyEventsStatus.loading,
                                       isUpcoming: true,
@@ -112,7 +111,6 @@ class _MyEventsPageState extends State<MyEventsPage>
                                     // History tab
                                     _buildEventsList(
                                       colors,
-                                      textTheme,
                                       state.pastEvents,
                                       state.status == MyEventsStatus.loading,
                                       isUpcoming: false,
@@ -139,7 +137,6 @@ class _MyEventsPageState extends State<MyEventsPage>
 
   Widget _buildEventsList(
     AppColorsTheme colors,
-    TextTheme textTheme,
     List<MyEvent> events,
     bool isLoading, {
     required bool isUpcoming,
@@ -159,9 +156,11 @@ class _MyEventsPageState extends State<MyEventsPage>
                 ),
               )
             else if (events.isEmpty)
-              isUpcoming
-                  ? const _MyEventCardEmptyUpcoming()
-                  : const _MyEventCardEmptyHistory()
+              Expanded(
+                child: isUpcoming
+                    ? _MyEventCardEmptyUpcoming(onGoHome: () => context.go(AppRoutes.home))
+                    : const _MyEventCardEmptyHistory(),
+              )
             else
               Expanded(
                 child: ShaderMask(
@@ -208,7 +207,6 @@ class _MyEventCardLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
 
     return Container(
       width: double.infinity,
@@ -270,15 +268,9 @@ class _MyEventCardLoading extends StatelessWidget {
               padding: const EdgeInsets.only(top: 12),
               child: Row(
                 children: [
-                  Text(
-                    '時間： ',
-                    style: textTheme.labelMedium?.copyWith(
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                    ),
-                  ),
                   Container(
-                    width: 108,
-                    height: 24,
+                    width: 48,
+                    height: 20,
                     decoration: BoxDecoration(
                       color: colors.alternate,
                       borderRadius: BorderRadius.circular(6),
@@ -287,8 +279,19 @@ class _MyEventCardLoading extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 8),
                     child: Container(
+                      width: 108,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: colors.alternate,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Container(
                       width: 48,
-                      height: 24,
+                      height: 20,
                       decoration: BoxDecoration(
                         color: colors.alternate,
                         borderRadius: BorderRadius.circular(6),
@@ -303,18 +306,23 @@ class _MyEventCardLoading extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(0, 12, 0, 18),
               child: Row(
                 children: [
-                  Text(
-                    '地點： ',
-                    style: textTheme.labelMedium?.copyWith(
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                    ),
-                  ),
                   Container(
-                    width: 128,
-                    height: 24,
+                    width: 48,
+                    height: 20,
                     decoration: BoxDecoration(
                       color: colors.alternate,
                       borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Container(
+                      width: 128,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: colors.alternate,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
                   ),
                 ],
@@ -329,44 +337,75 @@ class _MyEventCardLoading extends StatelessWidget {
 
 /// Empty state for upcoming events
 class _MyEventCardEmptyUpcoming extends StatelessWidget {
-  const _MyEventCardEmptyUpcoming();
+  const _MyEventCardEmptyUpcoming({required this.onGoHome});
+
+  final VoidCallback onGoHome;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: colors.secondaryBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: colors.tertiary,
-            width: 2,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.event_available_outlined,
-                size: 48,
-                color: colors.tertiary,
+    return LayoutBuilder(
+      builder: (context, constraints) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight * 0.25,
+              child: Image.asset(
+                'assets/images/black_only_transparent.png',
+                fit: BoxFit.contain,
               ),
-              const SizedBox(height: 12),
-              Text(
-                '目前沒有即將到來的活動',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colors.secondaryText,
+            ),
+            const SizedBox(height: 32),
+            Text(
+              '快去探索新活動！',
+              style: typo.heading.copyWith(
+                color: colors.primaryText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '首頁有好多活動正在等著你',
+              style: typo.detail.copyWith(
+                color: colors.tertiaryText,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 6,
+                    spreadRadius: -2,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: TextButton(
+                onPressed: onGoHome,
+                style: TextButton.styleFrom(
+                  backgroundColor: colors.alternate,
+                  foregroundColor: colors.secondaryText,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  '去逛逛',
+                  style: typo.body.copyWith(
+                    color: colors.secondaryText,
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -380,39 +419,36 @@ class _MyEventCardEmptyHistory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: colors.secondaryBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: colors.tertiary,
-            width: 2,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.history,
-                size: 48,
-                color: colors.tertiary,
+    return LayoutBuilder(
+      builder: (context, constraints) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight * 0.25,
+              child: Image.asset(
+                'assets/images/black_only_transparent_2.png',
+                fit: BoxFit.contain,
               ),
-              const SizedBox(height: 12),
-              Text(
-                '目前沒有過去的活動',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colors.secondaryText,
-                ),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              '還沒有回憶呢',
+              style: typo.heading.copyWith(
+                color: colors.primaryText,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '參加活動後，精采回顧都會在這裡！',
+              style: typo.detail.copyWith(
+                color: colors.tertiaryText,
+              ),
+            ),
+          ],
         ),
       ),
     );

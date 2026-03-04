@@ -26,7 +26,7 @@ class SettingsListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return InkWell(
       onTap: onTap,
@@ -44,7 +44,7 @@ class SettingsListTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       color: isDestructive ? colors.error : colors.primaryText,
                       fontWeight: FontWeight.w500,
                     ),
@@ -53,7 +53,7 @@ class SettingsListTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: textTheme.bodySmall?.copyWith(
+                      style: typo.footnote.copyWith(
                         color: colors.secondaryText,
                       ),
                     ),
@@ -92,13 +92,13 @@ class SettingsSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, top: 24, bottom: 8),
       child: Text(
         title,
-        style: textTheme.labelMedium?.copyWith(
+        style: typo.subheading.copyWith(
           color: colors.secondaryText,
           fontWeight: FontWeight.w600,
         ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/theme/app_theme.dart';
@@ -17,8 +16,7 @@ class ContactSupportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
-    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+    final typo = context.appTypography;
 
     return Scaffold(
       backgroundColor: colors.primaryBackground,
@@ -34,8 +32,7 @@ class ContactSupportPage extends StatelessWidget {
         ),
         title: Text(
           '聯絡客服',
-          style: textTheme.titleMedium?.copyWith(
-            fontFamily: fontFamily,
+          style: typo.pageTitle.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -52,8 +49,7 @@ class ContactSupportPage extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   '如有任何問題或建議，歡迎透過以下方式聯絡我們。',
-                  style: textTheme.bodyLarge?.copyWith(
-                    fontFamily: fontFamily,
+                  style: typo.body.copyWith(
                     color: colors.secondaryText,
                   ),
                 ),
@@ -87,8 +83,7 @@ class ContactSupportPage extends StatelessWidget {
                             const SizedBox(width: 8),
                             Text(
                               '電子郵件',
-                              style: textTheme.bodyMedium?.copyWith(
-                                fontFamily: fontFamily,
+                              style: typo.caption.copyWith(
                                 color: colors.secondaryText,
                               ),
                             ),
@@ -99,8 +94,7 @@ class ContactSupportPage extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
                             _supportEmail,
-                            style: textTheme.bodyLarge?.copyWith(
-                              fontFamily: fontFamily,
+                            style: typo.body.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -117,8 +111,7 @@ class ContactSupportPage extends StatelessWidget {
                                   label: '複製',
                                   onTap: () => _copyEmail(context),
                                   colors: colors,
-                                  textTheme: textTheme,
-                                  fontFamily: fontFamily,
+                                  typo: typo,
                                   isOutlined: true,
                                 ),
                               ),
@@ -130,8 +123,7 @@ class ContactSupportPage extends StatelessWidget {
                                   label: '寄信',
                                   onTap: () => _sendEmail(context),
                                   colors: colors,
-                                  textTheme: textTheme,
-                                  fontFamily: fontFamily,
+                                  typo: typo,
                                   isOutlined: false,
                                 ),
                               ),
@@ -165,8 +157,7 @@ class ContactSupportPage extends StatelessWidget {
                         Expanded(
                           child: Text(
                             '預計回覆時間：1-2 個工作天',
-                            style: textTheme.bodyMedium?.copyWith(
-                              fontFamily: fontFamily,
+                            style: typo.caption.copyWith(
                               color: colors.secondaryText,
                             ),
                           ),
@@ -256,8 +247,7 @@ class _ActionButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.colors,
-    required this.textTheme,
-    required this.fontFamily,
+    required this.typo,
     required this.isOutlined,
   });
 
@@ -265,8 +255,7 @@ class _ActionButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final AppColorsTheme colors;
-  final TextTheme textTheme;
-  final String? fontFamily;
+  final AppTypography typo;
   final bool isOutlined;
 
   @override
@@ -295,8 +284,7 @@ class _ActionButton extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               label,
-              style: textTheme.bodyLarge?.copyWith(
-                fontFamily: fontFamily,
+              style: typo.body.copyWith(
                 color: colors.secondaryText,
               ),
             ),

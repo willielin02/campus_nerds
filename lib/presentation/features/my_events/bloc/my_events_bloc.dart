@@ -36,32 +36,52 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
   }
 
   /// Load initial my events data
+  /// Uses stale-while-revalidate: if cached data exists, show it immediately
+  /// and refresh in background without showing loading skeleton.
   Future<void> _onLoadData(
     MyEventsLoadData event,
     Emitter<MyEventsState> emit,
   ) async {
     if (state.status == MyEventsStatus.loading) return;
 
-    emit(state.copyWith(status: MyEventsStatus.loading));
+    final hasCachedData = state.status == MyEventsStatus.loaded;
+
+    if (hasCachedData) {
+      // Show cached data immediately, refresh silently in background
+      emit(state.copyWith(isRefreshing: true));
+    } else {
+      emit(state.copyWith(status: MyEventsStatus.loading));
+    }
 
     try {
-      final upcomingEvents = await _myEventsRepository.getUpcomingEvents();
-      final pastEvents = await _myEventsRepository.getPastEvents();
-      final ticketBalance = await _myEventsRepository.getTicketBalance();
+      final results = await Future.wait([
+        _myEventsRepository.getUpcomingEvents(),
+        _myEventsRepository.getPastEvents(),
+        _myEventsRepository.getTicketBalance(),
+      ]);
+
+      final upcomingEvents = results[0] as List<MyEvent>;
+      final pastEvents = results[1] as List<MyEvent>;
+      final ticketBalance = results[2] as TicketBalance;
 
       emit(state.copyWith(
         status: MyEventsStatus.loaded,
         upcomingEvents: upcomingEvents,
         pastEvents: pastEvents,
         ticketBalance: ticketBalance,
+        isRefreshing: false,
       ));
 
       _setupRealtimeSubscriptions(upcomingEvents);
     } catch (e) {
-      emit(state.copyWith(
-        status: MyEventsStatus.error,
-        errorMessage: '載入資料失敗',
-      ));
+      if (hasCachedData) {
+        emit(state.copyWith(isRefreshing: false));
+      } else {
+        emit(state.copyWith(
+          status: MyEventsStatus.error,
+          errorMessage: '載入資料失敗',
+        ));
+      }
     }
   }
 
@@ -73,9 +93,15 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
     emit(state.copyWith(isRefreshing: true));
 
     try {
-      final upcomingEvents = await _myEventsRepository.getUpcomingEvents();
-      final pastEvents = await _myEventsRepository.getPastEvents();
-      final ticketBalance = await _myEventsRepository.getTicketBalance();
+      final results = await Future.wait([
+        _myEventsRepository.getUpcomingEvents(),
+        _myEventsRepository.getPastEvents(),
+        _myEventsRepository.getTicketBalance(),
+      ]);
+
+      final upcomingEvents = results[0] as List<MyEvent>;
+      final pastEvents = results[1] as List<MyEvent>;
+      final ticketBalance = results[2] as TicketBalance;
 
       emit(state.copyWith(
         upcomingEvents: upcomingEvents,

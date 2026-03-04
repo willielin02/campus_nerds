@@ -95,14 +95,14 @@ class _HomePageState extends State<HomePage>
               children: [
                 Text(
                   '無法報名此活動',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: context.appTypography.pageTitle.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   '你在此日期的同一時段已經報名其他活動，請改選其他時段或日期。',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  style: context.appTypography.caption.copyWith(
                         color: colors.secondaryText,
                       ),
                   textAlign: TextAlign.center,
@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return GestureDetector(
       onTap: () {
@@ -154,10 +154,10 @@ class _HomePageState extends State<HomePage>
                             controller: _tabController,
                             labelColor: colors.primaryText,
                             unselectedLabelColor: colors.tertiary,
-                            labelStyle: textTheme.labelLarge?.copyWith(
+                            labelStyle: typo.heading.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
-                            unselectedLabelStyle: textTheme.bodyLarge?.copyWith(
+                            unselectedLabelStyle: typo.body.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                             indicatorColor: colors.secondaryText,
@@ -178,9 +178,9 @@ class _HomePageState extends State<HomePage>
                                 controller: _tabController,
                                 children: [
                                   // Focused Study tab
-                                  _buildFocusedStudyTab(colors, textTheme, state),
+                                  _buildFocusedStudyTab(colors, typo, state),
                                   // English Games tab
-                                  _buildEnglishGamesTab(colors, textTheme, state),
+                                  _buildEnglishGamesTab(colors, typo, state),
                                 ],
                               );
                             },
@@ -200,7 +200,7 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildFocusedStudyTab(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     HomeState state,
   ) {
     return Container(
@@ -229,7 +229,7 @@ class _HomePageState extends State<HomePage>
                           padding: const EdgeInsets.only(left: 4),
                           child: Text(
                             state.selectedCityName,
-                            style: textTheme.labelLarge?.copyWith(
+                            style: typo.heading.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
@@ -278,7 +278,7 @@ class _HomePageState extends State<HomePage>
                               padding: const EdgeInsets.only(right: 6),
                               child: Text(
                                 '${state.ticketBalance.studyBalance}',
-                                style: textTheme.labelLarge?.copyWith(
+                                style: typo.heading.copyWith(
                                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                   color: colors.secondaryText,
                                 ),
@@ -304,7 +304,7 @@ class _HomePageState extends State<HomePage>
                         padding: const EdgeInsets.only(left: 4),
                         child: Text(
                           '和其他書呆子一起',
-                          style: textTheme.titleMedium?.copyWith(
+                          style: typo.pageTitle.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
@@ -318,7 +318,7 @@ class _HomePageState extends State<HomePage>
                       children: [
                         Text(
                           '交出手機，全程專注學習',
-                          style: textTheme.titleMedium?.copyWith(
+                          style: typo.pageTitle.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
@@ -333,7 +333,7 @@ class _HomePageState extends State<HomePage>
             Expanded(
               child: _buildEventsList(
                 colors,
-                textTheme,
+                typo,
                 state.focusedStudyEvents,
                 state.status == HomeStatus.loading,
               ),
@@ -346,7 +346,7 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildEnglishGamesTab(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     HomeState state,
   ) {
     return Container(
@@ -375,7 +375,7 @@ class _HomePageState extends State<HomePage>
                           padding: const EdgeInsets.only(left: 4),
                           child: Text(
                             state.selectedCityName,
-                            style: textTheme.labelLarge?.copyWith(
+                            style: typo.heading.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
@@ -424,7 +424,7 @@ class _HomePageState extends State<HomePage>
                               padding: const EdgeInsets.only(right: 6),
                               child: Text(
                                 '${state.ticketBalance.gamesBalance}',
-                                style: textTheme.labelLarge?.copyWith(
+                                style: typo.heading.copyWith(
                                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                   color: colors.secondaryText,
                                 ),
@@ -450,7 +450,7 @@ class _HomePageState extends State<HomePage>
                         padding: const EdgeInsets.only(left: 4),
                         child: Text(
                           '和其他書呆子一起',
-                          style: textTheme.titleMedium?.copyWith(
+                          style: typo.pageTitle.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
@@ -464,7 +464,7 @@ class _HomePageState extends State<HomePage>
                       children: [
                         Text(
                           '用英文玩桌遊、密室逃脫',
-                          style: textTheme.titleMedium?.copyWith(
+                          style: typo.pageTitle.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
@@ -479,7 +479,7 @@ class _HomePageState extends State<HomePage>
             Expanded(
               child: _buildEventsList(
                 colors,
-                textTheme,
+                typo,
                 state.englishGamesEvents,
                 state.status == HomeStatus.loading,
               ),
@@ -492,7 +492,7 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildEventsList(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     List<Event> events,
     bool isLoading,
   ) {
@@ -635,7 +635,7 @@ class _EventCardEmpty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24),
@@ -666,7 +666,7 @@ class _EventCardEmpty extends StatelessWidget {
               Text(
                 '很抱歉，\n目前這個城市沒有可報名的活動。',
                 textAlign: TextAlign.left,
-                style: textTheme.bodyLarge?.copyWith(
+                style: typo.body.copyWith(
                   color: colors.primaryText,
                 ),
               ),

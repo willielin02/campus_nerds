@@ -21,7 +21,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final accent = accentColor ?? colors.primary;
 
     return InkWell(
@@ -47,7 +47,7 @@ class ProductCard extends StatelessWidget {
               children: [
                 Text(
                   product.title,
-                  style: textTheme.titleSmall?.copyWith(
+                  style: typo.heading.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -63,7 +63,7 @@ class ProductCard extends StatelessWidget {
                     ),
                     child: Text(
                       product.discountLabel,
-                      style: textTheme.bodySmall?.copyWith(
+                      style: typo.footnote.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 10,
@@ -77,7 +77,7 @@ class ProductCard extends StatelessWidget {
             // Pack size
             Text(
               '${product.packSize} 張票券',
-              style: textTheme.bodyMedium?.copyWith(
+              style: typo.caption.copyWith(
                 color: colors.secondaryText,
               ),
             ),
@@ -89,7 +89,7 @@ class ProductCard extends StatelessWidget {
               children: [
                 Text(
                   product.displayPrice,
-                  style: textTheme.titleMedium?.copyWith(
+                  style: typo.pageTitle.copyWith(
                     color: accent,
                     fontWeight: FontWeight.bold,
                   ),
@@ -97,7 +97,7 @@ class ProductCard extends StatelessWidget {
                 if (product.unitPriceTwd != null)
                   Text(
                     '每張 NT\$ ${product.unitPriceTwd}',
-                    style: textTheme.bodySmall?.copyWith(
+                    style: typo.footnote.copyWith(
                       color: colors.secondaryText,
                     ),
                   ),

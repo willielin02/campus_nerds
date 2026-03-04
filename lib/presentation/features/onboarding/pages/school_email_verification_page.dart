@@ -76,7 +76,7 @@ class _SchoolEmailVerificationPageState
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return BlocListener<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
@@ -219,7 +219,7 @@ class _SchoolEmailVerificationPageState
                               children: [
                                 Text(
                                   'Step2 驗證您的學校信箱',
-                                  style: textTheme.titleMedium?.copyWith(
+                                  style: typo.pageTitle.copyWith(
                                     fontFamily:
                                         GoogleFonts.notoSansTc().fontFamily,
                                   ),
@@ -236,7 +236,7 @@ class _SchoolEmailVerificationPageState
                               children: [
                                 Text(
                                   '為了確保最好的活動品質',
-                                  style: textTheme.bodyLarge?.copyWith(
+                                  style: typo.body.copyWith(
                                     fontFamily:
                                         GoogleFonts.notoSansTc().fontFamily,
                                   ),
@@ -246,7 +246,7 @@ class _SchoolEmailVerificationPageState
                           ),
 
                           // Email field section
-                          _buildEmailSection(colors, textTheme),
+                          _buildEmailSection(colors, typo),
 
                           // Code field section (animated expand)
                           SizeTransition(
@@ -254,7 +254,7 @@ class _SchoolEmailVerificationPageState
                             axisAlignment: -1.0,
                             child: FadeTransition(
                               opacity: _expandAnimation,
-                              child: _buildCodeSection(colors, textTheme),
+                              child: _buildCodeSection(colors, typo),
                             ),
                           ),
                               ],
@@ -273,7 +273,7 @@ class _SchoolEmailVerificationPageState
     );
   }
 
-  Widget _buildEmailSection(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildEmailSection(AppColorsTheme colors, AppTypography typo) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         final canSend = state.cooldownSeconds == 0 && !state.isLoading;
@@ -292,7 +292,7 @@ class _SchoolEmailVerificationPageState
                 padding: const EdgeInsets.only(left: 2),
                 child: Text(
                   '學校信箱',
-                  style: textTheme.labelLarge?.copyWith(
+                  style: typo.heading.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     color: colors.secondaryText,
                   ),
@@ -309,14 +309,14 @@ class _SchoolEmailVerificationPageState
                     focusNode: _emailFocusNode,
                     keyboardType: TextInputType.emailAddress,
                     cursorColor: colors.primaryText,
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                       color: colors.primaryText,
                     ),
                     decoration: InputDecoration(
                       isDense: true,
                       hintText: '請輸入學校信箱',
-                      hintStyle: textTheme.bodyLarge?.copyWith(
+                      hintStyle: typo.body.copyWith(
                         fontFamily: GoogleFonts.notoSansTc().fontFamily,
                         color: colors.tertiary,
                       ),
@@ -376,7 +376,7 @@ class _SchoolEmailVerificationPageState
                     ),
                     child: Text(
                       buttonText,
-                      style: textTheme.bodyLarge?.copyWith(
+                      style: typo.body.copyWith(
                         fontFamily: GoogleFonts.notoSansTc().fontFamily,
                       ),
                     ),
@@ -391,7 +391,7 @@ class _SchoolEmailVerificationPageState
     );
   }
 
-  Widget _buildCodeSection(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildCodeSection(AppColorsTheme colors, AppTypography typo) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         return Padding(
@@ -407,7 +407,7 @@ class _SchoolEmailVerificationPageState
                     padding: const EdgeInsets.only(left: 2),
                     child: Text(
                       '驗證碼',
-                      style: textTheme.labelLarge?.copyWith(
+                      style: typo.heading.copyWith(
                         fontFamily: GoogleFonts.notoSansTc().fontFamily,
                         color: colors.secondaryText,
                       ),
@@ -424,14 +424,14 @@ class _SchoolEmailVerificationPageState
                         focusNode: _codeFocusNode,
                         keyboardType: TextInputType.number,
                         cursorColor: colors.primaryText,
-                        style: textTheme.bodyLarge?.copyWith(
+                        style: typo.body.copyWith(
                           fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           color: colors.primaryText,
                         ),
                         decoration: InputDecoration(
                           isDense: true,
                           hintText: '請輸入驗證碼',
-                          hintStyle: textTheme.bodyLarge?.copyWith(
+                          hintStyle: typo.body.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             color: colors.tertiary,
                           ),
@@ -499,7 +499,7 @@ class _SchoolEmailVerificationPageState
                           )
                         : Text(
                             '驗證',
-                            style: textTheme.labelLarge?.copyWith(
+                            style: typo.heading.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),

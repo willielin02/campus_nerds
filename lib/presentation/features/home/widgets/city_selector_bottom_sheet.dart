@@ -86,7 +86,7 @@ class CitySelectorBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return Padding(
       // Outer padding: 16 left/right (matches FlutterFlow)
@@ -111,7 +111,7 @@ class CitySelectorBottomSheet extends StatelessWidget {
                 children: [
                   Text(
                     '想認識哪裡的書呆子呢？',
-                    style: textTheme.titleMedium?.copyWith(
+                    style: typo.pageTitle.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
                   ),
@@ -179,7 +179,7 @@ class _CityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return Opacity(
       opacity: isDisabled ? 0.22 : 1.0,
@@ -231,7 +231,7 @@ class _CityCard extends StatelessWidget {
                       children: [
                         Text(
                           city.name,
-                          style: textTheme.labelLarge?.copyWith(
+                          style: typo.heading.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             shadows: [
                               Shadow(

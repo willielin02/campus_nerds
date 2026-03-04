@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/router/app_routes.dart';
@@ -106,7 +105,7 @@ class _CheckoutPageState extends State<CheckoutPage>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return BlocConsumer<CheckoutBloc, CheckoutState>(
       listener: (context, state) {
@@ -161,7 +160,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: state.status == CheckoutStatus.loading
                               ? const Center(child: CircularProgressIndicator())
-                              : _buildContent(colors, textTheme, state),
+                              : _buildContent(colors, typo, state),
                         ),
                       ),
                     ),
@@ -199,7 +198,7 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   Widget _buildContent(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     CheckoutState state,
   ) {
     return Column(
@@ -224,12 +223,8 @@ class _CheckoutPageState extends State<CheckoutPage>
           controller: _tabController,
           labelColor: colors.primaryText,
           unselectedLabelColor: colors.tertiary,
-          labelStyle: textTheme.labelLarge?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
-          unselectedLabelStyle: textTheme.bodyLarge?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-          ),
+          labelStyle: typo.heading,
+          unselectedLabelStyle: typo.body,
           indicatorColor: colors.secondaryText,
           dividerColor: Colors.transparent,
           tabs: const [
@@ -244,8 +239,8 @@ class _CheckoutPageState extends State<CheckoutPage>
           child: TabBarView(
             controller: _tabController,
             children: [
-              _buildStudyTab(colors, textTheme, state),
-              _buildGamesTab(colors, textTheme, state),
+              _buildStudyTab(colors, typo, state),
+              _buildGamesTab(colors, typo, state),
             ],
           ),
         ),
@@ -255,7 +250,7 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   Widget _buildStudyTab(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     CheckoutState state,
   ) {
     return Container(
@@ -274,14 +269,12 @@ class _CheckoutPageState extends State<CheckoutPage>
                     padding: const EdgeInsets.fromLTRB(4, 12, 0, 0),
                     child: Text(
                       '和其他書呆子一起',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                      ),
+                      style: typo.pageTitle,
                     ),
                   ),
                   _buildTicketBalanceBox(
                     colors,
-                    textTheme,
+                    typo,
                     state.studyBalance,
                     'assets/images/ticket_study_work.png',
                     colors.primary,
@@ -301,9 +294,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                       children: [
                         Text(
                           '交出手機，全程專注學習',
-                          style: textTheme.titleMedium?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                          ),
+                          style: typo.pageTitle,
                         ),
                       ],
                     ),
@@ -316,7 +307,7 @@ class _CheckoutPageState extends State<CheckoutPage>
               padding: const EdgeInsets.only(top: 32),
               child: _buildProductCards(
                 colors,
-                textTheme,
+                typo,
                 state.studyProducts,
                 state.selectedStudyIndex,
                 (index) => context
@@ -327,7 +318,7 @@ class _CheckoutPageState extends State<CheckoutPage>
             // Purchase button
             _buildPurchaseButton(
               colors,
-              textTheme,
+              typo,
               state.studyProducts,
               state.selectedStudyIndex,
               state.status == CheckoutStatus.creating,
@@ -340,7 +331,7 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   Widget _buildGamesTab(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     CheckoutState state,
   ) {
     return Container(
@@ -359,14 +350,12 @@ class _CheckoutPageState extends State<CheckoutPage>
                     padding: const EdgeInsets.fromLTRB(4, 12, 0, 0),
                     child: Text(
                       '和其他書呆子一起',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                      ),
+                      style: typo.pageTitle,
                     ),
                   ),
                   _buildTicketBalanceBox(
                     colors,
-                    textTheme,
+                    typo,
                     state.gamesBalance,
                     'assets/images/ticket_games_work2.png',
                     colors.secondary,
@@ -386,9 +375,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                       children: [
                         Text(
                           '封印中文，全程英文遊戲',
-                          style: textTheme.titleMedium?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                          ),
+                          style: typo.pageTitle,
                         ),
                       ],
                     ),
@@ -401,7 +388,7 @@ class _CheckoutPageState extends State<CheckoutPage>
               padding: const EdgeInsets.only(top: 32),
               child: _buildProductCards(
                 colors,
-                textTheme,
+                typo,
                 state.gamesProducts,
                 state.selectedGamesIndex,
                 (index) => context
@@ -412,7 +399,7 @@ class _CheckoutPageState extends State<CheckoutPage>
             // Purchase button
             _buildPurchaseButton(
               colors,
-              textTheme,
+              typo,
               state.gamesProducts,
               state.selectedGamesIndex,
               state.status == CheckoutStatus.creating,
@@ -425,7 +412,7 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   Widget _buildTicketBalanceBox(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     int balance,
     String imagePath,
     Color fallbackColor,
@@ -465,8 +452,7 @@ class _CheckoutPageState extends State<CheckoutPage>
               padding: const EdgeInsets.only(right: 6),
               child: Text(
                 '$balance',
-                style: textTheme.labelLarge?.copyWith(
-                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                style: typo.heading.copyWith(
                   color: colors.secondaryText,
                 ),
               ),
@@ -479,7 +465,7 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   Widget _buildProductCards(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     List<Product> products,
     int selectedIndex,
     void Function(int) onSelect,
@@ -488,7 +474,7 @@ class _CheckoutPageState extends State<CheckoutPage>
       return Center(
         child: Text(
           '目前沒有可購買的票券',
-          style: textTheme.bodyLarge?.copyWith(
+          style: typo.body.copyWith(
             color: colors.secondaryText,
           ),
         ),
@@ -536,8 +522,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                           isFirst
                               ? '探索'
                               : '節省${product.percentOff}%',
-                          style: textTheme.bodyMedium?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                          style: typo.caption.copyWith(
                             color: isSelected
                                 ? colors.primaryText
                                 : colors.secondaryText,
@@ -554,8 +539,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                         padding: const EdgeInsets.symmetric(vertical: 24),
                         child: Text(
                           '${product.packSize}張票',
-                          style: textTheme.labelMedium?.copyWith(
-                            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                          style: typo.subheading.copyWith(
                             color: isSelected
                                 ? colors.primaryText
                                 : colors.secondaryText,
@@ -567,7 +551,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(
                           'NT\$${product.unitPriceTwd ?? product.priceTwd ~/ product.packSize}/張',
-                          style: context.appTypography.bodyBig.copyWith(
+                          style: typo.detail.copyWith(
                             color: isSelected
                                 ? colors.primaryText
                                 : colors.secondaryText,
@@ -587,7 +571,7 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   Widget _buildPurchaseButton(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     List<Product> products,
     int selectedIndex,
     bool isLoading,
@@ -628,9 +612,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                     )
                   : Text(
                       '以 NT\$ ${selectedProduct.priceTwd} 購買 ${selectedProduct.packSize} 張票',
-                      style: textTheme.bodyLarge?.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                      ),
+                      style: typo.body,
                     ),
             ),
           ),
@@ -640,9 +622,7 @@ class _CheckoutPageState extends State<CheckoutPage>
           padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
           child: Text(
             '票券效期：依最近一次購買日起 1 年內。',
-            style: textTheme.bodyMedium?.copyWith(
-              fontFamily: GoogleFonts.notoSansTc().fontFamily,
-            ),
+            style: typo.caption,
           ),
         ),
       ],

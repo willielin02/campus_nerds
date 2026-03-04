@@ -63,7 +63,7 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return Opacity(
       opacity: event.hasConflictSameSlot ? 0.222 : 1.0,
@@ -93,13 +93,13 @@ class EventCard extends StatelessWidget {
                       children: [
                         Text(
                           _formatDate(event.eventDate),
-                          style: textTheme.labelLarge?.copyWith(
+                          style: typo.heading.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
                         Text(
                           _getTimeSlotName(event.timeSlot),
-                          style: textTheme.labelLarge?.copyWith(
+                          style: typo.heading.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
@@ -125,7 +125,7 @@ class EventCard extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 16),
                       child: Text(
                         _getLocationDisplay(event.locationDetail),
-                        style: textTheme.bodyLarge?.copyWith(
+                        style: typo.body.copyWith(
                           fontFamily: GoogleFonts.notoSansTc().fontFamily,
                         ),
                       ),

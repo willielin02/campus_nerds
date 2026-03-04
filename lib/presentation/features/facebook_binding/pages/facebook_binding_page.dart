@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../app/theme/app_theme.dart';
 import '../../../common/widgets/app_confirm_dialog.dart';
@@ -28,7 +27,7 @@ class _FacebookBindingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return BlocListener<FacebookBindingBloc, FacebookBindingState>(
       listener: (context, state) {
@@ -125,16 +124,12 @@ class _FacebookBindingView extends StatelessWidget {
                                         title: Text(
                                           '解除綁定',
                                           style:
-                                              textTheme.bodyLarge?.copyWith(
-                                            fontFamily:
-                                                GoogleFonts.notoSansTc()
-                                                    .fontFamily,
-                                          ),
+                                              typo.body,
                                         ),
                                         onTap: () {
                                           Navigator.of(sheetContext).pop();
                                           _showUnlinkConfirmDialog(
-                                              context, colors, textTheme);
+                                              context, colors, typo);
                                         },
                                       ),
                                     ),
@@ -188,10 +183,7 @@ class _FacebookBindingView extends StatelessWidget {
                                 children: [
                                   Text(
                                     '臉書帳號綁定',
-                                    style: textTheme.titleMedium?.copyWith(
-                                      fontFamily:
-                                          GoogleFonts.notoSansTc().fontFamily,
-                                    ),
+                                    style: typo.pageTitle,
                                   ),
                                 ],
                               ),
@@ -204,9 +196,7 @@ class _FacebookBindingView extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       '綁定臉書帳號後，我們會在分組時避免將你與臉書好友分到同一組',
-                                      style: textTheme.bodyMedium?.copyWith(
-                                        fontFamily:
-                                            GoogleFonts.notoSansTc().fontFamily,
+                                      style: typo.caption.copyWith(
                                         color: colors.secondaryText,
                                       ),
                                     ),
@@ -218,7 +208,7 @@ class _FacebookBindingView extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 32, bottom: 24),
                               child:
-                                  _buildFacebookButton(context, colors, textTheme),
+                                  _buildFacebookButton(context, colors, typo),
                             ),
                             // Synced friends count (subtle info when linked)
                             BlocBuilder<FacebookBindingBloc,
@@ -230,9 +220,7 @@ class _FacebookBindingView extends StatelessWidget {
                                     padding: const EdgeInsets.only(top: 8),
                                     child: Text(
                                       '已同步 ${state.syncedFriendsCount} 位好友',
-                                      style: textTheme.bodySmall?.copyWith(
-                                        fontFamily:
-                                            GoogleFonts.notoSansTc().fontFamily,
+                                      style: typo.footnote.copyWith(
                                         color: colors.secondaryText,
                                       ),
                                     ),
@@ -258,7 +246,7 @@ class _FacebookBindingView extends StatelessWidget {
   Widget _buildFacebookButton(
     BuildContext context,
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
   ) {
     return BlocBuilder<FacebookBindingBloc, FacebookBindingState>(
       builder: (context, state) {
@@ -317,8 +305,7 @@ class _FacebookBindingView extends StatelessWidget {
                           padding: const EdgeInsets.only(left: 12),
                           child: Text(
                             isLinked ? '已綁定 Facebook 帳號' : '綁定 Facebook 帳號',
-                            style: textTheme.bodyLarge?.copyWith(
-                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            style: typo.body.copyWith(
                               color:
                                   isLinked ? colors.primaryText : Colors.white,
                               fontWeight: FontWeight.w600,
@@ -337,7 +324,7 @@ class _FacebookBindingView extends StatelessWidget {
   void _showUnlinkConfirmDialog(
     BuildContext context,
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
   ) {
     showAppConfirmDialog(
       context: context,

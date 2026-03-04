@@ -124,7 +124,7 @@ class MyEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return InkWell(
       onTap: onTap,
@@ -158,13 +158,13 @@ class MyEventCard extends StatelessWidget {
                           children: [
                             Text(
                               event.isFocusedStudy ? 'Focused Study' : 'English Games',
-                              style: textTheme.labelLarge?.copyWith(
+                              style: typo.heading.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
                             ),
                             Text(
                               '  ( ${_getCityName(event.cityId)} ) ',
-                              style: textTheme.bodyMedium?.copyWith(
+                              style: typo.caption.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
                             ),
@@ -183,7 +183,7 @@ class MyEventCard extends StatelessWidget {
                               padding: const EdgeInsets.all(4),
                               child: Text(
                                 _getStatusDisplayName(event.eventStatus.value),
-                                style: textTheme.bodyMedium?.copyWith(
+                                style: typo.caption.copyWith(
                                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                   color: colors.secondaryBackground,
                                 ),
@@ -205,13 +205,13 @@ class MyEventCard extends StatelessWidget {
                           children: [
                             Text(
                               '時間： ',
-                              style: textTheme.bodyLarge?.copyWith(
+                              style: typo.body.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
                             ),
                             Text(
                               _formatDate(),
-                              style: textTheme.bodyLarge?.copyWith(
+                              style: typo.body.copyWith(
                                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
                               ),
                             ),
@@ -229,14 +229,14 @@ class MyEventCard extends StatelessWidget {
                       children: [
                         Text(
                           '地點： ',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
                         ),
                         Flexible(
                           child: Text(
                             _getLocationDisplay(),
-                            style: textTheme.bodyLarge?.copyWith(
+                            style: typo.body.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
@@ -263,7 +263,7 @@ class MyEventCard extends StatelessWidget {
                 alignment: Alignment.center,
                 child: Text(
                   '${event.unreadMessageCount}',
-                  style: textTheme.bodySmall?.copyWith(
+                  style: typo.footnote.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     color: colors.secondaryBackground,
                     fontSize: 12,

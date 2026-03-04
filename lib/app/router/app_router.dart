@@ -158,12 +158,12 @@ class AppRouter {
             const SizedBox(height: 16),
             Text(
               '找不到頁面',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: context.appTypography.pageTitle,
             ),
             const SizedBox(height: 8),
             Text(
               state.matchedLocation,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: context.appTypography.caption,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -573,13 +573,13 @@ class _PlaceholderPage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: context.appTypography.pageTitle,
             ),
             if (params != null && params!.isNotEmpty) ...[
               const SizedBox(height: 16),
               Text(
                 'Params: ${params.toString()}',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: context.appTypography.footnote,
               ),
             ],
             const SizedBox(height: 24),

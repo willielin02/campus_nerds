@@ -23,7 +23,7 @@ class StudyPlanCard extends StatelessWidget {
 
   bool get _canEdit => plan.isMe && (canEditGoalContent || canCheckGoal);
 
-  static Widget _slotBadge(int slot, Color badgeColor, Color textColor, TextTheme textTheme, String? fontFamily) {
+  static Widget _slotBadge(int slot, Color badgeColor, Color textColor, AppTypography typo, String? fontFamily) {
     return Container(
       width: 24,
       height: 24,
@@ -34,7 +34,7 @@ class StudyPlanCard extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         '$slot',
-        style: textTheme.bodyMedium?.copyWith(
+        style: typo.caption.copyWith(
           fontFamily: fontFamily,
           color: textColor,
           fontWeight: FontWeight.w700,
@@ -60,7 +60,7 @@ class StudyPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
     final accentColor = plan.isMe ? colors.secondaryText : colors.tertiaryText;
     final headerKey = GlobalKey();
@@ -98,14 +98,14 @@ class StudyPlanCard extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: '書呆子 ${plan.displayName}',
-                        style: textTheme.labelLarge?.copyWith(
+                        style: typo.heading.copyWith(
                           fontFamily: fontFamily,
                           color: plan.isMe ? null : colors.secondaryText,
                         ),
                       ),
                       TextSpan(
                         text: ' 的待辦事項',
-                        style: textTheme.labelLarge?.copyWith(
+                        style: typo.heading.copyWith(
                           fontFamily: fontFamily,
                           color: accentColor,
                         ),
@@ -143,7 +143,7 @@ class StudyPlanCard extends StatelessWidget {
     double bottomPadding = 8,
   }) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
     final isEmpty = content == null || content.isEmpty;
 
@@ -155,21 +155,21 @@ class StudyPlanCard extends StatelessWidget {
           // Goal number badge
           Padding(
             padding: const EdgeInsets.only(top: 1, right: 8),
-            child: _slotBadge(slot, accentColor, colors.secondaryBackground, textTheme, fontFamily),
+            child: _slotBadge(slot, accentColor, colors.secondaryBackground, typo, fontFamily),
           ),
           // Goal content (or placeholder if empty)
           Expanded(
             child: isEmpty
                 ? Text(
                     _canEdit ? '點擊以新增' : '',
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: fontFamily,
                       color: colors.quaternary,
                     ),
                   )
                 : Text(
                     content,
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: fontFamily,
                       color: plan.isMe ? null : colors.secondaryText,
                     ),

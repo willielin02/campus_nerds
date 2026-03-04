@@ -73,7 +73,7 @@ class AppConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Container(
@@ -97,7 +97,7 @@ class AppConfirmDialog extends StatelessWidget {
               padding: const EdgeInsets.only(top: 16),
               child: Text(
                 title,
-                style: textTheme.labelLarge?.copyWith(
+                style: typo.heading.copyWith(
                   fontFamily: fontFamily,
                 ),
               ),
@@ -108,7 +108,7 @@ class AppConfirmDialog extends StatelessWidget {
               child: messageWidget ??
                   Text(
                     message,
-                    style: context.appTypography.bodyBig,
+                    style: context.appTypography.detail,
                   ),
             ),
             // Buttons row
@@ -134,7 +134,7 @@ class AppConfirmDialog extends StatelessWidget {
                           ),
                           child: Text(
                             cancelText,
-                            style: textTheme.bodyLarge?.copyWith(
+                            style: typo.body.copyWith(
                               fontFamily: fontFamily,
                             ),
                           ),
@@ -158,7 +158,7 @@ class AppConfirmDialog extends StatelessWidget {
                         ),
                         child: Text(
                           confirmText,
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontFamily: fontFamily,
                           ),
                         ),

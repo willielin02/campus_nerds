@@ -69,7 +69,7 @@ class _ChatInputState extends State<ChatInput> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
@@ -95,12 +95,12 @@ class _ChatInputState extends State<ChatInput> {
                 cursorColor: colors.primaryText,
                 textInputAction: TextInputAction.send,
                 onFieldSubmitted: (_) => _handleSend(),
-                style: textTheme.bodyLarge?.copyWith(
+                style: typo.body.copyWith(
                   fontFamily: fontFamily,
                 ),
                 decoration: InputDecoration(
                   hintText: '請輸入訊息',
-                  hintStyle: textTheme.bodyLarge?.copyWith(
+                  hintStyle: typo.body.copyWith(
                     fontFamily: fontFamily,
                     color: colors.quaternary,
                   ),

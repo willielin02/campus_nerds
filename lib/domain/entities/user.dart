@@ -34,6 +34,7 @@ class UserProfile extends Equatable {
   final String? avatarUrl;
   final bool hasFacebookLinked;
   final DateTime createdAt;
+  final String? verificationMethod;
 
   const UserProfile({
     required this.id,
@@ -48,6 +49,7 @@ class UserProfile extends Equatable {
     this.avatarUrl,
     this.hasFacebookLinked = false,
     required this.createdAt,
+    this.verificationMethod,
   });
 
   /// Get display name (nickname or anonymous)
@@ -77,6 +79,9 @@ class UserProfile extends Equatable {
   bool get isSchoolEmailVerified =>
       schoolEmailStatus == SchoolEmailStatus.verified;
 
+  /// Check if manually verified by customer support
+  bool get isManuallyVerified => verificationMethod == 'manual';
+
   @override
   List<Object?> get props => [
         id,
@@ -91,6 +96,7 @@ class UserProfile extends Equatable {
         avatarUrl,
         hasFacebookLinked,
         createdAt,
+        verificationMethod,
       ];
 }
 

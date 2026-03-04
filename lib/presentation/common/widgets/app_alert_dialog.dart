@@ -58,7 +58,7 @@ class AppAlertDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Container(
@@ -82,7 +82,7 @@ class AppAlertDialog extends StatelessWidget {
               padding: const EdgeInsets.only(top: 16),
               child: Text(
                 title,
-                style: textTheme.labelLarge?.copyWith(
+                style: typo.heading.copyWith(
                   fontFamily: fontFamily,
                 ),
               ),
@@ -92,7 +92,7 @@ class AppAlertDialog extends StatelessWidget {
               padding: const EdgeInsets.only(top: 16),
               child: Text(
                 message,
-                style: context.appTypography.bodyBig,
+                style: context.appTypography.detail,
               ),
             ),
             // Button
@@ -113,7 +113,7 @@ class AppAlertDialog extends StatelessWidget {
                   ),
                   child: Text(
                     buttonText,
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: fontFamily,
                     ),
                   ),

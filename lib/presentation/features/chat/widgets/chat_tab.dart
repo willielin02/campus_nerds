@@ -131,7 +131,7 @@ class _ChatTabState extends State<ChatTab>
                         // Text at the bottom (two lines, centered)
                         Text(
                           '聊天室將於',
-                          style: context.textTheme.labelLarge?.copyWith(
+                          style: context.appTypography.heading.copyWith(
                             fontFamily: fontFamily,
                             color: colors.secondaryText,
                           ),
@@ -141,7 +141,7 @@ class _ChatTabState extends State<ChatTab>
                           chatOpenAt != null
                               ? '${_formatOpenTime(chatOpenAt)}開啟...'
                               : '活動開始 1 小時前開啟...',
-                          style: context.textTheme.labelLarge?.copyWith(
+                          style: context.appTypography.heading.copyWith(
                             fontFamily: fontFamily,
                             color: colors.secondaryText,
                           ),
@@ -152,7 +152,7 @@ class _ChatTabState extends State<ChatTab>
                           padding: const EdgeInsets.only(bottom: 16),
                           child: Text(
                             '屆時你們會透過聊天室聯絡並確認碰面地點。',
-                            style: context.textTheme.bodyMedium?.copyWith(
+                            style: context.appTypography.caption.copyWith(
                               fontFamily: fontFamily,
                               color: colors.secondaryText,
                             ),
@@ -205,7 +205,7 @@ class _ChatTabState extends State<ChatTab>
                 const SizedBox(height: 16),
                 Text(
                   '載入失敗',
-                  style: context.textTheme.bodyLarge?.copyWith(
+                  style: context.appTypography.body.copyWith(
                     color: colors.error,
                   ),
                 ),

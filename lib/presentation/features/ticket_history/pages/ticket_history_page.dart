@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../app/router/app_routes.dart';
@@ -64,7 +63,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return Scaffold(
       backgroundColor: colors.primaryBackground,
@@ -80,8 +79,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
         ),
         title: Text(
           '票券紀錄',
-          style: textTheme.titleMedium?.copyWith(
-            fontFamily: GoogleFonts.notoSansTc().fontFamily,
+          style: typo.pageTitle.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -105,12 +103,8 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
                     controller: _tabController,
                     labelColor: colors.primaryText,
                     unselectedLabelColor: colors.tertiary,
-                    labelStyle: textTheme.labelLarge?.copyWith(
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                    ),
-                    unselectedLabelStyle: textTheme.bodyLarge?.copyWith(
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                    ),
+                    labelStyle: typo.heading,
+                    unselectedLabelStyle: typo.body,
                     indicatorColor: colors.secondaryText,
                     dividerColor: Colors.transparent,
                     tabs: const [
@@ -132,7 +126,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: _buildTabContent(
                               colors,
-                              textTheme,
+                              typo,
                               state.studyEntries,
                               state.status == TicketHistoryStatus.loading,
                               isStudy: true,
@@ -144,7 +138,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: _buildTabContent(
                               colors,
-                              textTheme,
+                              typo,
                               state.gamesEntries,
                               state.status == TicketHistoryStatus.loading,
                               isStudy: false,
@@ -166,7 +160,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
 
   Widget _buildTabContent(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     List<TicketHistoryEntry> entries,
     bool isLoading, {
     required bool isStudy,
@@ -180,7 +174,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              _buildTicketBalanceBox(colors, textTheme, isStudy, balance),
+              _buildTicketBalanceBox(colors, typo, isStudy, balance),
             ],
           ),
         ),
@@ -189,7 +183,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
         Expanded(
           child: _buildHistoryList(
             colors,
-            textTheme,
+            typo,
             entries,
             isLoading,
             isStudy: isStudy,
@@ -201,7 +195,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
 
   Widget _buildTicketBalanceBox(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     bool isStudy,
     int balance,
   ) {
@@ -250,8 +244,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
               padding: const EdgeInsets.only(right: 6),
               child: Text(
                 '$balance',
-                style: textTheme.labelLarge?.copyWith(
-                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                style: typo.heading.copyWith(
                   color: colors.secondaryText,
                 ),
               ),
@@ -265,7 +258,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
 
   Widget _buildHistoryList(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     List<TicketHistoryEntry> entries,
     bool isLoading, {
     required bool isStudy,
@@ -280,7 +273,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
     }
 
     if (entries.isEmpty) {
-      return _buildEmptyState(colors, textTheme);
+      return _buildEmptyState(colors, typo);
     }
 
     return ShaderMask(
@@ -313,7 +306,7 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
     );
   }
 
-  Widget _buildEmptyState(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildEmptyState(AppColorsTheme colors, AppTypography typo) {
     return Padding(
       padding: const EdgeInsets.only(top: 16, bottom: 24),
       child: Container(
@@ -339,9 +332,8 @@ class _TicketHistoryPageState extends State<TicketHistoryPage>
               const SizedBox(height: 12),
               Text(
                 '目前沒有票券紀錄',
-                style: textTheme.bodyMedium?.copyWith(
+                style: typo.caption.copyWith(
                   color: colors.secondaryText,
-                  fontFamily: GoogleFonts.notoSansTc().fontFamily,
                 ),
               ),
             ],
@@ -366,7 +358,7 @@ class _TicketHistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     final delta = isStudy ? entry.deltaStudy : entry.deltaGames;
     final isPositive = delta > 0;
@@ -398,8 +390,7 @@ class _TicketHistoryCard extends StatelessWidget {
               children: [
                 Text(
                   entry.reason.displayText,
-                  style: textTheme.labelLarge?.copyWith(
-                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                  style: typo.heading.copyWith(
                     color: colors.primaryText,
                   ),
                 ),
@@ -408,15 +399,13 @@ class _TicketHistoryCard extends StatelessWidget {
                   children: [
                     Text(
                       deltaNumberText,
-                      style: textTheme.labelLarge?.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                      style: typo.heading.copyWith(
                         color: colors.primaryText,
                       ),
                     ),
                     Text(
                       '張',
-                      style: textTheme.labelMedium?.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                      style: typo.subheading.copyWith(
                         color: colors.primaryText,
                       ),
                     ),
@@ -433,8 +422,7 @@ class _TicketHistoryCard extends StatelessWidget {
               children: [
                 Text(
                   formattedDate,
-                  style: textTheme.bodySmall?.copyWith(
-                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                  style: typo.footnote.copyWith(
                     color: colors.secondaryText,
                   ),
                 ),
@@ -451,8 +439,7 @@ class _TicketHistoryCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     _getSimpleDescription(),
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                    style: typo.caption.copyWith(
                       color: colors.primaryText,
                     ),
                   ),

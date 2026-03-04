@@ -47,7 +47,7 @@ class _StudyBookingConfirmationPageState
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
@@ -62,7 +62,7 @@ class _StudyBookingConfirmationPageState
               child: Column(
                 children: [
                   // Header row
-                  _buildHeader(context, colors, textTheme),
+                  _buildHeader(context, colors, typo),
                   // Content (scrollable area)
                   Expanded(
                     child: Padding(
@@ -70,11 +70,11 @@ class _StudyBookingConfirmationPageState
                       child: Column(
                         children: [
                           // Title row: "Focused Study ( city )"
-                          _buildTitleRow(colors, textTheme, state),
+                          _buildTitleRow(colors, typo, state),
                           // Subtitle row with ticket balance
-                          _buildSubtitleRow(context, colors, textTheme, state),
+                          _buildSubtitleRow(context, colors, typo, state),
                           // Description text right-aligned
-                          _buildDescriptionRow(textTheme),
+                          _buildDescriptionRow(typo),
                           // ListView with event card, rules, and notice
                           Expanded(
                             child: ShaderMask(
@@ -101,11 +101,11 @@ class _StudyBookingConfirmationPageState
                                     child: Column(
                                       children: [
                                         // Event info card
-                                        _buildEventCard(colors, textTheme),
+                                        _buildEventCard(colors, typo),
                                         // Rules card
-                                        _buildRulesCard(colors, textTheme),
+                                        _buildRulesCard(colors, typo),
                                         // Notice section
-                                        _buildNoticeSection(textTheme),
+                                        _buildNoticeSection(typo),
                                       ],
                                     ),
                                   ),
@@ -120,7 +120,7 @@ class _StudyBookingConfirmationPageState
                   // Confirm button (fixed at bottom, outside scrollable area)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildConfirmButton(context, colors, textTheme, state),
+                    child: _buildConfirmButton(context, colors, typo, state),
                   ),
                 ],
               ),
@@ -134,7 +134,7 @@ class _StudyBookingConfirmationPageState
   Widget _buildHeader(
     BuildContext context,
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
   ) {
     return Container(
       width: double.infinity,
@@ -157,7 +157,7 @@ class _StudyBookingConfirmationPageState
           ),
           Text(
             '確認報名',
-            style: textTheme.titleMedium?.copyWith(
+            style: typo.pageTitle.copyWith(
               fontFamily: GoogleFonts.notoSansTc().fontFamily,
             ),
           ),
@@ -169,7 +169,7 @@ class _StudyBookingConfirmationPageState
 
   Widget _buildTitleRow(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     HomeState state,
   ) {
     return Padding(
@@ -181,7 +181,7 @@ class _StudyBookingConfirmationPageState
             children: [
               Text(
                 'Focused Study',
-                style: textTheme.titleMedium?.copyWith(
+                style: typo.pageTitle.copyWith(
                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.5,
@@ -191,7 +191,7 @@ class _StudyBookingConfirmationPageState
                 padding: const EdgeInsets.only(left: 4),
                 child: Text(
                   ' ( ${state.selectedCityName} )',
-                  style: textTheme.bodyLarge?.copyWith(
+                  style: typo.body.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   ),
                 ),
@@ -206,7 +206,7 @@ class _StudyBookingConfirmationPageState
   Widget _buildSubtitleRow(
     BuildContext context,
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     HomeState state,
   ) {
     return Padding(
@@ -217,7 +217,7 @@ class _StudyBookingConfirmationPageState
         children: [
           Text(
             '和其他書呆子一起',
-            style: textTheme.labelLarge?.copyWith(
+            style: typo.heading.copyWith(
               fontFamily: GoogleFonts.notoSansTc().fontFamily,
             ),
           ),
@@ -266,7 +266,7 @@ class _StudyBookingConfirmationPageState
                         padding: const EdgeInsets.only(right: 6),
                         child: Text(
                           '${state.ticketBalance.studyBalance}',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontWeight: FontWeight.w600,
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             color: colors.secondaryText,
@@ -284,7 +284,7 @@ class _StudyBookingConfirmationPageState
     );
   }
 
-  Widget _buildDescriptionRow(TextTheme textTheme) {
+  Widget _buildDescriptionRow(AppTypography typo) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 12, 16),
       child: Row(
@@ -294,7 +294,7 @@ class _StudyBookingConfirmationPageState
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               '交出手機，全程專注學習',
-              style: textTheme.labelLarge?.copyWith(
+              style: typo.heading.copyWith(
                 fontFamily: GoogleFonts.notoSansTc().fontFamily,
               ),
             ),
@@ -304,7 +304,7 @@ class _StudyBookingConfirmationPageState
     );
   }
 
-  Widget _buildEventCard(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildEventCard(AppColorsTheme colors, AppTypography typo) {
     final weekdays = ['一', '二', '三', '四', '五', '六', '日'];
     final weekday = weekdays[widget.event.eventDate.weekday - 1];
     final dateString =
@@ -331,7 +331,7 @@ class _StudyBookingConfirmationPageState
               children: [
                 Text(
                   '時間：',
-                  style: textTheme.bodyLarge?.copyWith(
+                  style: typo.body.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   ),
                 ),
@@ -339,7 +339,7 @@ class _StudyBookingConfirmationPageState
                   padding: const EdgeInsets.only(left: 4),
                   child: Text(
                     dateString,
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontWeight: FontWeight.w600,
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
@@ -349,7 +349,7 @@ class _StudyBookingConfirmationPageState
                   padding: const EdgeInsets.only(left: 8),
                   child: Text(
                     timeSlotText,
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontWeight: FontWeight.w600,
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
@@ -365,7 +365,7 @@ class _StudyBookingConfirmationPageState
                 children: [
                   Text(
                     '地點：',
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
                   ),
@@ -376,7 +376,7 @@ class _StudyBookingConfirmationPageState
                         padding: const EdgeInsets.only(left: 4),
                         child: Text(
                           _getLocationDisplay(widget.event.locationDetail),
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             fontWeight: FontWeight.w600,
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           ),
@@ -393,7 +393,7 @@ class _StudyBookingConfirmationPageState
     );
   }
 
-  Widget _buildRulesCard(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildRulesCard(AppColorsTheme colors, AppTypography typo) {
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: Container(
@@ -417,7 +417,7 @@ class _StudyBookingConfirmationPageState
                 children: [
                   Text(
                     '活動流程',
-                    style: textTheme.labelLarge?.copyWith(
+                    style: typo.heading.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                     ),
                   ),
@@ -436,17 +436,17 @@ class _StudyBookingConfirmationPageState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildRuleRow(
-                          textTheme,
+                          typo,
                           '開始學習前：\n寫下 3 個待辦事項，並將手機設為靜音，置於桌面中央。',
                         ),
                         Divider(thickness: 2, color: colors.alternate),
                         _buildRuleRow(
-                          textTheme,
+                          typo,
                           '學習期間：\n專注學習，不干擾他人。',
                         ),
                         Divider(thickness: 2, color: colors.alternate),
                         _buildRuleRow(
-                          textTheme,
+                          typo,
                           '中午一起吃飯時：\n互相檢查是否完成開始前寫下的 3 個待辦事項。',
                         ),
                       ],
@@ -461,15 +461,15 @@ class _StudyBookingConfirmationPageState
     );
   }
 
-  Widget _buildRuleRow(TextTheme textTheme, String text) {
+  Widget _buildRuleRow(AppTypography typo, String text) {
     final parts = text.split('\n');
     final title = parts[0];
     final body = parts.length > 1 ? parts.sublist(1).join('\n') : '';
-    final titleStyle = textTheme.bodyLarge?.copyWith(
+    final titleStyle = typo.body.copyWith(
       fontWeight: FontWeight.w600,
       fontFamily: GoogleFonts.notoSansTc().fontFamily,
     );
-    final bodyStyle = textTheme.bodyLarge?.copyWith(
+    final bodyStyle = typo.body.copyWith(
       fontSize: 16.0,
       fontFamily: GoogleFonts.notoSansTc().fontFamily,
     );
@@ -490,7 +490,7 @@ class _StudyBookingConfirmationPageState
     );
   }
 
-  Widget _buildNoticeSection(TextTheme textTheme) {
+  Widget _buildNoticeSection(AppTypography typo) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -499,26 +499,26 @@ class _StudyBookingConfirmationPageState
             children: [
               Text(
                 '報名前小提醒',
-                style: textTheme.bodySmall?.copyWith(
+                style: typo.footnote.copyWith(
                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                 ),
               ),
             ],
           ),
           _buildNoticeItem(
-            textTheme,
+            typo,
             '報名後由 Campus Nerds 進行分組，不保證一定成團；我們會依整體報名情形與過往出席狀況盡力安排。',
           ),
           _buildNoticeItem(
-            textTheme,
+            typo,
             '活動開始 2 天前我們會透過 App 通知是否成團以及確切時間、地點 ( 如果有順利成團 ) 。',
           ),
           _buildNoticeItem(
-            textTheme,
+            typo,
             '若臨時有事，活動開始 3 天前 23:59 前，可在 App 自行取消報名，不會扣除票券。',
           ),
           _buildNoticeItem(
-            textTheme,
+            typo,
             '我們會優先安排學生價位友善的圖書館／咖啡廳，以不造成壓力的價位為主。',
           ),
         ],
@@ -526,7 +526,7 @@ class _StudyBookingConfirmationPageState
     );
   }
 
-  Widget _buildNoticeItem(TextTheme textTheme, String text) {
+  Widget _buildNoticeItem(AppTypography typo, String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Row(
@@ -534,7 +534,7 @@ class _StudyBookingConfirmationPageState
         children: [
           Text(
             '‧',
-            style: textTheme.bodySmall?.copyWith(
+            style: typo.footnote.copyWith(
               fontFamily: GoogleFonts.notoSansTc().fontFamily,
             ),
           ),
@@ -543,7 +543,7 @@ class _StudyBookingConfirmationPageState
               decoration: const BoxDecoration(),
               child: Text(
                 text,
-                style: textTheme.bodySmall?.copyWith(
+                style: typo.footnote.copyWith(
                   fontFamily: GoogleFonts.notoSansTc().fontFamily,
                 ),
               ),
@@ -557,7 +557,7 @@ class _StudyBookingConfirmationPageState
   Widget _buildConfirmButton(
     BuildContext context,
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     HomeState state,
   ) {
     return Padding(
@@ -608,18 +608,18 @@ class _StudyBookingConfirmationPageState
                       children: [
                         Text(
                           '您將花費一張 Study 票券報名',
-                          style: context.appTypography.bodyBig,
+                          style: context.appTypography.detail,
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text.rich(
                             TextSpan(
-                              style: context.appTypography.bodyBig,
+                              style: context.appTypography.detail,
                               children: [
                                 TextSpan(text: '$dateStr Focused Study '),
                                 TextSpan(
                                   text: '( $cityName )',
-                                  style: textTheme.bodyMedium?.copyWith(
+                                  style: typo.caption.copyWith(
                                     fontFamily: fontFamily,
                                   ),
                                 ),
@@ -750,7 +750,7 @@ class _StudyBookingConfirmationPageState
                 )
               : Text(
                   '確認報名',
-                  style: textTheme.bodyLarge?.copyWith(
+                  style: typo.body.copyWith(
                     fontWeight: FontWeight.w600,
                     color: colors.primaryText,
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,

@@ -27,7 +27,9 @@ class AppClock {
     if (kReleaseMode) return;
 
     try {
-      final response = await SupabaseService.client.rpc('get_server_now');
+      final response = await SupabaseService.client
+          .rpc('get_server_now')
+          .timeout(const Duration(seconds: 3));
 
       final String timeStr;
       if (response is String) {

@@ -62,7 +62,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Container(
@@ -89,7 +89,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
               children: [
                 Text(
                   '活動規則與流程',
-                  style: textTheme.labelLarge?.copyWith(
+                  style: typo.heading.copyWith(
                     fontFamily: fontFamily,
                   ),
                 ),
@@ -195,7 +195,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
                   ),
                   child: Text(
                     '我知道了',
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: fontFamily,
                     ),
                   ),
@@ -209,7 +209,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
   }
 
   Widget _buildRule(BuildContext context, String title, String description) {
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
@@ -220,7 +220,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
         children: [
           Text(
             title,
-            style: textTheme.bodyLarge?.copyWith(
+            style: typo.body.copyWith(
               fontFamily: fontFamily,
               fontWeight: FontWeight.w600,
             ),
@@ -229,7 +229,7 @@ class _RulesDialogStudyState extends State<RulesDialogStudy> {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               description,
-              style: context.appTypography.bodyBig,
+              style: typo.detail,
             ),
           ),
         ],

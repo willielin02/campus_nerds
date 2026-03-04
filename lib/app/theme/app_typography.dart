@@ -3,8 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
-/// Campus Nerds typography definitions
-/// Using Noto Sans TC for Traditional Chinese support
+/// Campus Nerds 自訂字體定義
+/// 使用 Noto Sans TC，名稱根據實際用途命名
+/// 存取方式：context.appTypography.xxx
 class AppTypography {
   final AppColorsTheme colors;
 
@@ -13,113 +14,90 @@ class AppTypography {
   static const String fontFamily = 'Noto Sans TC';
 
   // ============================================
-  // Display Styles
+  // Display / Title — 大型標題（備用）
   // ============================================
-  TextStyle get displayLarge => GoogleFonts.notoSansTc(
+
+  /// 68px w600 — 大型展示文字
+  TextStyle get display => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.w600,
         fontSize: 68.0,
       );
 
-  TextStyle get displayMedium => GoogleFonts.notoSansTc(
-        color: colors.primaryText,
-        fontWeight: FontWeight.w600,
-        fontSize: 56.0,
-      );
-
-  TextStyle get displaySmall => GoogleFonts.notoSansTc(
-        color: colors.primaryText,
-        fontWeight: FontWeight.w600,
-        fontSize: 44.0,
-      );
-
-  // ============================================
-  // Headline Styles
-  // ============================================
-  TextStyle get headlineLarge => GoogleFonts.notoSansTc(
+  /// 40px w600 — 大型標題
+  TextStyle get title => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.w600,
         fontSize: 40.0,
       );
 
-  TextStyle get headlineMedium => GoogleFonts.notoSansTc(
-        color: colors.primaryText,
-        fontWeight: FontWeight.w600,
-        fontSize: 32.0,
-      );
+  // ============================================
+  // Section / Page — 區段與頁面標題
+  // ============================================
 
-  TextStyle get headlineSmall => GoogleFonts.notoSansTc(
+  /// 28px w600 — 活動類別標題、大型強調數字
+  TextStyle get sectionTitle => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.w600,
         fontSize: 28.0,
       );
 
-  // ============================================
-  // Title Styles
-  // ============================================
-  TextStyle get titleLarge => GoogleFonts.notoSansTc(
-        color: colors.primaryText,
-        fontWeight: FontWeight.w600,
-        fontSize: 28.0,
-      );
-
-  TextStyle get titleMedium => GoogleFonts.notoSansTc(
+  /// 24px w600 — 頁面標題、步驟標題、主要區段標題
+  TextStyle get pageTitle => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.w600,
         fontSize: 24.0,
       );
 
-  TextStyle get titleSmall => GoogleFonts.notoSansTc(
+  // ============================================
+  // Heading / Subheading — UI 元件標題
+  // ============================================
+
+  /// 20px w600 — Tab 標籤、對話框標題、卡片標題、動作按鈕
+  TextStyle get heading => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.w600,
         fontSize: 20.0,
       );
 
-  // ============================================
-  // Label Styles
-  // ============================================
-  TextStyle get labelLarge => GoogleFonts.notoSansTc(
-        color: colors.primaryText,
-        fontWeight: FontWeight.w600,
-        fontSize: 20.0,
-      );
-
-  TextStyle get labelMedium => GoogleFonts.notoSansTc(
+  /// 20px normal — 次要標籤、CTA 文字、設定項目
+  TextStyle get subheading => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 20.0,
       );
 
-  TextStyle get labelSmall => GoogleFonts.notoSansTc(
-        color: colors.primaryText,
-        fontWeight: FontWeight.normal,
-        fontSize: 14.0,
-      );
+  // ============================================
+  // Body / Detail — 內文
+  // ============================================
 
-  // ============================================
-  // Body Styles
-  // ============================================
-  TextStyle get bodyLarge => GoogleFonts.notoSansTc(
+  /// 18px normal — 對話框按鈕、內文、個人資料名稱、FAQ
+  TextStyle get body => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 18.0,
       );
 
-  /// 16px body text — 介於 bodyLarge (18) 和 bodyMedium (14) 之間
-  /// 用法：context.appTypography.bodyBig
-  TextStyle get bodyBig => GoogleFonts.notoSansTc(
+  /// 16px normal — 對話框內容、表單細節、預訂資訊、規則文字
+  TextStyle get detail => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 16.0,
       );
 
-  TextStyle get bodyMedium => GoogleFonts.notoSansTc(
+  // ============================================
+  // Caption / Footnote — 輔助文字
+  // ============================================
+
+  /// 14px normal — 描述、metadata、聊天時間戳、次要資訊
+  TextStyle get caption => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 14.0,
       );
 
-  TextStyle get bodySmall => GoogleFonts.notoSansTc(
+  /// 12px normal — 免責聲明、小字印刷、徽章、警告
+  TextStyle get footnote => GoogleFonts.notoSansTc(
         color: colors.primaryText,
         fontWeight: FontWeight.normal,
         fontSize: 12.0,

@@ -102,7 +102,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return BlocListener<OnboardingBloc, OnboardingState>(
@@ -228,7 +228,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                               children: [
                                 Text(
                                   'Step3 輸入您的基本資料',
-                                  style: textTheme.titleMedium?.copyWith(
+                                  style: typo.pageTitle.copyWith(
                                     fontFamily: fontFamily,
                                   ),
                                 ),
@@ -244,7 +244,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                               children: [
                                 Text(
                                   '為了提供您更精準的活動分配',
-                                  style: textTheme.bodyLarge?.copyWith(
+                                  style: typo.body.copyWith(
                                     fontFamily: fontFamily,
                                   ),
                                 ),
@@ -262,7 +262,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                   padding: const EdgeInsets.only(left: 2),
                                   child: Text(
                                     '暱稱',
-                                    style: textTheme.labelLarge?.copyWith(
+                                    style: typo.heading.copyWith(
                                       fontFamily: fontFamily,
                                       color: colors.secondaryText,
                                     ),
@@ -277,14 +277,14 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                       maxLength: 12,
                                       cursorColor: colors.primaryText,
                                       onChanged: (_) => setState(() {}),
-                                      style: textTheme.bodyLarge?.copyWith(
+                                      style: typo.body.copyWith(
                                         fontFamily: fontFamily,
                                       ),
                                       decoration: InputDecoration(
                                         isDense: true,
                                         hintText: '請輸入暱稱 ( 至多 12 個字 ) ',
                                         hintStyle:
-                                            textTheme.bodyLarge?.copyWith(
+                                            typo.body.copyWith(
                                           fontFamily: fontFamily,
                                           color: colors.primaryText,
                                         ),
@@ -351,8 +351,8 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                               left: 2),
                                           child: Text(
                                             '性別',
-                                            style: textTheme.labelLarge
-                                                ?.copyWith(
+                                            style: typo.heading
+                                                .copyWith(
                                               fontFamily: fontFamily,
                                               color: colors.secondaryText,
                                             ),
@@ -383,9 +383,9 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                                 value: _selectedGender,
                                                 hint: Text(
                                                   '請選擇性別',
-                                                  style: textTheme
-                                                      .bodyLarge
-                                                      ?.copyWith(
+                                                  style: typo
+                                                      .body
+                                                      .copyWith(
                                                     fontFamily: fontFamily,
                                                   ),
                                                 ),
@@ -400,8 +400,8 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                                 dropdownColor: colors
                                                     .secondaryBackground,
                                                 elevation: 2,
-                                                style: textTheme.bodyLarge
-                                                    ?.copyWith(
+                                                style: typo.body
+                                                    .copyWith(
                                                   fontFamily: fontFamily,
                                                 ),
                                                 items: _genderOptions
@@ -411,9 +411,9 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                                     value: gender,
                                                     child: Text(
                                                       gender,
-                                                      style: textTheme
-                                                          .bodyLarge
-                                                          ?.copyWith(
+                                                      style: typo
+                                                          .body
+                                                          .copyWith(
                                                         fontFamily:
                                                             fontFamily,
                                                       ),
@@ -449,8 +449,8 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                               left: 2),
                                           child: Text(
                                             '生日',
-                                            style: textTheme.labelLarge
-                                                ?.copyWith(
+                                            style: typo.heading
+                                                .copyWith(
                                               fontFamily: fontFamily,
                                               color: colors.secondaryText,
                                             ),
@@ -495,9 +495,9 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                                               null
                                                           ? '${_selectedBirthday!.year}/${_selectedBirthday!.month.toString().padLeft(2, '0')}/${_selectedBirthday!.day.toString().padLeft(2, '0')}'
                                                           : '請選擇生日',
-                                                      style: textTheme
-                                                          .bodyLarge
-                                                          ?.copyWith(
+                                                      style: typo
+                                                          .body
+                                                          .copyWith(
                                                         fontFamily:
                                                             fontFamily,
                                                       ),
@@ -519,7 +519,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                           // Confirm button
                           Padding(
                             padding: const EdgeInsets.only(top: 24),
-                            child: _buildSubmitButton(colors, textTheme),
+                            child: _buildSubmitButton(colors, typo),
                           ),
 
                           // Footer note line 1
@@ -529,7 +529,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                               children: [
                                 Text(
                                   'Campus Nerds 提醒您：',
-                                  style: textTheme.bodySmall?.copyWith(
+                                  style: typo.footnote.copyWith(
                                     fontFamily: fontFamily,
                                   ),
                                 ),
@@ -545,7 +545,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                 Flexible(
                                   child: Text(
                                     '基本資料提交後不可修改。若查證不實，將取消用戶資格。',
-                                    style: textTheme.bodySmall?.copyWith(
+                                    style: typo.footnote.copyWith(
                                       fontFamily: fontFamily,
                                     ),
                                   ),
@@ -569,7 +569,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
     );
   }
 
-  Widget _buildSubmitButton(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildSubmitButton(AppColorsTheme colors, AppTypography typo) {
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return BlocBuilder<OnboardingBloc, OnboardingState>(
@@ -598,7 +598,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                   )
                 : Text(
                     '確認',
-                    style: textTheme.labelLarge?.copyWith(
+                    style: typo.heading.copyWith(
                       fontFamily: fontFamily,
                       color: colors.secondaryText,
                     ),

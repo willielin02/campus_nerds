@@ -46,6 +46,8 @@ class AccountRepositoryImpl implements AccountRepository {
       avatarUrl: map['avatar_url'] as String?,
       hasFacebookLinked: map['has_facebook_linked'] as bool? ?? false,
       createdAt: _parseDateTime(map['created_at']) ?? AppClock.now(),
+      verificationMethod:
+          map['school_email_verification_method'] as String?,
     );
   }
 

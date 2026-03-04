@@ -63,4 +63,9 @@ class UserProfileVRow extends SupabaseDataRow {
 
   int? get academicRank => getField<int>('academic_rank');
   set academicRank(int? value) => setField<int>('academic_rank', value);
+
+  String? get schoolEmailVerificationMethod =>
+      getField<String>('school_email_verification_method');
+  set schoolEmailVerificationMethod(String? value) =>
+      setField<String>('school_email_verification_method', value);
 }

@@ -68,7 +68,7 @@ class _ProfilePopupOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return Stack(
       children: [
@@ -88,7 +88,7 @@ class _ProfilePopupOverlay extends StatelessWidget {
           bottom: showBelow ? null : MediaQuery.of(context).size.height - anchorPosition.dy + 8,
           child: Material(
             color: Colors.transparent,
-            child: _buildProfileCard(context, colors, textTheme),
+            child: _buildProfileCard(context, colors, typo),
           ),
         ),
       ],
@@ -98,7 +98,7 @@ class _ProfilePopupOverlay extends StatelessWidget {
   Widget _buildProfileCard(
     BuildContext context,
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
   ) {
     return Container(
       width: double.infinity,
@@ -156,7 +156,7 @@ class _ProfilePopupOverlay extends StatelessWidget {
               children: [
                 Text(
                   '書呆子 ${data.displayName}',
-                  style: textTheme.bodyLarge?.copyWith(
+                  style: typo.body.copyWith(
                     color: colors.primaryText,
                   ),
                 ),
@@ -166,14 +166,14 @@ class _ProfilePopupOverlay extends StatelessWidget {
                   children: [
                     Text(
                       data.universityName ?? '',
-                      style: textTheme.bodyMedium?.copyWith(
+                      style: typo.caption.copyWith(
                         color: colors.primaryText,
                       ),
                     ),
                     if (data.age != null)
                       Text(
                         '  |  ${data.ageDisplay}',
-                        style: textTheme.bodyMedium?.copyWith(
+                        style: typo.caption.copyWith(
                           color: colors.primaryText,
                         ),
                       ),

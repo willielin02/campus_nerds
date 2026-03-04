@@ -69,7 +69,7 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
             const SizedBox(height: 16),
             Text(
               '開始聊天吧！',
-              style: context.textTheme.bodyLarge?.copyWith(
+              style: context.appTypography.body.copyWith(
                 color: colors.secondaryText,
               ),
             ),
@@ -103,7 +103,7 @@ class _ChatMessagesListState extends State<ChatMessagesList> {
                         child: Center(
                           child: Text(
                             '載入更早訊息',
-                            style: context.textTheme.bodyMedium?.copyWith(
+                            style: context.appTypography.caption.copyWith(
                               fontFamily:
                                   GoogleFonts.notoSansTc().fontFamily,
                               color: colors.secondaryBackground,

@@ -25,7 +25,7 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return BlocConsumer<AccountBloc, AccountState>(
       listener: (context, state) {
@@ -59,14 +59,14 @@ class _AccountPageState extends State<AccountPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Profile card
-                      _buildProfileCard(colors, textTheme, state.profile),
+                      _buildProfileCard(colors, typo, state.profile),
 
                       // 帳號設定 section header
                       Padding(
                         padding: const EdgeInsets.only(top: 16),
                         child: Text(
                           '帳號設定',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             color: colors.primaryText,
                           ),
                         ),
@@ -77,7 +77,7 @@ class _AccountPageState extends State<AccountPage> {
                         padding: const EdgeInsets.only(top: 12),
                         child: _buildSettingsContainer(
                           colors,
-                          textTheme,
+                          typo,
                           [
                             _SettingsItem(
                               icon: Icons.email_rounded,
@@ -117,7 +117,7 @@ class _AccountPageState extends State<AccountPage> {
                         padding: const EdgeInsets.only(top: 16),
                         child: Text(
                           '幫助',
-                          style: textTheme.bodyLarge?.copyWith(
+                          style: typo.body.copyWith(
                             color: colors.primaryText,
                           ),
                         ),
@@ -128,7 +128,7 @@ class _AccountPageState extends State<AccountPage> {
                         padding: const EdgeInsets.only(top: 12),
                         child: _buildSettingsContainer(
                           colors,
-                          textTheme,
+                          typo,
                           [
                             _SettingsItem(
                               icon: Icons.question_mark_rounded,
@@ -152,7 +152,7 @@ class _AccountPageState extends State<AccountPage> {
                       // Logout container
                       Padding(
                         padding: const EdgeInsets.only(top: 16),
-                        child: _buildLogoutContainer(colors, textTheme, state),
+                        child: _buildLogoutContainer(colors, typo, state),
                       ),
 
                       // Version
@@ -161,7 +161,7 @@ class _AccountPageState extends State<AccountPage> {
                         child: Center(
                           child: Text(
                             'v1.0.3 (103)',
-                            style: textTheme.bodyMedium?.copyWith(
+                            style: typo.caption.copyWith(
                               color: colors.quaternary,
                             ),
                           ),
@@ -180,7 +180,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildProfileCard(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     UserProfile? profile,
   ) {
     return Container(
@@ -224,7 +224,7 @@ class _AccountPageState extends State<AccountPage> {
               children: [
                 Text(
                   profile?.displayNameWithPrefix ?? '書呆子',
-                  style: textTheme.bodyLarge?.copyWith(
+                  style: typo.body.copyWith(
                     color: colors.secondaryText,
                   ),
                 ),
@@ -233,13 +233,13 @@ class _AccountPageState extends State<AccountPage> {
                   children: [
                     Text(
                       profile?.universityName ?? '',
-                      style: textTheme.bodyMedium?.copyWith(
+                      style: typo.caption.copyWith(
                         color: colors.secondaryText,
                       ),
                     ),
                     Text(
                       '  |  ${profile?.ageDisplay ?? ''}',
-                      style: textTheme.bodyMedium?.copyWith(
+                      style: typo.caption.copyWith(
                         color: colors.secondaryText,
                       ),
                     ),
@@ -266,7 +266,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildSettingsContainer(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     List<_SettingsItem> items,
   ) {
     return Container(
@@ -283,7 +283,7 @@ class _AccountPageState extends State<AccountPage> {
         children: items.map((item) {
           return Column(
             children: [
-              _buildSettingsRow(colors, textTheme, item),
+              _buildSettingsRow(colors, typo, item),
               if (!item.isLast)
                 Divider(
                   thickness: 1,
@@ -301,7 +301,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildSettingsRow(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     _SettingsItem item,
   ) {
     final isFirst = item == item; // placeholder for first item detection
@@ -325,7 +325,7 @@ class _AccountPageState extends State<AccountPage> {
                   padding: const EdgeInsets.only(left: 10, bottom: 3),
                   child: Text(
                     item.title,
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: typo.body.copyWith(
                       color: colors.secondaryText,
                     ),
                   ),
@@ -348,7 +348,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildLogoutContainer(
     AppColorsTheme colors,
-    TextTheme textTheme,
+    AppTypography typo,
     AccountState state,
   ) {
     return InkWell(
@@ -392,7 +392,7 @@ class _AccountPageState extends State<AccountPage> {
                     padding: const EdgeInsets.only(left: 10, bottom: 3),
                     child: Text(
                       '登出',
-                      style: textTheme.bodyLarge?.copyWith(
+                      style: typo.body.copyWith(
                         color: colors.secondaryText,
                       ),
                     ),

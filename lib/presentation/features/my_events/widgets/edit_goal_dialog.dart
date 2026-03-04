@@ -93,7 +93,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
     final fontFamily = GoogleFonts.notoSansTc().fontFamily;
 
     return Padding(
@@ -122,7 +122,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                   children: [
                     Text(
                       '編輯待辦事項 ${widget.slot} ',
-                      style: textTheme.labelLarge?.copyWith(
+                      style: typo.heading.copyWith(
                         fontFamily: fontFamily,
                         color: colors.secondaryText,
                       ),
@@ -142,9 +142,9 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                       autofocus: false,
                       decoration: InputDecoration(
                         isDense: true,
-                        labelStyle: context.appTypography.bodyBig,
+                        labelStyle: context.appTypography.detail,
                         hintText: '請輸入待辦事項 ${widget.slot}',
-                        hintStyle: context.appTypography.bodyBig.copyWith(
+                        hintStyle: context.appTypography.detail.copyWith(
                           color: colors.tertiary,
                         ),
                         enabledBorder: OutlineInputBorder(
@@ -178,7 +178,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                         filled: true,
                         fillColor: colors.secondaryBackground,
                       ),
-                      style: context.appTypography.bodyBig,
+                      style: context.appTypography.detail,
                       maxLines: null,
                       keyboardType: TextInputType.text,
                       cursorColor: colors.primaryText,
@@ -228,7 +228,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                                 ? '待辦事項 ${widget.slot} 已完成'
                                 : '待辦事項 ${widget.slot} 尚未完成')
                             : '待辦事項 ${widget.slot} 尚不能勾選完成',
-                        style: context.appTypography.bodyBig.copyWith(
+                        style: context.appTypography.detail.copyWith(
                           color: widget.canEditCompletion
                               ? (_isDone
                                   ? colors.secondaryText
@@ -265,7 +265,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                             ),
                             child: Text(
                               '取消',
-                              style: textTheme.bodyLarge?.copyWith(
+                              style: typo.body.copyWith(
                                 fontFamily: fontFamily,
                               ),
                             ),
@@ -291,7 +291,7 @@ class _EditGoalDialogState extends State<EditGoalDialog> {
                             ),
                             child: Text(
                               '確定',
-                              style: textTheme.bodyLarge?.copyWith(
+                              style: typo.body.copyWith(
                                 fontFamily: fontFamily,
                               ),
                             ),

@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final textTheme = context.textTheme;
+    final typo = context.appTypography;
 
     return BlocListener<AuthBloc, AuthBlocState>(
       listener: (context, state) {
@@ -195,7 +195,7 @@ class _LoginPageState extends State<LoginPage>
                                       children: [
                                         Text(
                                           'Step1 登入 / 註冊',
-                                          style: textTheme.titleMedium?.copyWith(
+                                          style: typo.pageTitle.copyWith(
                                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                                           ),
                                         ),
@@ -205,12 +205,12 @@ class _LoginPageState extends State<LoginPage>
                                   // Google sign-in button
                                   Padding(
                                     padding: const EdgeInsets.only(top: 24),
-                                    child: _buildGoogleButton(colors, textTheme),
+                                    child: _buildGoogleButton(colors, typo),
                                   ),
                                   // "更多登入方式" toggle
                                   Padding(
                                     padding: const EdgeInsets.only(top: 4),
-                                    child: _buildMoreOptionsToggle(colors, textTheme),
+                                    child: _buildMoreOptionsToggle(colors, typo),
                                   ),
                                 ],
                               ),
@@ -225,12 +225,12 @@ class _LoginPageState extends State<LoginPage>
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(top: 16),
-                                      child: _buildAppleButton(colors, textTheme),
+                                      child: _buildAppleButton(colors, typo),
                                     ),
                                     if (widget.allowGuest)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 16),
-                                        child: _buildGuestButton(colors, textTheme),
+                                        child: _buildGuestButton(colors, typo),
                                       ),
                                   ],
                                 ),
@@ -250,7 +250,7 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  Widget _buildGoogleButton(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildGoogleButton(AppColorsTheme colors, AppTypography typo) {
     return BlocBuilder<AuthBloc, AuthBlocState>(
       builder: (context, state) {
         return InkWell(
@@ -288,7 +288,7 @@ class _LoginPageState extends State<LoginPage>
                           padding: const EdgeInsets.only(left: 8),
                           child: Text(
                             '使用 Google 繼續',
-                            style: textTheme.bodyLarge?.copyWith(
+                            style: typo.body.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
@@ -302,7 +302,7 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  Widget _buildMoreOptionsToggle(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildMoreOptionsToggle(AppColorsTheme colors, AppTypography typo) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -318,7 +318,7 @@ class _LoginPageState extends State<LoginPage>
               children: [
                 Text(
                   '更多登入方式',
-                  style: textTheme.bodyMedium?.copyWith(
+                  style: typo.caption.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   ),
                 ),
@@ -340,7 +340,7 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  Widget _buildAppleButton(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildAppleButton(AppColorsTheme colors, AppTypography typo) {
     return BlocBuilder<AuthBloc, AuthBlocState>(
       builder: (context, state) {
         return InkWell(
@@ -370,7 +370,7 @@ class _LoginPageState extends State<LoginPage>
                     padding: const EdgeInsets.only(left: 8),
                     child: Text(
                       '使用 Apple 繼續',
-                      style: textTheme.bodyLarge?.copyWith(
+                      style: typo.body.copyWith(
                         fontFamily: GoogleFonts.notoSansTc().fontFamily,
                       ),
                     ),
@@ -384,7 +384,7 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  Widget _buildGuestButton(AppColorsTheme colors, TextTheme textTheme) {
+  Widget _buildGuestButton(AppColorsTheme colors, AppTypography typo) {
     return InkWell(
       splashColor: Colors.transparent,
       focusColor: Colors.transparent,
@@ -411,7 +411,7 @@ class _LoginPageState extends State<LoginPage>
                 padding: const EdgeInsets.only(left: 8),
                 child: Text(
                   '以訪客身分繼續',
-                  style: textTheme.bodyLarge?.copyWith(
+                  style: typo.body.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   ),
                 ),
