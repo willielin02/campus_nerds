@@ -70,7 +70,7 @@ class _SchoolEmailInfoView extends StatelessWidget {
                       children: [
                         // Logo
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          padding: const EdgeInsets.symmetric(horizontal: 36),
                           child: Image.asset(
                             'assets/images/Photoroom3.png',
                             width: double.infinity,

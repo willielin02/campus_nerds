@@ -77,12 +77,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     required String schoolEmail,
   }) async {
     try {
-      // Check if email domain is valid first
-      final university = await getUniversityByEmailDomain(schoolEmail);
-      if (university == null) {
-        return OnboardingResult.failure('此電子郵件網域不屬於任何支援的大學');
-      }
-
+      // Domain validation is handled by Edge Function (single source of truth)
       // Call Supabase Edge Function to send verification code
       final response = await SupabaseService.client.functions.invoke(
         'send-school-email-code',
@@ -95,22 +90,12 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
         return OnboardingResult.success();
       } else {
         final data = response.data as Map<String, dynamic>?;
-        final errorMessage = data?['error'] as String? ?? '發送驗證碼失敗';
-        return OnboardingResult.failure(errorMessage);
+        final error = data?['error'] as String? ?? '';
+        return OnboardingResult.failure(_mapSendCodeError(error));
       }
     } catch (e) {
-      // Handle specific error cases
       final errorString = e.toString().toLowerCase();
-      if (errorString.contains('email_already_bound')) {
-        return OnboardingResult.failure('email_already_bound');
-      }
-      if (errorString.contains('rate') || errorString.contains('cooldown')) {
-        return OnboardingResult.failure('請稍後再試，驗證碼發送過於頻繁');
-      }
-      if (errorString.contains('already') || errorString.contains('verified')) {
-        return OnboardingResult.failure('此電子郵件已被驗證');
-      }
-      return OnboardingResult.failure('發送驗證碼時發生錯誤');
+      return OnboardingResult.failure(_mapSendCodeError(errorString));
     }
   }
 
@@ -224,5 +209,21 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     } catch (e) {
       return 0; // On error, allow sending
     }
+  }
+
+  String _mapSendCodeError(String error) {
+    if (error.contains('unsupported_domain')) {
+      return '此電子郵件網域不屬於我們支援的學校網域';
+    }
+    if (error.contains('email_already_bound')) {
+      return 'email_already_bound';
+    }
+    if (error.contains('rate') || error.contains('cooldown')) {
+      return '請稍後再試，驗證碼發送過於頻繁';
+    }
+    if (error.contains('already') || error.contains('verified')) {
+      return '此電子郵件已被驗證';
+    }
+    return '發送驗證碼時發生錯誤';
   }
 }

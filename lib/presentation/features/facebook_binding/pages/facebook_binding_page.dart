@@ -155,7 +155,7 @@ class _FacebookBindingView extends StatelessWidget {
                             // Logo
                             Padding(
                               padding:
-                                  const EdgeInsets.symmetric(horizontal: 32),
+                                  const EdgeInsets.symmetric(horizontal: 36),
                               child: Image.asset(
                                 'assets/images/Photoroom3.png',
                                 width: double.infinity,

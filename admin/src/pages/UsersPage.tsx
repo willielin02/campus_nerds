@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, invokeSendUserPush } from '../lib/supabase'
 import type { UserProfile, University } from '../types/database'
 import { formatDateTime } from '../lib/date'
 
@@ -112,6 +112,19 @@ export default function UsersPage() {
       alert(`驗證失敗: ${error.message}`)
     } else {
       alert('手動驗證成功！')
+
+      // 發送推播通知提醒用戶
+      try {
+        await invokeSendUserPush({
+          user_id: selectedUser.id,
+          title: '學校驗證完成',
+          body: '您的學校身分已驗證成功！現在可以開始報名活動了。',
+          data: { type: 'school_verified' },
+        })
+      } catch (pushError) {
+        console.warn('推播通知發送失敗:', pushError)
+      }
+
       setSelectedUniversityId('')
       await loadAllUsers()
       // 重新選取用戶以更新右側面板

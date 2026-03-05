@@ -186,7 +186,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                           // Logo
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 32),
+                                const EdgeInsets.symmetric(horizontal: 48),
                             child: Image.asset(
                               'assets/images/Photoroom3.png',
                               width: double.infinity,
@@ -262,8 +262,9 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                   padding: const EdgeInsets.only(left: 2),
                                   child: Text(
                                     '暱稱',
-                                    style: typo.heading.copyWith(
+                                    style: typo.detail.copyWith(
                                       fontFamily: fontFamily,
+                                      fontWeight: FontWeight.w600,
                                       color: colors.secondaryText,
                                     ),
                                   ),
@@ -277,14 +278,14 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                       maxLength: 12,
                                       cursorColor: colors.primaryText,
                                       onChanged: (_) => setState(() {}),
-                                      style: typo.body.copyWith(
+                                      style: typo.detail.copyWith(
                                         fontFamily: fontFamily,
                                       ),
                                       decoration: InputDecoration(
                                         isDense: true,
                                         hintText: '請輸入暱稱 ( 至多 12 個字 ) ',
                                         hintStyle:
-                                            typo.body.copyWith(
+                                            typo.detail.copyWith(
                                           fontFamily: fontFamily,
                                           color: colors.primaryText,
                                         ),
@@ -351,9 +352,10 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                               left: 2),
                                           child: Text(
                                             '性別',
-                                            style: typo.heading
+                                            style: typo.detail
                                                 .copyWith(
                                               fontFamily: fontFamily,
+                                              fontWeight: FontWeight.w600,
                                               color: colors.secondaryText,
                                             ),
                                           ),
@@ -384,7 +386,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                                 hint: Text(
                                                   '請選擇性別',
                                                   style: typo
-                                                      .body
+                                                      .detail
                                                       .copyWith(
                                                     fontFamily: fontFamily,
                                                   ),
@@ -400,7 +402,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                                 dropdownColor: colors
                                                     .secondaryBackground,
                                                 elevation: 2,
-                                                style: typo.body
+                                                style: typo.detail
                                                     .copyWith(
                                                   fontFamily: fontFamily,
                                                 ),
@@ -412,7 +414,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                                     child: Text(
                                                       gender,
                                                       style: typo
-                                                          .body
+                                                          .detail
                                                           .copyWith(
                                                         fontFamily:
                                                             fontFamily,
@@ -449,9 +451,10 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                               left: 2),
                                           child: Text(
                                             '生日',
-                                            style: typo.heading
+                                            style: typo.detail
                                                 .copyWith(
                                               fontFamily: fontFamily,
+                                              fontWeight: FontWeight.w600,
                                               color: colors.secondaryText,
                                             ),
                                           ),
@@ -496,7 +499,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                                                           ? '${_selectedBirthday!.year}/${_selectedBirthday!.month.toString().padLeft(2, '0')}/${_selectedBirthday!.day.toString().padLeft(2, '0')}'
                                                           : '請選擇生日',
                                                       style: typo
-                                                          .body
+                                                          .detail
                                                           .copyWith(
                                                         fontFamily:
                                                             fontFamily,
@@ -598,8 +601,9 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                   )
                 : Text(
                     '確認',
-                    style: typo.heading.copyWith(
+                    style: typo.body.copyWith(
                       fontFamily: fontFamily,
+                      fontWeight: FontWeight.w600,
                       color: colors.secondaryText,
                     ),
                   ),

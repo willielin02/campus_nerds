@@ -1,6 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/router/auth_state_notifier.dart';
 import '../../../../app/theme/app_theme.dart';
@@ -23,19 +25,21 @@ class SchoolEmailVerificationPage extends StatefulWidget {
 
 class _SchoolEmailVerificationPageState
     extends State<SchoolEmailVerificationPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final _emailController = TextEditingController();
   final _codeController = TextEditingController();
   final _emailFocusNode = FocusNode();
   final _codeFocusNode = FocusNode();
 
   bool _isExpanded = false;
+  bool _waitingForEmailReturn = false;
   late final AnimationController _expandController;
   late final Animation<double> _expandAnimation;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _expandController = AnimationController(
       duration: const Duration(milliseconds: 350),
       vsync: this,
@@ -48,12 +52,89 @@ class _SchoolEmailVerificationPageState
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _expandController.dispose();
     _emailController.dispose();
     _codeController.dispose();
     _emailFocusNode.dispose();
     _codeFocusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _waitingForEmailReturn) {
+      _waitingForEmailReturn = false;
+      _showEmailSentDialog();
+    }
+  }
+
+  void _showEmailSentDialog() {
+    final colors = context.appColors;
+    final typo = context.appTypography;
+    final fontFamily = GoogleFonts.notoSansTc().fontFamily;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          width: 579,
+          decoration: BoxDecoration(
+            color: colors.secondaryBackground,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colors.tertiary, width: 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text(
+                    '寄出信件了嗎？',
+                    style: typo.heading.copyWith(fontFamily: fontFamily),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text(
+                    '我們通常會在 1 個工作天內回覆，你可以先回到上一頁以訪客身分瀏覽 App。',
+                    style: typo.detail,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 24, bottom: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.alternate,
+                        foregroundColor: colors.primaryText,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        '我知道了',
+                        style: typo.body.copyWith(fontFamily: fontFamily),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _handleSendCode() {
@@ -176,8 +257,10 @@ class _SchoolEmailVerificationPageState
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                           // Logo
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                          AnimatedPadding(
+                            duration: const Duration(milliseconds: 350),
+                            curve: Curves.easeOutCubic,
+                            padding: EdgeInsets.symmetric(horizontal: _isExpanded ? 48 : 36),
                             child: Image.asset(
                               'assets/images/Photoroom3.png',
                               width: double.infinity,
@@ -257,6 +340,44 @@ class _SchoolEmailVerificationPageState
                               child: _buildCodeSection(colors, typo),
                             ),
                           ),
+
+                          // Help text at content bottom
+                          Padding(
+                            padding: EdgeInsets.only(top: _isExpanded ? 12 : 24),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: RichText(
+                                textAlign: TextAlign.center,
+                                text: TextSpan(
+                                  style: typo.caption.copyWith(
+                                    fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                    color: colors.tertiaryText,
+                                  ),
+                                  children: [
+                                    const TextSpan(text: '收不到驗證信或想以其他方式驗證？'),
+                                    TextSpan(
+                                      text: '聯繫我們',
+                                      style: typo.caption.copyWith(
+                                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                                        color: colors.secondaryText,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () async {
+                                          _waitingForEmailReturn = true;
+                                          final launched = await launchUrl(
+                                            Uri.parse('mailto:team@campusnerds.app'),
+                                          );
+                                          if (!launched) {
+                                            _waitingForEmailReturn = false;
+                                          }
+                                        },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                               ],
                             ),
                           ),
@@ -292,8 +413,9 @@ class _SchoolEmailVerificationPageState
                 padding: const EdgeInsets.only(left: 2),
                 child: Text(
                   '學校信箱',
-                  style: typo.heading.copyWith(
+                  style: typo.detail.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                    fontWeight: FontWeight.w600,
                     color: colors.secondaryText,
                   ),
                 ),
@@ -309,14 +431,14 @@ class _SchoolEmailVerificationPageState
                     focusNode: _emailFocusNode,
                     keyboardType: TextInputType.emailAddress,
                     cursorColor: colors.primaryText,
-                    style: typo.body.copyWith(
+                    style: typo.detail.copyWith(
                       fontFamily: GoogleFonts.notoSansTc().fontFamily,
                       color: colors.primaryText,
                     ),
                     decoration: InputDecoration(
                       isDense: true,
                       hintText: '請輸入學校信箱',
-                      hintStyle: typo.body.copyWith(
+                      hintStyle: typo.detail.copyWith(
                         fontFamily: GoogleFonts.notoSansTc().fontFamily,
                         color: colors.tertiary,
                       ),
@@ -358,7 +480,7 @@ class _SchoolEmailVerificationPageState
               // Send code button - matching FlutterFlow FFButtonWidget style
               Center(
                 child: Opacity(
-                opacity: canSend ? 1.0 : 0.5,
+                opacity: (state.isLoading && !state.isCodeSent) ? 1.0 : (canSend ? 1.0 : 0.5),
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: ElevatedButton(
@@ -368,22 +490,42 @@ class _SchoolEmailVerificationPageState
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       backgroundColor: colors.primaryBackground,
+                      disabledBackgroundColor: colors.primaryBackground,
                       foregroundColor: colors.primaryText,
+                      disabledForegroundColor: colors.primaryText,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
-                      buttonText,
-                      style: typo.body.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
-                      ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Opacity(
+                          opacity: (state.isLoading && !state.isCodeSent) ? 0 : 1,
+                          child: Text(
+                            buttonText,
+                            style: typo.detail.copyWith(
+                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            ),
+                          ),
+                        ),
+                        if (state.isLoading && !state.isCodeSent)
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colors.secondaryText,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
               ),
               ),
+
             ],
           ),
         );
@@ -395,7 +537,7 @@ class _SchoolEmailVerificationPageState
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         return Padding(
-          padding: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.only(top: 4),
           child: Column(
             children: [
               // Verification code field
@@ -407,8 +549,9 @@ class _SchoolEmailVerificationPageState
                     padding: const EdgeInsets.only(left: 2),
                     child: Text(
                       '驗證碼',
-                      style: typo.heading.copyWith(
+                      style: typo.detail.copyWith(
                         fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                        fontWeight: FontWeight.w600,
                         color: colors.secondaryText,
                       ),
                     ),
@@ -424,14 +567,14 @@ class _SchoolEmailVerificationPageState
                         focusNode: _codeFocusNode,
                         keyboardType: TextInputType.number,
                         cursorColor: colors.primaryText,
-                        style: typo.body.copyWith(
+                        style: typo.detail.copyWith(
                           fontFamily: GoogleFonts.notoSansTc().fontFamily,
                           color: colors.primaryText,
                         ),
                         decoration: InputDecoration(
                           isDense: true,
                           hintText: '請輸入驗證碼',
-                          hintStyle: typo.body.copyWith(
+                          hintStyle: typo.detail.copyWith(
                             fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             color: colors.tertiary,
                           ),
@@ -474,7 +617,7 @@ class _SchoolEmailVerificationPageState
 
               // Verify button - matching FlutterFlow
               Padding(
-                padding: const EdgeInsets.only(top: 16, bottom: 16),
+                padding: const EdgeInsets.only(top: 16),
                 child: SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -499,8 +642,9 @@ class _SchoolEmailVerificationPageState
                           )
                         : Text(
                             '驗證',
-                            style: typo.heading.copyWith(
+                            style: typo.body.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                   ),

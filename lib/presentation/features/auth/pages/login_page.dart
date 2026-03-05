@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage>
                                 children: [
                                   // Logo
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                                    padding: const EdgeInsets.symmetric(horizontal: 36),
                                     child: Image.asset(
                                       'assets/images/Photoroom3.png',
                                       width: double.infinity,
@@ -224,7 +224,7 @@ class _LoginPageState extends State<LoginPage>
                                 child: Column(
                                   children: [
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 16),
+                                      padding: const EdgeInsets.only(top: 8),
                                       child: _buildAppleButton(colors, typo),
                                     ),
                                     if (widget.allowGuest)
@@ -269,11 +269,14 @@ class _LoginPageState extends State<LoginPage>
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: state.isLoading
-                  ? const Center(
+                  ? Center(
                       child: SizedBox(
                         width: 28,
                         height: 28,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colors.secondaryText,
+                        ),
                       ),
                     )
                   : Row(
@@ -288,7 +291,7 @@ class _LoginPageState extends State<LoginPage>
                           padding: const EdgeInsets.only(left: 8),
                           child: Text(
                             '使用 Google 繼續',
-                            style: typo.body.copyWith(
+                            style: typo.detail.copyWith(
                               fontFamily: GoogleFonts.notoSansTc().fontFamily,
                             ),
                           ),
@@ -358,25 +361,36 @@ class _LoginPageState extends State<LoginPage>
             ),
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FaIcon(
-                    FontAwesomeIcons.apple,
-                    color: colors.primaryText,
-                    size: 28,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Text(
-                      '使用 Apple 繼續',
-                      style: typo.body.copyWith(
-                        fontFamily: GoogleFonts.notoSansTc().fontFamily,
+              child: state.isLoading
+                  ? Center(
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colors.secondaryText,
+                        ),
                       ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FaIcon(
+                          FontAwesomeIcons.apple,
+                          color: colors.primaryText,
+                          size: 28,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(
+                            '使用 Apple 繼續',
+                            style: typo.detail.copyWith(
+                              fontFamily: GoogleFonts.notoSansTc().fontFamily,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         );
@@ -411,7 +425,7 @@ class _LoginPageState extends State<LoginPage>
                 padding: const EdgeInsets.only(left: 8),
                 child: Text(
                   '以訪客身分繼續',
-                  style: typo.body.copyWith(
+                  style: typo.detail.copyWith(
                     fontFamily: GoogleFonts.notoSansTc().fontFamily,
                   ),
                 ),

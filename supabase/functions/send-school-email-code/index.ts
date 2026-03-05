@@ -91,8 +91,23 @@ serve(async (req)=>{
         school_email
       });
     }
-    // ==== Check if email is already active for another user ====
+    // ==== Check if email domain belongs to a supported university ====
+    const emailDomain = school_email.split("@")[1];
+    const baseDomain = extractBaseDomain(emailDomain);
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: domainRow, error: domainError } = await adminClient
+      .from("university_email_domains")
+      .select("id")
+      .eq("domain", baseDomain)
+      .maybeSingle();
+    if (domainError) {
+      console.error("check domain error", domainError);
+      return jsonResponse({ error: "Internal error" }, 500);
+    }
+    if (!domainRow) {
+      return jsonResponse({ error: "unsupported_domain" }, 400);
+    }
+    // ==== Check if email is already active for another user ====
     const { data: activeRow, error: activeError } = await adminClient
       .from("user_school_emails")
       .select("id, user_id")

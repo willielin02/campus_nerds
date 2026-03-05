@@ -49,3 +49,20 @@ export async function invokeConfirmGroup(params: {
   })
   return res.json()
 }
+
+export async function invokeSendUserPush(params: {
+  user_id: string
+  title: string
+  body: string
+  data?: Record<string, string>
+}) {
+  const res = await fetch(`${supabaseUrl}/functions/v1/send-user-push`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${supabaseServiceRoleKey}`,
+    },
+    body: JSON.stringify(params),
+  })
+  return res.json()
+}
