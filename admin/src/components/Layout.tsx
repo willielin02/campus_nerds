@@ -41,12 +41,28 @@ const UserIcon = () => (
   </svg>
 )
 
+const HeadsetIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+  </svg>
+)
+
+const ShieldCheckIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+)
+
 const navItems = [
   { to: '/events', label: '活動管理', icon: CalendarIcon },
   { to: '/venues', label: '場地管理', icon: MapPinIcon },
   { to: '/tickets', label: '票券調整', icon: TicketIcon },
   { to: '/orders', label: '訂單查看', icon: CreditCardIcon },
   { to: '/users', label: '用戶管理', icon: UserIcon },
+  { to: '/student-id-review', label: '學生證審查', icon: ShieldCheckIcon },
+  { to: '/support', label: '客服工單', icon: HeadsetIcon },
 ]
 
 const currentEnv = getAdminEnv()

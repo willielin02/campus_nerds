@@ -9,6 +9,7 @@ import '../../data/repositories/home_repository_impl.dart';
 import '../../data/repositories/my_events_repository_impl.dart';
 import '../../data/repositories/onboarding_repository_impl.dart';
 import '../../data/repositories/notification_repository_impl.dart';
+import '../../data/repositories/support_repository_impl.dart';
 import '../../data/repositories/ticket_history_repository_impl.dart';
 import '../../domain/repositories/account_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -19,6 +20,7 @@ import '../../domain/repositories/home_repository.dart';
 import '../../domain/repositories/my_events_repository.dart';
 import '../../domain/repositories/notification_repository.dart';
 import '../../domain/repositories/onboarding_repository.dart';
+import '../../domain/repositories/support_repository.dart';
 import '../../domain/repositories/ticket_history_repository.dart';
 import '../../presentation/features/account/bloc/account_bloc.dart';
 import '../../presentation/features/auth/bloc/auth_bloc.dart';
@@ -30,6 +32,7 @@ import '../../presentation/features/my_events/bloc/my_events_bloc.dart';
 import '../../presentation/features/my_events/bloc/recording_bloc.dart';
 import '../../presentation/features/onboarding/bloc/onboarding_bloc.dart';
 import '../../presentation/features/facebook_binding/bloc/facebook_binding_bloc.dart';
+import '../../presentation/features/support/bloc/support_bloc.dart';
 import '../../presentation/features/ticket_history/bloc/ticket_history_bloc.dart';
 
 /// Global service locator
@@ -94,6 +97,10 @@ void _registerRepositories() {
   getIt.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(),
   );
+
+  getIt.registerLazySingleton<SupportRepository>(
+    () => SupportRepositoryImpl(),
+  );
 }
 
 void _registerBlocs() {
@@ -157,5 +164,10 @@ void _registerBlocs() {
   // FeedbackBloc is factory — each FeedbackPage gets its own instance
   getIt.registerFactory<FeedbackBloc>(
     () => FeedbackBloc(repository: getIt<MyEventsRepository>()),
+  );
+
+  // SupportBloc is factory — each support page gets its own instance
+  getIt.registerFactory<SupportBloc>(
+    () => SupportBloc(supportRepository: getIt<SupportRepository>()),
   );
 }

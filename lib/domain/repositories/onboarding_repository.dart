@@ -55,4 +55,10 @@ abstract class OnboardingRepository {
   /// Get remaining cooldown seconds for resending verification code
   /// Returns 0 if user can resend immediately
   Future<int> getResendCooldownSeconds(String schoolEmail);
+
+  /// Upload student ID photo and verify via AI
+  /// Returns 'verified' if auto-verified, 'pending_review' if needs manual review
+  Future<OnboardingResult> submitStudentIdVerification({
+    required String imagePath,
+  });
 }

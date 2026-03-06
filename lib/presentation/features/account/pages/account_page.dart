@@ -52,33 +52,40 @@ class _AccountPageState extends State<AccountPage> {
               decoration: BoxDecoration(
                 color: colors.primaryBackground,
               ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Profile card
-                      _buildProfileCard(colors, typo, state.profile),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // 空間不足時把 body(18) 降為 detail(16)
+                  final isCompact = constraints.maxHeight < 665;
+                  final bodyStyle = isCompact ? typo.detail : typo.body;
 
-                      // 帳號設定 section header
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Text(
-                          '帳號設定',
-                          style: typo.body.copyWith(
-                            color: colors.primaryText,
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Profile card
+                          _buildProfileCard(colors, typo, state.profile,
+                              isCompact: isCompact),
+
+                          // 帳號設定 section header
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Text(
+                              '帳號設定',
+                              style: bodyStyle.copyWith(
+                                color: colors.primaryText,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
 
-                      // Account settings container
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: _buildSettingsContainer(
-                          colors,
-                          typo,
-                          [
+                          // Account settings container
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: _buildSettingsContainer(
+                              colors,
+                              bodyStyle,
+                              [
                             _SettingsItem(
                               icon: Icons.email_rounded,
                               title: '學校信箱驗證',
@@ -108,68 +115,70 @@ class _AccountPageState extends State<AccountPage> {
                               },
                               isLast: true,
                             ),
-                          ],
-                        ),
-                      ),
-
-                      // 幫助 section header
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Text(
-                          '幫助',
-                          style: typo.body.copyWith(
-                            color: colors.primaryText,
-                          ),
-                        ),
-                      ),
-
-                      // Help container
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: _buildSettingsContainer(
-                          colors,
-                          typo,
-                          [
-                            _SettingsItem(
-                              icon: Icons.question_mark_rounded,
-                              title: '常見問題與使用說明',
-                              onTap: () {
-                                context.push(AppRoutes.faq);
-                              },
-                            ),
-                            _SettingsItem(
-                              icon: Icons.contact_mail_rounded,
-                              title: '聯絡客服',
-                              onTap: () {
-                                context.push(AppRoutes.contactSupport);
-                              },
-                              isLast: true,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Logout container
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: _buildLogoutContainer(colors, typo, state),
-                      ),
-
-                      // Version
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Center(
-                          child: Text(
-                            'v1.0.3 (103)',
-                            style: typo.caption.copyWith(
-                              color: colors.quaternary,
+                              ],
                             ),
                           ),
-                        ),
+
+                          // 幫助 section header
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Text(
+                              '幫助',
+                              style: bodyStyle.copyWith(
+                                color: colors.primaryText,
+                              ),
+                            ),
+                          ),
+
+                          // Help container
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: _buildSettingsContainer(
+                              colors,
+                              bodyStyle,
+                              [
+                                _SettingsItem(
+                                  icon: Icons.question_mark_rounded,
+                                  title: '常見問題與使用說明',
+                                  onTap: () {
+                                    context.push(AppRoutes.faq);
+                                  },
+                                ),
+                                _SettingsItem(
+                                  icon: Icons.contact_mail_rounded,
+                                  title: '聯絡客服',
+                                  onTap: () {
+                                    context.push(AppRoutes.supportTickets);
+                                  },
+                                  isLast: true,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Logout container
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: _buildLogoutContainer(colors, bodyStyle, state),
+                          ),
+
+                          // Version
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Center(
+                              child: Text(
+                                'v1.0.3 (103)',
+                                style: typo.caption.copyWith(
+                                  color: colors.quaternary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -181,8 +190,9 @@ class _AccountPageState extends State<AccountPage> {
   Widget _buildProfileCard(
     AppColorsTheme colors,
     AppTypography typo,
-    UserProfile? profile,
-  ) {
+    UserProfile? profile, {
+    bool isCompact = false,
+  }) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -224,7 +234,7 @@ class _AccountPageState extends State<AccountPage> {
               children: [
                 Text(
                   profile?.displayNameWithPrefix ?? '書呆子',
-                  style: typo.body.copyWith(
+                  style: (isCompact ? typo.detail : typo.body).copyWith(
                     color: colors.secondaryText,
                   ),
                 ),
@@ -266,7 +276,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildSettingsContainer(
     AppColorsTheme colors,
-    AppTypography typo,
+    TextStyle bodyStyle,
     List<_SettingsItem> items,
   ) {
     return Container(
@@ -283,7 +293,7 @@ class _AccountPageState extends State<AccountPage> {
         children: items.map((item) {
           return Column(
             children: [
-              _buildSettingsRow(colors, typo, item),
+              _buildSettingsRow(colors, bodyStyle, item),
               if (!item.isLast)
                 Divider(
                   thickness: 1,
@@ -301,7 +311,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildSettingsRow(
     AppColorsTheme colors,
-    AppTypography typo,
+    TextStyle bodyStyle,
     _SettingsItem item,
   ) {
     final isFirst = item == item; // placeholder for first item detection
@@ -325,7 +335,7 @@ class _AccountPageState extends State<AccountPage> {
                   padding: const EdgeInsets.only(left: 10, bottom: 3),
                   child: Text(
                     item.title,
-                    style: typo.body.copyWith(
+                    style: bodyStyle.copyWith(
                       color: colors.secondaryText,
                     ),
                   ),
@@ -348,7 +358,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildLogoutContainer(
     AppColorsTheme colors,
-    AppTypography typo,
+    TextStyle bodyStyle,
     AccountState state,
   ) {
     return InkWell(
@@ -392,7 +402,7 @@ class _AccountPageState extends State<AccountPage> {
                     padding: const EdgeInsets.only(left: 10, bottom: 3),
                     child: Text(
                       '登出',
-                      style: typo.body.copyWith(
+                      style: bodyStyle.copyWith(
                         color: colors.secondaryText,
                       ),
                     ),

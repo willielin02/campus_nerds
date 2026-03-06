@@ -26,6 +26,13 @@ class _MyEventsPageState extends State<MyEventsPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     context.read<MyEventsBloc>().add(const MyEventsLoadData());
+
+    // 如果有 pendingTabIndex，立即套用
+    final pending = context.read<MyEventsBloc>().state.pendingTabIndex;
+    if (pending != null) {
+      _tabController.index = pending;
+      context.read<MyEventsBloc>().add(const MyEventsClearPendingTab());
+    }
   }
 
   @override
@@ -50,7 +57,16 @@ class _MyEventsPageState extends State<MyEventsPage>
     final colors = context.appColors;
     final typo = context.appTypography;
 
-    return GestureDetector(
+    return BlocListener<MyEventsBloc, MyEventsState>(
+      listenWhen: (prev, curr) =>
+          curr.pendingTabIndex != null && prev.pendingTabIndex != curr.pendingTabIndex,
+      listener: (context, state) {
+        if (state.pendingTabIndex != null) {
+          _tabController.animateTo(state.pendingTabIndex!);
+          context.read<MyEventsBloc>().add(const MyEventsClearPendingTab());
+        }
+      },
+      child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
           FocusManager.instance.primaryFocus?.unfocus();
@@ -132,6 +148,7 @@ class _MyEventsPageState extends State<MyEventsPage>
             ),
           ),
         ),
+      ),
     );
   }
 

@@ -6,6 +6,8 @@ import TicketsPage from './pages/TicketsPage'
 import OrdersPage from './pages/OrdersPage'
 import VenuesPage from './pages/VenuesPage'
 import UsersPage from './pages/UsersPage'
+import SupportTicketsPage from './pages/SupportTicketsPage'
+import StudentIdReviewPage from './pages/StudentIdReviewPage'
 
 export default function App() {
   return (
@@ -19,6 +21,8 @@ export default function App() {
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/venues" element={<VenuesPage />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/student-id-review" element={<StudentIdReviewPage />} />
+          <Route path="/support" element={<SupportTicketsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

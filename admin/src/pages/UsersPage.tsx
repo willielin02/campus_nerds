@@ -11,6 +11,8 @@ export default function UsersPage() {
   const [universities, setUniversities] = useState<University[]>([])
   const [selectedUniversityId, setSelectedUniversityId] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [revokeReason, setRevokeReason] = useState('')
+  const [revokeCustomReason, setRevokeCustomReason] = useState('')
 
   useEffect(() => {
     loadAllUsers()
@@ -46,10 +48,15 @@ export default function UsersPage() {
   function selectUser(user: UserProfile) {
     setSelectedUser(user)
     setSelectedUniversityId('')
+    setRevokeReason('')
+    setRevokeCustomReason('')
   }
 
   function getVerificationBadge(user: UserProfile) {
     if (user.school_email_status === 'verified') {
+      if (user.school_email_verification_method === 'ai') {
+        return <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">AI 驗證</span>
+      }
       if (user.school_email_verification_method === 'manual') {
         return <span className="text-[11px] px-1.5 py-0.5 rounded bg-alternate text-secondary-text">客服驗證</span>
       }
@@ -138,6 +145,52 @@ export default function UsersPage() {
     setSubmitting(false)
   }
 
+  async function handleRevokeVerification() {
+    if (!selectedUser) return
+
+    const reason = revokeReason === '__custom' ? revokeCustomReason.trim() : revokeReason
+    if (!reason) {
+      alert('請選擇或輸入撤回原因')
+      return
+    }
+    if (!confirm(`確定要撤回此用戶的學校驗證嗎？\n原因：${reason}`)) return
+
+    setSubmitting(true)
+
+    await supabase
+      .from('user_school_emails')
+      .update({
+        is_active: false,
+        released_at: new Date().toISOString(),
+        released_reason: 'admin_revoked',
+      })
+      .eq('user_id', selectedUser.id)
+      .eq('is_active', true)
+
+    try {
+      await invokeSendUserPush({
+        user_id: selectedUser.id,
+        title: '學校驗證已被撤回',
+        body: `${reason}，請重新驗證。`,
+        data: { type: 'school_verification_revoked' },
+      })
+    } catch (e) {
+      console.warn('推播通知發送失敗:', e)
+    }
+
+    alert('已撤回驗證')
+    setRevokeReason('')
+    setRevokeCustomReason('')
+    await loadAllUsers()
+    const { data: updated } = await supabase
+      .from('user_profile_v')
+      .select('id, nickname, gender, age, school_email, school_email_status, school_email_verification_method, university_id, university_name, university_code, created_at')
+      .eq('id', selectedUser.id)
+      .single()
+    if (updated) setSelectedUser(updated as unknown as UserProfile)
+    setSubmitting(false)
+  }
+
   const isVerified = selectedUser?.school_email_status === 'verified'
 
   return (
@@ -217,12 +270,15 @@ export default function UsersPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm text-secondary-text">✓ 已驗證</span>
+                      {selectedUser.school_email_verification_method === 'ai' && (
+                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">AI 驗證</span>
+                      )}
                       {selectedUser.school_email_verification_method === 'manual' && (
                         <span className="text-[11px] px-1.5 py-0.5 rounded bg-alternate text-secondary-text">客服驗證</span>
                       )}
                     </div>
                     <p className="text-xs text-tertiary-text">學校：{selectedUser.university_name}</p>
-                    {selectedUser.school_email_verification_method !== 'manual' && (
+                    {selectedUser.school_email_verification_method === 'email_otp' && (
                       <p className="text-xs text-tertiary-text">信箱：{selectedUser.school_email}</p>
                     )}
                   </div>
@@ -230,6 +286,48 @@ export default function UsersPage() {
                   <p className="text-sm text-tertiary-text">尚未驗證學校身分</p>
                 )}
               </div>
+
+              {/* Revoke verification */}
+              {isVerified && (
+                <div className="bg-secondary border-2 border-tertiary rounded-[var(--radius-app)] p-4">
+                  <h3 className="text-sm font-semibold mb-3">撤回驗證</h3>
+                  <div className="space-y-3">
+                    <label className="block">
+                      <span className="text-xs text-secondary-text">撤回原因</span>
+                      <select
+                        value={revokeReason}
+                        onChange={(e) => {
+                          setRevokeReason(e.target.value)
+                          if (e.target.value !== '__custom') setRevokeCustomReason('')
+                        }}
+                        className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
+                      >
+                        <option value="">選擇原因...</option>
+                        <option value="學生證資訊與本人不符">學生證資訊與本人不符</option>
+                        <option value="提供的學生證為偽造">提供的學生證為偽造</option>
+                        <option value="學生證已過期">學生證已過期</option>
+                        <option value="__custom">自訂原因...</option>
+                      </select>
+                    </label>
+                    {revokeReason === '__custom' && (
+                      <input
+                        type="text"
+                        value={revokeCustomReason}
+                        onChange={(e) => setRevokeCustomReason(e.target.value)}
+                        placeholder="請輸入原因..."
+                        className="block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
+                      />
+                    )}
+                    <button
+                      onClick={handleRevokeVerification}
+                      disabled={submitting || (!revokeReason || (revokeReason === '__custom' && !revokeCustomReason.trim()))}
+                      className="px-4 py-2.5 bg-red-50 text-red-700 rounded-[var(--radius-app)] text-sm font-semibold hover:opacity-80 disabled:opacity-50 transition-opacity"
+                    >
+                      {submitting ? '處理中...' : '確認撤回'}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Manual verification form */}
               {!isVerified && (

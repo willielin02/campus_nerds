@@ -32,7 +32,12 @@ abstract class AppRoutes {
   // Facebook Binding
   static const String facebookBinding = '/facebook-binding';
 
-  // Contact Support
+  // Support Tickets
+  static const String supportTickets = '/support-tickets';
+  static const String supportTicketDetail = '/support-ticket-detail';
+  static const String createTicket = '/create-ticket';
+
+  // Contact Support (legacy, redirects to supportTickets)
   static const String contactSupport = '/contact-support';
 
   // FAQ
@@ -60,6 +65,9 @@ abstract class AppRouteNames {
   static const String ticketHistory = 'ticketHistory';
   static const String schoolEmailInfo = 'schoolEmailInfo';
   static const String facebookBinding = 'facebookBinding';
+  static const String supportTickets = 'supportTickets';
+  static const String supportTicketDetail = 'supportTicketDetail';
+  static const String createTicket = 'createTicket';
   static const String contactSupport = 'contactSupport';
   static const String faq = 'faq';
   static const String feedback = 'feedback';

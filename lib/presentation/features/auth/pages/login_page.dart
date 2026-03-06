@@ -84,10 +84,10 @@ class _LoginPageState extends State<LoginPage>
       listener: (context, state) {
         if (state.status == AuthStatus.authenticated) {
           context.go(AppRoutes.home);
-        } else if (state.status == AuthStatus.needsSchoolVerification) {
-          context.go(AppRoutes.schoolEmailVerification);
         } else if (state.status == AuthStatus.needsBasicInfo) {
           context.go(AppRoutes.basicInfo);
+        } else if (state.status == AuthStatus.needsSchoolVerification) {
+          context.go(AppRoutes.schoolEmailVerification);
         } else if (state.status == AuthStatus.error && state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

@@ -23,6 +23,9 @@ import '../../presentation/features/facebook_binding/pages/facebook_binding_page
 import '../../presentation/features/account/pages/school_email_info_page.dart';
 import '../../presentation/features/account/pages/contact_support_page.dart';
 import '../../presentation/features/account/pages/faq_page.dart';
+import '../../presentation/features/support/pages/support_tickets_page.dart';
+import '../../presentation/features/support/pages/support_ticket_detail_page.dart';
+import '../../presentation/features/support/pages/create_ticket_page.dart';
 import '../../presentation/features/my_events/pages/feedback_page.dart';
 import '../../presentation/features/my_events/pages/learning_report_page.dart';
 import 'app_routes.dart';
@@ -116,14 +119,25 @@ class AppRouter {
       final needsSchool = authNotifier.needsSchoolVerification;
       final needsBasic = authNotifier.needsBasicInfo;
 
-      // Must verify school email first
-      if (needsSchool && currentPath != AppRoutes.schoolEmailVerification) {
-        return AppRoutes.schoolEmailVerification;
+      // Routes accessible during onboarding (e.g. support tickets)
+      const allowedDuringOnboarding = [
+        AppRoutes.supportTickets,
+        AppRoutes.supportTicketDetail,
+        AppRoutes.createTicket,
+      ];
+
+      // Must fill basic info first (nickname, birthday, gender, OS)
+      if (needsBasic &&
+          currentPath != AppRoutes.basicInfo &&
+          !allowedDuringOnboarding.contains(currentPath)) {
+        return AppRoutes.basicInfo;
       }
 
-      // Must fill basic info (nickname, birthday, gender, OS)
-      if (needsBasic && currentPath != AppRoutes.basicInfo) {
-        return AppRoutes.basicInfo;
+      // Then verify school email
+      if (needsSchool &&
+          currentPath != AppRoutes.schoolEmailVerification &&
+          !allowedDuringOnboarding.contains(currentPath)) {
+        return AppRoutes.schoolEmailVerification;
       }
 
       // Fully onboarded but still on onboarding route → go home
@@ -339,12 +353,35 @@ class AppRouter {
           builder: (context, state) => const FacebookBindingPage(),
         ),
 
-        // Contact Support route (use root navigator - no navbar)
+        // Support Tickets routes (use root navigator - no navbar)
+        GoRoute(
+          path: AppRoutes.supportTickets,
+          name: AppRouteNames.supportTickets,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) => const SupportTicketsPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.supportTicketDetail,
+          name: AppRouteNames.supportTicketDetail,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) {
+            final ticketId = state.uri.queryParameters['ticketId'] ?? '';
+            return SupportTicketDetailPage(ticketId: ticketId);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.createTicket,
+          name: AppRouteNames.createTicket,
+          parentNavigatorKey: appNavigatorKey,
+          builder: (context, state) => const CreateTicketPage(),
+        ),
+
+        // Contact Support route (legacy, redirects to support tickets)
         GoRoute(
           path: AppRoutes.contactSupport,
           name: AppRouteNames.contactSupport,
           parentNavigatorKey: appNavigatorKey,
-          builder: (context, state) => const ContactSupportPage(),
+          redirect: (_, __) => AppRoutes.supportTickets,
         ),
 
         // FAQ route (use root navigator - no navbar)

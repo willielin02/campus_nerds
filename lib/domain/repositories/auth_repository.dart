@@ -42,11 +42,11 @@ class UserProfileStatus {
   /// Check if user needs to complete onboarding
   bool get needsOnboarding => !hasUniversity || !hasBasicInfo;
 
-  /// Check if user needs school email verification
-  bool get needsSchoolVerification => !hasUniversity;
+  /// Check if user needs basic info (Step 2, comes first)
+  bool get needsBasicInfo => !hasBasicInfo;
 
-  /// Check if user needs basic info
-  bool get needsBasicInfo => hasUniversity && !hasBasicInfo;
+  /// Check if user needs school email verification (Step 3, comes after basic info)
+  bool get needsSchoolVerification => hasBasicInfo && !hasUniversity;
 }
 
 /// Abstract repository for authentication operations

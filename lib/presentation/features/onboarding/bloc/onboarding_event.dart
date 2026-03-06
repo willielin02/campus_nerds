@@ -58,6 +58,16 @@ class OnboardingUpdateBasicInfo extends OnboardingEvent {
   List<Object?> get props => [nickname, gender, birthday];
 }
 
+/// Event to submit student ID photo for AI verification
+class OnboardingSubmitStudentId extends OnboardingEvent {
+  final String imagePath;
+
+  const OnboardingSubmitStudentId(this.imagePath);
+
+  @override
+  List<Object?> get props => [imagePath];
+}
+
 /// Event to clear any error state
 class OnboardingClearError extends OnboardingEvent {
   const OnboardingClearError();

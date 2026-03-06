@@ -84,7 +84,7 @@ class FacebookRepositoryImpl implements FacebookRepository {
       return FacebookLinkResult.success(fbUserId);
     } on PostgrestException catch (e) {
       if (e.code == '23505' && e.message.contains('users_fb_user_id_key')) {
-        return FacebookLinkResult.failure('此 Facebook 帳號已被其他用戶綁定。若您之前的帳號遺失或有任何疑問，請寄信至 team@campusnerds.app 聯絡客服。');
+        return FacebookLinkResult.failure('此 Facebook 帳號已被其他用戶綁定。若您之前的帳號遺失或有任何疑問，請透過「聯絡客服」聯繫我們。');
       }
       return FacebookLinkResult.failure('臉書綁定失敗：${e.message}');
     } catch (e) {

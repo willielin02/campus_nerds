@@ -11,7 +11,7 @@ import '../../../../domain/entities/event.dart';
 import '../../../../domain/repositories/my_events_repository.dart';
 import '../../../common/widgets/app_alert_dialog.dart';
 import '../../../common/widgets/app_confirm_dialog.dart';
-import '../../my_events/bloc/bloc.dart' show MyEventsBloc, MyEventsRefresh;
+import '../../my_events/bloc/bloc.dart' show MyEventsBloc, MyEventsRefresh, MyEventsSetPendingTab;
 import '../bloc/bloc.dart';
 
 /// Booking confirmation page for Focused Study events
@@ -661,6 +661,10 @@ class _StudyBookingConfirmationPageState
                     context
                         .read<MyEventsBloc>()
                         .add(const MyEventsRefresh());
+                    // 導航後切到 Upcoming tab
+                    context
+                        .read<MyEventsBloc>()
+                        .add(const MyEventsSetPendingTab(0));
 
                     // Check Facebook binding status before navigating
                     bool shouldPromptFb = false;

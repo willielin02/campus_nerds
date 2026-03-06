@@ -1,4 +1,4 @@
-import 'dart:io' show Platform;
+import 'dart:io' show File, Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -208,6 +208,56 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       return cooldownEnd.difference(now).inSeconds;
     } catch (e) {
       return 0; // On error, allow sending
+    }
+  }
+
+  @override
+  Future<OnboardingResult> submitStudentIdVerification({
+    required String imagePath,
+  }) async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) {
+        return OnboardingResult.failure('用戶未登入');
+      }
+
+      // 1. Upload photo to student-id-uploads bucket
+      final file = File(imagePath);
+      final ext = imagePath.split('.').last.toLowerCase();
+      final timestamp = AppClock.now().millisecondsSinceEpoch;
+      final storagePath = '$userId/$timestamp.$ext';
+
+      await SupabaseService.client.storage
+          .from('student-id-uploads')
+          .upload(storagePath, file);
+
+      // 2. Call verify-student-id Edge Function
+      final response = await SupabaseService.client.functions.invoke(
+        'verify-student-id',
+        body: {
+          'storage_path': storagePath,
+        },
+      );
+
+      if (response.status == 200) {
+        final data = response.data as Map<String, dynamic>?;
+        final status = data?['status'] as String?;
+
+        if (status == 'verified') {
+          return OnboardingResult.success('verified');
+        } else if (status == 'pending_review') {
+          return OnboardingResult.success('pending_review');
+        } else {
+          return OnboardingResult.failure(
+              data?['error'] as String? ?? '驗證失敗');
+        }
+      } else {
+        final data = response.data as Map<String, dynamic>?;
+        return OnboardingResult.failure(
+            data?['error'] as String? ?? '驗證服務暫時無法使用');
+      }
+    } catch (e) {
+      return OnboardingResult.failure('提交驗證失敗，請稍後再試');
     }
   }
 

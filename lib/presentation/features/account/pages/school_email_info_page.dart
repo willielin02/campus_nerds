@@ -93,7 +93,7 @@ class _SchoolEmailInfoView extends StatelessWidget {
                         ),
                         // Title
                         Padding(
-                          padding: const EdgeInsets.only(top: 32),
+                          padding: const EdgeInsets.only(top: 48),
                           child: Row(
                             children: [
                               Text(

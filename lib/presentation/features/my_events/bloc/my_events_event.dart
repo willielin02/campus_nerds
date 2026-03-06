@@ -64,6 +64,21 @@ class MyEventsClearSuccess extends MyEventsEvent {
   const MyEventsClearSuccess();
 }
 
+/// Event to request switching to a specific tab
+class MyEventsSetPendingTab extends MyEventsEvent {
+  final int tabIndex;
+
+  const MyEventsSetPendingTab(this.tabIndex);
+
+  @override
+  List<Object?> get props => [tabIndex];
+}
+
+/// Event to clear the pending tab index after it's been consumed
+class MyEventsClearPendingTab extends MyEventsEvent {
+  const MyEventsClearPendingTab();
+}
+
 // ============================================
 // Study Plan Events (Phase 7)
 // ============================================

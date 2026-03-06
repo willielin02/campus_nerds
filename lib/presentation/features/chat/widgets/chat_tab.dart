@@ -150,13 +150,17 @@ class _ChatTabState extends State<ChatTab>
                         const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16),
-                          child: Text(
-                            '屆時你們會透過聊天室聯絡並確認碰面地點。',
-                            style: context.appTypography.caption.copyWith(
-                              fontFamily: fontFamily,
-                              color: colors.secondaryText,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '屆時你們會透過聊天室聯絡並確認碰面地點。',
+                              style: context.appTypography.caption.copyWith(
+                                fontFamily: fontFamily,
+                                color: colors.secondaryText,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],

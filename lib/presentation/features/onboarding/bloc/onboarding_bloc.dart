@@ -23,6 +23,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<OnboardingSendCode>(_onSendCode);
     on<OnboardingVerifyCode>(_onVerifyCode);
     on<OnboardingUpdateBasicInfo>(_onUpdateBasicInfo);
+    on<OnboardingSubmitStudentId>(_onSubmitStudentId);
     on<OnboardingClearError>(_onClearError);
     on<OnboardingReset>(_onReset);
     on<OnboardingUpdateCooldown>(_onUpdateCooldown);
@@ -145,6 +146,53 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       emit(state.copyWith(
         status: OnboardingStatus.codeSent, // Stay on code entry
         errorMessage: result.errorMessage ?? '驗證碼無效',
+        isLoading: false,
+      ));
+    }
+  }
+
+  /// Submit student ID photo for AI verification
+  Future<void> _onSubmitStudentId(
+    OnboardingSubmitStudentId event,
+    Emitter<OnboardingState> emit,
+  ) async {
+    emit(state.copyWith(
+      status: OnboardingStatus.studentIdSubmitting,
+      isLoading: true,
+    ));
+
+    final result = await _onboardingRepository.submitStudentIdVerification(
+      imagePath: event.imagePath,
+    );
+
+    if (result.success && result.data != null) {
+      if (result.data == 'verified') {
+        // AI auto-verified -> check if basic info is done
+        final profileStatus = await _authRepository.getUserProfileStatus();
+        if (profileStatus != null && profileStatus.hasBasicInfo) {
+          emit(state.copyWith(
+            status: OnboardingStatus.completed,
+            isLoading: false,
+          ));
+        } else {
+          emit(state.copyWith(
+            status: OnboardingStatus.studentIdVerified,
+            isLoading: false,
+          ));
+        }
+      } else {
+        // pending_review
+        emit(state.copyWith(
+          status: OnboardingStatus.studentIdPendingReview,
+          pendingReviewMessage:
+              '照片已提交，我們會在 1-2 個工作天內完成人工審核，届時將以推播通知告知您結果。',
+          isLoading: false,
+        ));
+      }
+    } else {
+      emit(state.copyWith(
+        status: OnboardingStatus.error,
+        errorMessage: result.errorMessage ?? '驗證失敗',
         isLoading: false,
       ));
     }

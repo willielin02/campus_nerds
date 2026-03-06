@@ -40,6 +40,8 @@ export 'tables/peer_feedbacks.dart';
 export 'tables/products.dart';
 export 'tables/recording_segments_table.dart';
 export 'tables/school_email_verifications.dart';
+export 'tables/support_messages.dart';
+export 'tables/support_tickets.dart';
 export 'tables/ticket_ledger.dart';
 export 'tables/universities.dart';
 export 'tables/university_email_domains.dart';

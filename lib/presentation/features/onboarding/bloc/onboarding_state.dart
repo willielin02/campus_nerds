@@ -12,6 +12,9 @@ enum OnboardingStatus {
   codeSent,
   codeVerifying,
   codeVerified,
+  studentIdSubmitting,
+  studentIdVerified,
+  studentIdPendingReview,
   basicInfoUpdating,
   completed,
   error,
@@ -25,6 +28,7 @@ class OnboardingState extends Equatable {
   final String? errorMessage;
   final int cooldownSeconds;
   final bool isLoading;
+  final String? pendingReviewMessage;
 
   const OnboardingState({
     this.status = OnboardingStatus.initial,
@@ -33,6 +37,7 @@ class OnboardingState extends Equatable {
     this.errorMessage,
     this.cooldownSeconds = 0,
     this.isLoading = false,
+    this.pendingReviewMessage,
   });
 
   /// Check if user can resend code
@@ -61,6 +66,7 @@ class OnboardingState extends Equatable {
     String? errorMessage,
     int? cooldownSeconds,
     bool? isLoading,
+    String? pendingReviewMessage,
   }) {
     return OnboardingState(
       status: status ?? this.status,
@@ -69,6 +75,7 @@ class OnboardingState extends Equatable {
       errorMessage: errorMessage,
       cooldownSeconds: cooldownSeconds ?? this.cooldownSeconds,
       isLoading: isLoading ?? this.isLoading,
+      pendingReviewMessage: pendingReviewMessage ?? this.pendingReviewMessage,
     );
   }
 
@@ -82,6 +89,7 @@ class OnboardingState extends Equatable {
       errorMessage: null,
       cooldownSeconds: cooldownSeconds,
       isLoading: isLoading,
+      pendingReviewMessage: pendingReviewMessage,
     );
   }
 
@@ -93,5 +101,6 @@ class OnboardingState extends Equatable {
         errorMessage,
         cooldownSeconds,
         isLoading,
+        pendingReviewMessage,
       ];
 }

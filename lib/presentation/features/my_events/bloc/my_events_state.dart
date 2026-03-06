@@ -31,6 +31,9 @@ class MyEventsState extends Equatable {
   final List<GroupEnglishAssignment> englishAssignments;
   final bool isLoadingEnglishAssignments;
 
+  /// 從外部導航過來時指定要切到哪個 tab（0=Upcoming, 1=History）
+  final int? pendingTabIndex;
+
   const MyEventsState({
     this.status = MyEventsStatus.initial,
     this.upcomingEvents = const [],
@@ -46,6 +49,7 @@ class MyEventsState extends Equatable {
     this.isUpdatingStudyPlan = false,
     this.englishAssignments = const [],
     this.isLoadingEnglishAssignments = false,
+    this.pendingTabIndex,
   });
 
   /// Check if data is loaded
@@ -77,6 +81,8 @@ class MyEventsState extends Equatable {
     bool? isUpdatingStudyPlan,
     List<GroupEnglishAssignment>? englishAssignments,
     bool? isLoadingEnglishAssignments,
+    int? pendingTabIndex,
+    bool clearPendingTabIndex = false,
   }) {
     return MyEventsState(
       status: status ?? this.status,
@@ -94,6 +100,7 @@ class MyEventsState extends Equatable {
       isUpdatingStudyPlan: isUpdatingStudyPlan ?? this.isUpdatingStudyPlan,
       englishAssignments: englishAssignments ?? this.englishAssignments,
       isLoadingEnglishAssignments: isLoadingEnglishAssignments ?? this.isLoadingEnglishAssignments,
+      pendingTabIndex: clearPendingTabIndex ? null : (pendingTabIndex ?? this.pendingTabIndex),
     );
   }
 
@@ -113,5 +120,6 @@ class MyEventsState extends Equatable {
         isUpdatingStudyPlan,
         englishAssignments,
         isLoadingEnglishAssignments,
+        pendingTabIndex,
       ];
 }

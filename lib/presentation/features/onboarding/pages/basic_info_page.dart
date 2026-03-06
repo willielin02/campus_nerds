@@ -215,7 +215,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                               width: double.infinity,
                               height: 24,
                               child: OnboardingStepProgress(
-                                currentStep: 3,
+                                currentStep: 2,
                                 totalSteps: 3,
                               ),
                             ),
@@ -227,7 +227,7 @@ class _BasicInfoPageState extends State<BasicInfoPage> {
                             child: Row(
                               children: [
                                 Text(
-                                  'Step3 輸入您的基本資料',
+                                  'Step2 輸入您的基本資料',
                                   style: typo.pageTitle.copyWith(
                                     fontFamily: fontFamily,
                                   ),

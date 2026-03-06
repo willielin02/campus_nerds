@@ -51,10 +51,10 @@ class AuthBlocState extends Equatable {
 
     // Determine if user needs onboarding
     if (profileStatus != null) {
-      if (profileStatus.needsSchoolVerification) {
-        newStatus = AuthStatus.needsSchoolVerification;
-      } else if (profileStatus.needsBasicInfo) {
+      if (profileStatus.needsBasicInfo) {
         newStatus = AuthStatus.needsBasicInfo;
+      } else if (profileStatus.needsSchoolVerification) {
+        newStatus = AuthStatus.needsSchoolVerification;
       }
     }
 

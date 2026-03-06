@@ -33,6 +33,22 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
     on<MyEventsLoadStudyPlans>(_onLoadStudyPlans);
     on<MyEventsLoadMyStudyPlans>(_onLoadMyStudyPlans);
     on<MyEventsUpdateStudyPlan>(_onUpdateStudyPlan);
+    on<MyEventsSetPendingTab>(_onSetPendingTab);
+    on<MyEventsClearPendingTab>(_onClearPendingTab);
+  }
+
+  void _onSetPendingTab(
+    MyEventsSetPendingTab event,
+    Emitter<MyEventsState> emit,
+  ) {
+    emit(state.copyWith(pendingTabIndex: event.tabIndex));
+  }
+
+  void _onClearPendingTab(
+    MyEventsClearPendingTab event,
+    Emitter<MyEventsState> emit,
+  ) {
+    emit(state.copyWith(clearPendingTabIndex: true));
   }
 
   /// Load initial my events data

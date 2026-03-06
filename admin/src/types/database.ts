@@ -112,7 +112,7 @@ export interface EcpayPayment {
 }
 
 export type SchoolEmailStatus = 'pending' | 'verified' | 'rejected'
-export type VerificationMethod = 'email_otp' | 'manual'
+export type VerificationMethod = 'email_otp' | 'manual' | 'ai'
 
 export interface UserProfile {
   id: string
