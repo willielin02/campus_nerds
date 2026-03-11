@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/retry_until_success.dart';
 import '../../../../domain/entities/event.dart';
 import '../../../../domain/repositories/home_repository.dart';
 import 'home_event.dart';
@@ -19,7 +20,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeChangeCity>(_onChangeCity);
   }
 
-  /// Load initial home data
+  /// Load initial home data — retries until success
   Future<void> _onLoadData(
     HomeLoadData event,
     Emitter<HomeState> emit,
@@ -28,54 +29,45 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     emit(state.copyWith(status: HomeStatus.loading));
 
-    try {
-      // Load cities
+    final data = await retryUntilSuccess(() async {
       final cities = await _homeRepository.getCities();
-
-      // Load saved city preference (default to 臺北)
       final savedCity = await _homeRepository.getUserCityPreference() ??
           cities.where((c) => c.name == '臺北').firstOrNull;
-
-      // Load ticket balance
       final ticketBalance = await _homeRepository.getTicketBalance();
-
-      // Load events for selected city
       final cityId = savedCity?.id;
-
       final focusedStudyEvents = await _homeRepository.getFocusedStudyEvents(
-        cityId: cityId,
-        limit: 10,
+        cityId: cityId, limit: 10,
       );
-
       final englishGamesEvents = await _homeRepository.getEnglishGamesEvents(
-        cityId: cityId,
-        limit: 10,
+        cityId: cityId, limit: 10,
       );
-
-      // Load event counts for all cities (for city selector opacity)
       final focusedStudyCountsByCity = await _homeRepository.getEventCountsByCity(
         EventCategory.focusedStudy,
       );
       final englishGamesCountsByCity = await _homeRepository.getEventCountsByCity(
         EventCategory.englishGames,
       );
-
-      emit(state.copyWith(
-        status: HomeStatus.loaded,
+      return (
         cities: cities,
-        selectedCity: savedCity,
+        savedCity: savedCity,
+        ticketBalance: ticketBalance,
         focusedStudyEvents: focusedStudyEvents,
         englishGamesEvents: englishGamesEvents,
-        ticketBalance: ticketBalance,
         focusedStudyCountsByCity: focusedStudyCountsByCity,
         englishGamesCountsByCity: englishGamesCountsByCity,
-      ));
-    } catch (e) {
-      emit(state.copyWith(
-        status: HomeStatus.error,
-        errorMessage: '載入資料失敗',
-      ));
-    }
+      );
+    });
+
+    emit(state.copyWith(
+      status: HomeStatus.loaded,
+      cities: data.cities,
+      selectedCity: data.savedCity,
+      focusedStudyEvents: data.focusedStudyEvents,
+      englishGamesEvents: data.englishGamesEvents,
+      ticketBalance: data.ticketBalance,
+      focusedStudyCountsByCity: data.focusedStudyCountsByCity,
+      englishGamesCountsByCity: data.englishGamesCountsByCity,
+    ));
   }
 
   /// Refresh home data (events + balance)
@@ -100,11 +92,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         ticketBalance: results[2] as dynamic,
         isRefreshing: false,
       ));
-    } catch (e) {
-      emit(state.copyWith(
-        isRefreshing: false,
-        errorMessage: '重新整理失敗',
-      ));
+    } catch (_) {
+      // Keep showing cached data
+      emit(state.copyWith(isRefreshing: false));
     }
   }
 
@@ -150,11 +140,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         englishGamesEvents: englishGamesEvents,
         isRefreshing: false,
       ));
-    } catch (e) {
-      emit(state.copyWith(
-        isRefreshing: false,
-        errorMessage: '載入資料失敗',
-      ));
+    } catch (_) {
+      // Keep showing cached data
+      emit(state.copyWith(isRefreshing: false));
     }
   }
 

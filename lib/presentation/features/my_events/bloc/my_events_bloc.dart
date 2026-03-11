@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/utils/retry_until_success.dart';
 import '../../../../domain/entities/booking.dart';
 import '../../../../domain/repositories/my_events_repository.dart';
 import 'my_events_event.dart';
@@ -65,16 +66,40 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
     if (hasCachedData) {
       // Show cached data immediately, refresh silently in background
       emit(state.copyWith(isRefreshing: true));
-    } else {
-      emit(state.copyWith(status: MyEventsStatus.loading));
-    }
 
-    try {
-      final results = await Future.wait([
+      try {
+        final results = await Future.wait([
+          _myEventsRepository.getUpcomingEvents(),
+          _myEventsRepository.getPastEvents(),
+          _myEventsRepository.getTicketBalance(),
+        ]);
+
+        final upcomingEvents = results[0] as List<MyEvent>;
+        final pastEvents = results[1] as List<MyEvent>;
+        final ticketBalance = results[2] as TicketBalance;
+
+        emit(state.copyWith(
+          status: MyEventsStatus.loaded,
+          upcomingEvents: upcomingEvents,
+          pastEvents: pastEvents,
+          ticketBalance: ticketBalance,
+          isRefreshing: false,
+        ));
+
+        _setupRealtimeSubscriptions(upcomingEvents);
+      } catch (_) {
+        // Keep showing cached data
+        emit(state.copyWith(isRefreshing: false));
+      }
+    } else {
+      // No cache — retry until success
+      emit(state.copyWith(status: MyEventsStatus.loading));
+
+      final results = await retryUntilSuccess(() => Future.wait([
         _myEventsRepository.getUpcomingEvents(),
         _myEventsRepository.getPastEvents(),
         _myEventsRepository.getTicketBalance(),
-      ]);
+      ]));
 
       final upcomingEvents = results[0] as List<MyEvent>;
       final pastEvents = results[1] as List<MyEvent>;
@@ -89,15 +114,6 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
       ));
 
       _setupRealtimeSubscriptions(upcomingEvents);
-    } catch (e) {
-      if (hasCachedData) {
-        emit(state.copyWith(isRefreshing: false));
-      } else {
-        emit(state.copyWith(
-          status: MyEventsStatus.error,
-          errorMessage: '載入資料失敗',
-        ));
-      }
     }
   }
 
@@ -127,11 +143,9 @@ class MyEventsBloc extends Bloc<MyEventsEvent, MyEventsState> {
       ));
 
       _setupRealtimeSubscriptions(upcomingEvents);
-    } catch (e) {
-      emit(state.copyWith(
-        isRefreshing: false,
-        errorMessage: '重新整理失敗',
-      ));
+    } catch (_) {
+      // Keep showing cached data
+      emit(state.copyWith(isRefreshing: false));
     }
   }
 

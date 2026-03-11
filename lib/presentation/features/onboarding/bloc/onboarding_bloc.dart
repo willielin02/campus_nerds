@@ -48,22 +48,30 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       isLoading: true,
     ));
 
-    final university =
-        await _onboardingRepository.getUniversityByEmailDomain(event.email);
+    try {
+      final university =
+          await _onboardingRepository.getUniversityByEmailDomain(event.email);
 
-    if (university != null) {
+      if (university != null) {
+        emit(state.copyWith(
+          status: OnboardingStatus.emailValid,
+          schoolEmail: event.email,
+          university: university,
+          isLoading: false,
+        ));
+      } else {
+        emit(state.copyWith(
+          status: OnboardingStatus.emailInvalid,
+          schoolEmail: event.email,
+          university: null,
+          errorMessage: '此電子郵件網域不屬於任何支援的大學',
+          isLoading: false,
+        ));
+      }
+    } catch (_) {
       emit(state.copyWith(
-        status: OnboardingStatus.emailValid,
-        schoolEmail: event.email,
-        university: university,
-        isLoading: false,
-      ));
-    } else {
-      emit(state.copyWith(
-        status: OnboardingStatus.emailInvalid,
-        schoolEmail: event.email,
-        university: null,
-        errorMessage: '此電子郵件網域不屬於任何支援的大學',
+        status: OnboardingStatus.error,
+        errorMessage: '網路連線失敗，請稍後再試',
         isLoading: false,
       ));
     }

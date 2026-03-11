@@ -18,7 +18,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
       final List<dynamic> data = response as List<dynamic>;
       return data.map((item) => _parseNotification(item as Map<String, dynamic>)).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/retry_until_success.dart';
 import '../../../../domain/repositories/checkout_repository.dart';
 import '../../../../domain/repositories/my_events_repository.dart';
 import 'checkout_event.dart';
@@ -30,52 +31,57 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     CheckoutLoadProducts event,
     Emitter<CheckoutState> emit,
   ) async {
-    // If we have cached data, show it immediately and refresh in background
     if (state.hasCachedData) {
+      // Show cached data immediately, refresh silently in background
       emit(state.copyWith(
         status: CheckoutStatus.loaded,
         isRefreshing: true,
       ));
+
+      try {
+        final studyProducts = await _checkoutRepository.getProducts('study');
+        final gamesProducts = await _checkoutRepository.getProducts('games');
+        final ticketBalance = await _myEventsRepository.getTicketBalance();
+
+        emit(state.copyWith(
+          status: CheckoutStatus.loaded,
+          studyProducts: studyProducts,
+          gamesProducts: gamesProducts,
+          studyBalance: ticketBalance.studyBalance,
+          gamesBalance: ticketBalance.gamesBalance,
+          selectedStudyIndex: state.selectedStudyIndex,
+          selectedGamesIndex: state.selectedGamesIndex,
+          isRefreshing: false,
+        ));
+      } catch (_) {
+        // Keep showing cached data
+        emit(state.copyWith(isRefreshing: false));
+      }
     } else {
-      // No cached data, show loading state
+      // No cached data — retry until success
       emit(state.copyWith(status: CheckoutStatus.loading));
-    }
 
-    try {
-      // Load products in parallel
-      final studyProducts = await _checkoutRepository.getProducts('study');
-      final gamesProducts = await _checkoutRepository.getProducts('games');
-      final ticketBalance = await _myEventsRepository.getTicketBalance();
-
-      // Determine selected indices
-      // Only set default selection if this is the first load (no cached data)
-      final selectedStudyIndex = state.hasCachedData
-          ? state.selectedStudyIndex
-          : (studyProducts.length > 1 ? 1 : 0);
-      final selectedGamesIndex = state.hasCachedData
-          ? state.selectedGamesIndex
-          : (gamesProducts.length > 1 ? 1 : 0);
+      final data = await retryUntilSuccess(() async {
+        final studyProducts = await _checkoutRepository.getProducts('study');
+        final gamesProducts = await _checkoutRepository.getProducts('games');
+        final ticketBalance = await _myEventsRepository.getTicketBalance();
+        return (
+          studyProducts: studyProducts,
+          gamesProducts: gamesProducts,
+          ticketBalance: ticketBalance,
+        );
+      });
 
       emit(state.copyWith(
         status: CheckoutStatus.loaded,
-        studyProducts: studyProducts,
-        gamesProducts: gamesProducts,
-        studyBalance: ticketBalance.studyBalance,
-        gamesBalance: ticketBalance.gamesBalance,
-        selectedStudyIndex: selectedStudyIndex,
-        selectedGamesIndex: selectedGamesIndex,
+        studyProducts: data.studyProducts,
+        gamesProducts: data.gamesProducts,
+        studyBalance: data.ticketBalance.studyBalance,
+        gamesBalance: data.ticketBalance.gamesBalance,
+        selectedStudyIndex: data.studyProducts.length > 1 ? 1 : 0,
+        selectedGamesIndex: data.gamesProducts.length > 1 ? 1 : 0,
         isRefreshing: false,
       ));
-    } catch (e) {
-      // If we have cached data, keep showing it even if refresh fails
-      if (state.hasCachedData) {
-        emit(state.copyWith(isRefreshing: false));
-      } else {
-        emit(state.copyWith(
-          status: CheckoutStatus.error,
-          errorMessage: '載入商品失敗',
-        ));
-      }
     }
   }
 

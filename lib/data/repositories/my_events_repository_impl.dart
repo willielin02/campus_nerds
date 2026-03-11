@@ -37,7 +37,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
 
       return response.map(_mapRowToMyEvent).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -62,7 +62,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
 
       return response.map(_mapRowToMyEvent).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -85,7 +85,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
 
       return myEvent;
     } catch (e) {
-      return null;
+      rethrow;
     }
   }
 
@@ -108,7 +108,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
         );
       }).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -130,7 +130,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
         gamesBalance: row.gamesBalance ?? 0,
       );
     } catch (e) {
-      return const TicketBalance();
+      rethrow;
     }
   }
 
@@ -220,7 +220,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
 
       return response.isNotEmpty;
     } catch (e) {
-      return false;
+      rethrow;
     }
   }
 
@@ -263,7 +263,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
         );
       }).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -299,7 +299,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
         );
       }).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -358,7 +358,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
         );
       }).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -388,7 +388,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
         );
       }).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -581,7 +581,7 @@ class MyEventsRepositoryImpl implements MyEventsRepository {
       );
     } catch (e) {
       debugPrint('查詢學習報告失敗: $e');
-      return null;
+      rethrow;
     }
   }
 

@@ -22,7 +22,7 @@ class FacebookRepositoryImpl implements FacebookRepository {
 
       return response?['fb_user_id'] != null;
     } catch (e) {
-      return false;
+      rethrow;
     }
   }
 
@@ -39,7 +39,7 @@ class FacebookRepositoryImpl implements FacebookRepository {
 
       return response?['fb_user_id'] as String?;
     } catch (e) {
-      return null;
+      rethrow;
     }
   }
 

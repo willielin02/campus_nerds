@@ -19,7 +19,8 @@ class AccountRepositoryImpl implements AccountRepository {
       if (response == null) return null;
 
       return _parseUserProfile(response);
-    } catch (e) {
+    } catch (e, st) {
+      print('[AccountRepository] getUserProfile error: $e\n$st');
       return null;
     }
   }

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent, AuthState;
 
 import '../../../../app/router/auth_state_notifier.dart';
+import '../../../../core/utils/retry_until_success.dart';
 import '../../../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -70,29 +71,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
       return;
     }
 
-    const fallback = UserProfileStatus(
-      hasUniversity: false,
-      hasBasicInfo: false,
-    );
-
-    try {
-      // Get profile status to determine routing
-      final profileStatus = await _authRepository.getUserProfileStatus();
-      // getUserProfileStatus() returns null on network failure (catches internally).
-      // Use fallback to avoid leaving profileChecked=false forever (stuck on splash).
-      final status = profileStatus ?? fallback;
-      _syncProfileToRouter(status);
-      emit(state.copyWithAuthenticated(
-        user: user,
-        profileStatus: status,
-      ));
-    } catch (e) {
-      // On failure, assume user needs full onboarding (restrictive default).
-      // This prevents the user from being stuck on splash forever, and
-      // ensures they cannot bypass onboarding if the network call fails.
-      _syncProfileToRouter(fallback);
-      emit(state.copyWithAuthenticated(user: user, profileStatus: fallback));
-    }
+    // Retry until we get a real profile status — never use a fallback
+    // that could redirect completed users to onboarding.
+    final status = await retryUntilSuccess(() async {
+      final result = await _authRepository.getUserProfileStatus();
+      if (result == null) throw Exception('Profile not ready');
+      return result;
+    });
+    _syncProfileToRouter(status);
+    emit(state.copyWithAuthenticated(
+      user: user,
+      profileStatus: status,
+    ));
   }
 
   /// Sign in with email
@@ -108,8 +98,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
     );
 
     if (result.success && result.user != null) {
-      // Get profile status to determine routing
-      final profileStatus = await _authRepository.getUserProfileStatus();
+      UserProfileStatus? profileStatus;
+      try {
+        profileStatus = await _authRepository.getUserProfileStatus();
+      } catch (_) {
+        // Will be retried by _onCheckStatus via auth state listener
+      }
       _syncProfileToRouter(profileStatus);
       emit(state.copyWithAuthenticated(
         user: result.user!,
@@ -158,7 +152,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
     final result = await _authRepository.signInWithGoogle();
 
     if (result.success && result.user != null) {
-      final profileStatus = await _authRepository.getUserProfileStatus();
+      UserProfileStatus? profileStatus;
+      try {
+        profileStatus = await _authRepository.getUserProfileStatus();
+      } catch (_) {
+        // Will be retried by _onCheckStatus via auth state listener
+      }
       _syncProfileToRouter(profileStatus);
       emit(state.copyWithAuthenticated(
         user: result.user!,
@@ -179,7 +178,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
     final result = await _authRepository.signInWithApple();
 
     if (result.success && result.user != null) {
-      final profileStatus = await _authRepository.getUserProfileStatus();
+      UserProfileStatus? profileStatus;
+      try {
+        profileStatus = await _authRepository.getUserProfileStatus();
+      } catch (_) {
+        // Will be retried by _onCheckStatus via auth state listener
+      }
       _syncProfileToRouter(profileStatus);
       emit(state.copyWithAuthenticated(
         user: result.user!,

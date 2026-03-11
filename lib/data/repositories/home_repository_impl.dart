@@ -41,7 +41,7 @@ class HomeRepositoryImpl implements HomeRepository {
         gamesBalance: (response['games_balance'] as num?)?.toInt() ?? 0,
       );
     } catch (e) {
-      return const TicketBalance();
+      rethrow;
     }
   }
 
@@ -67,7 +67,7 @@ class HomeRepositoryImpl implements HomeRepository {
 
       return _citiesCache!;
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -124,7 +124,7 @@ class HomeRepositoryImpl implements HomeRepository {
 
       return response.map(_mapRowToEvent).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -141,7 +141,7 @@ class HomeRepositoryImpl implements HomeRepository {
 
       return _mapRowToEvent(response.first);
     } catch (e) {
-      return null;
+      rethrow;
     }
   }
 
@@ -193,7 +193,7 @@ class HomeRepositoryImpl implements HomeRepository {
 
       return counts;
     } catch (e) {
-      return {};
+      rethrow;
     }
   }
 
@@ -224,7 +224,7 @@ class HomeRepositoryImpl implements HomeRepository {
 
       return response.map(_mapRowToEvent).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 

@@ -23,7 +23,7 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
 
       return response.map(_mapRowToProduct).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -39,7 +39,7 @@ class CheckoutRepositoryImpl implements CheckoutRepository {
 
       return response.map(_mapRowToProduct).toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 

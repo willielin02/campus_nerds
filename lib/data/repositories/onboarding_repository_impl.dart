@@ -55,7 +55,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
       return _universitiesCache!;
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 

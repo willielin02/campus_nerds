@@ -273,7 +273,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
     } catch (e) {
       debugPrint('Error getting user profile status: $e');
-      return null;
+      rethrow;
     }
   }
 

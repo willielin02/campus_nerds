@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/retry_until_success.dart';
 import '../../../../domain/repositories/facebook_repository.dart';
 import 'facebook_binding_event.dart';
 import 'facebook_binding_state.dart';
@@ -23,29 +24,50 @@ class FacebookBindingBloc
     FacebookBindingCheckStatus event,
     Emitter<FacebookBindingState> emit,
   ) async {
-    // Stale-while-revalidate: if we already have data, keep showing it
-    // while refreshing in the background
     final hasCachedData = state.status == FacebookBindingStatus.linked ||
         state.status == FacebookBindingStatus.notLinked;
 
-    if (!hasCachedData) {
+    if (hasCachedData) {
+      // Stale-while-revalidate: keep showing cached state
+      try {
+        final isLinked = await _facebookRepository.isFacebookLinked();
+        String? fbUserId;
+        if (isLinked) {
+          fbUserId = await _facebookRepository.getFacebookUserId();
+        }
+        emit(state.copyWith(
+          status: isLinked
+              ? FacebookBindingStatus.linked
+              : FacebookBindingStatus.notLinked,
+          isLinked: isLinked,
+          fbUserId: fbUserId,
+        ));
+      } catch (_) {
+        // Keep showing cached data
+      }
+    } else {
+      // No cache — retry until success
       emit(state.copyWith(status: FacebookBindingStatus.loading));
+
+      final isLinked = await retryUntilSuccess(
+        () => _facebookRepository.isFacebookLinked(),
+      );
+      String? fbUserId;
+      if (isLinked) {
+        try {
+          fbUserId = await _facebookRepository.getFacebookUserId();
+        } catch (_) {
+          // Non-critical, proceed without FB user ID
+        }
+      }
+      emit(state.copyWith(
+        status: isLinked
+            ? FacebookBindingStatus.linked
+            : FacebookBindingStatus.notLinked,
+        isLinked: isLinked,
+        fbUserId: fbUserId,
+      ));
     }
-
-    final isLinked = await _facebookRepository.isFacebookLinked();
-    String? fbUserId;
-
-    if (isLinked) {
-      fbUserId = await _facebookRepository.getFacebookUserId();
-    }
-
-    emit(state.copyWith(
-      status: isLinked
-          ? FacebookBindingStatus.linked
-          : FacebookBindingStatus.notLinked,
-      isLinked: isLinked,
-      fbUserId: fbUserId,
-    ));
   }
 
   Future<void> _onLink(

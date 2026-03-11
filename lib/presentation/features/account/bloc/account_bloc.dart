@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/retry_until_success.dart';
+import '../../../../domain/entities/user.dart';
 import '../../../../domain/repositories/account_repository.dart';
 import 'account_event.dart';
 import 'account_state.dart';
@@ -18,7 +20,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     on<AccountClearError>(_onClearError);
   }
 
-  /// Load user profile
+  /// Load user profile — retries indefinitely until success
   Future<void> _onLoadProfile(
     AccountLoadProfile event,
     Emitter<AccountState> emit,
@@ -27,56 +29,37 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
     emit(state.copyWith(status: AccountStatus.loading));
 
-    try {
-      final profile = await _accountRepository.getUserProfile();
+    final profile = await _fetchProfileUntilSuccess();
 
-      if (profile != null) {
-        emit(state.copyWith(
-          status: AccountStatus.loaded,
-          profile: profile,
-        ));
-      } else {
-        emit(state.copyWith(
-          status: AccountStatus.error,
-          errorMessage: '無法載入使用者資料',
-        ));
-      }
-    } catch (e) {
-      emit(state.copyWith(
-        status: AccountStatus.error,
-        errorMessage: '載入資料失敗',
-      ));
-    }
+    emit(state.copyWith(
+      status: AccountStatus.loaded,
+      profile: profile,
+    ));
   }
 
-  /// Refresh profile
+  /// Refresh profile — retries indefinitely until success
   Future<void> _onRefresh(
     AccountRefresh event,
     Emitter<AccountState> emit,
   ) async {
     emit(state.copyWith(isRefreshing: true));
 
-    try {
-      final profile = await _accountRepository.getUserProfile();
+    final profile = await _fetchProfileUntilSuccess();
 
-      if (profile != null) {
-        emit(state.copyWith(
-          profile: profile,
-          isRefreshing: false,
-        ));
-      } else {
-        emit(state.copyWith(
-          isRefreshing: false,
-          errorMessage: '重新整理失敗',
-        ));
-      }
-    } catch (e) {
-      emit(state.copyWith(
-        isRefreshing: false,
-        errorMessage: '重新整理失敗',
-      ));
-    }
+    emit(state.copyWith(
+      isRefreshing: false,
+      profile: profile,
+    ));
   }
+
+  /// Keep retrying until profile is fetched successfully
+  Future<UserProfile> _fetchProfileUntilSuccess() => retryUntilSuccess(
+    () async {
+      final profile = await _accountRepository.getUserProfile();
+      if (profile == null) throw Exception('Profile not available');
+      return profile;
+    },
+  );
 
   /// Logout
   Future<void> _onLogout(

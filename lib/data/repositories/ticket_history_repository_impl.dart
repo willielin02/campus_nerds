@@ -63,7 +63,7 @@ class TicketHistoryRepositoryImpl implements TicketHistoryRepository {
 
       return entries;
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -86,7 +86,7 @@ class TicketHistoryRepositoryImpl implements TicketHistoryRepository {
         title: response['title_snapshot'] as String,
       );
     } catch (e) {
-      return null;
+      rethrow;
     }
   }
 
@@ -128,7 +128,7 @@ class TicketHistoryRepositoryImpl implements TicketHistoryRepository {
         category: eventResponse['category'] as String,
       );
     } catch (e) {
-      return null;
+      rethrow;
     }
   }
 
@@ -154,7 +154,7 @@ class TicketHistoryRepositoryImpl implements TicketHistoryRepository {
         _citiesCache![id] = name;
       }
     } catch (e) {
-      _citiesCache = {};
+      rethrow;
     }
   }
 
@@ -182,7 +182,7 @@ class TicketHistoryRepositoryImpl implements TicketHistoryRepository {
         gamesBalance: (response['games_balance'] as num?)?.toInt() ?? 0,
       );
     } catch (e) {
-      return const TicketBalance();
+      rethrow;
     }
   }
 }
