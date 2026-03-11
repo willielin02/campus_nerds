@@ -57,7 +57,7 @@
   <!-- Content -->
   <main class="max-w-3xl mx-auto px-6 py-12">
     <h1 class="text-3xl font-bold mb-2">隱私權政策</h1>
-    <p class="text-secondaryText mb-8">最後更新日期：2026 年 2 月 6 日</p>
+    <p class="text-secondaryText mb-8">最後更新日期：2026 年 3 月 11 日</p>
 
     <div class="prose text-primaryText">
 
@@ -75,6 +75,7 @@
         <li>性別（用於活動分組的男女比例配對）</li>
         <li>生日（用於年齡計算與分組參考）</li>
         <li>使用的作業系統（iOS / Android）</li>
+        <li>學術等級（用於分組參考）</li>
       </ul>
 
       <h3>2.2 學校驗證資料</h3>
@@ -82,6 +83,7 @@
         <li>學校電子郵件地址（用於驗證您的大學生身份）</li>
         <li>所屬大學名稱</li>
         <li>電子郵件驗證狀態</li>
+        <li>學生證照片（作為替代驗證方式，主要透過 AI 自動審查）</li>
       </ul>
 
       <h3>2.3 社交連結資料</h3>
@@ -98,12 +100,13 @@
         <li>群組聊天訊息</li>
         <li>Focused Study 待辦事項內容與完成狀態</li>
         <li>English Games 中的指定學習內容</li>
+        <li>English Games 中的口說錄音片段（用於 AI 分析並提供進步建議）</li>
       </ul>
 
       <h3>2.5 回饋資料</h3>
       <ul>
         <li>活動回饋（場地評分、流程評分、氛圍評分、文字評論）</li>
-        <li>同儕回饋（專注度評分、表現評分、行為觀察）</li>
+        <li>同儕回饋（出席狀態、專注度評分、表現評分、行為觀察、本人與資料是否相符）</li>
       </ul>
 
       <h3>2.6 付款資料</h3>
@@ -131,9 +134,11 @@
         <li><strong>Google 帳號登入：</strong>提供 OAuth 身份驗證，我們僅取得您的電子郵件和基本資料</li>
         <li><strong>Apple 帳號登入：</strong>提供 OAuth 身份驗證，您可選擇隱藏電子郵件地址</li>
         <li><strong>Facebook：</strong>用於識別您在本服務中的 Facebook 好友，僅存取好友名單中同樣使用本服務的用戶</li>
-        <li><strong>綠界科技（ECPay）：</strong>處理信用卡/金融卡付款，我們不會接觸您的卡片資訊</li>
+        <li><strong>綠界科技（ECPay）：</strong>處理信用卡 / 金融卡 / Apple Pay 付款，我們不會接觸您的卡片資訊</li>
         <li><strong>Resend：</strong>用於發送學校信箱驗證碼的電子郵件服務</li>
         <li><strong>Firebase：</strong>用於推播通知服務，僅收集裝置識別碼以傳送通知</li>
+        <li><strong>OpenAI：</strong>用於將口說錄音轉為文字（Whisper 語音辨識），錄音資料僅用於轉錄，不會被用於模型訓練</li>
+        <li><strong>Anthropic：</strong>用於分析口說內容並提供英語進步建議，僅接收轉錄後的文字，不接收錄音原檔</li>
       </ul>
 
       <h2>五、資料保留</h2>
@@ -149,7 +154,6 @@
       <p>我們採取以下措施保護您的資料安全：</p>
       <ul>
         <li>所有資料傳輸均使用 HTTPS 加密</li>
-        <li>密碼採用業界標準雜湊演算法儲存，無法被還原</li>
         <li>學校信箱驗證碼以 SHA-256 加鹽雜湊方式儲存</li>
         <li>資料庫啟用行級安全性（Row Level Security），確保用戶只能存取自己的資料</li>
         <li>付款透過綠界科技安全處理，使用 SHA-256 HMAC 驗證交易完整性</li>
