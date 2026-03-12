@@ -168,8 +168,8 @@ export const TIME_SLOT_LABELS: Record<EventTimeSlot, string> = {
 }
 
 export const CATEGORY_LABELS: Record<EventCategory, string> = {
-  focused_study: '專注讀書',
-  english_games: '英文遊戲',
+  focused_study: 'Focused Study',
+  english_games: 'English Games',
 }
 
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {

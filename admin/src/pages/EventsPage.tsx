@@ -123,8 +123,9 @@ export default function EventsPage() {
                 }}
                 className="mt-1 block w-full border-2 border-tertiary rounded-[var(--radius-app)] px-3 py-2 text-sm bg-secondary"
               >
-                <option value="focused_study">專注讀書</option>
-                <option value="english_games">英文遊戲</option>
+                {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
               </select>
             </label>
             <label className="block">
